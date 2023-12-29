@@ -1,18 +1,12 @@
-import { inferAsyncReturnType } from "@trpc/server";
-import Database from "better-sqlite3";
-import { BetterSQLite3Database, drizzle } from "drizzle-orm/better-sqlite3";
+import { inferAsyncReturnType } from '@trpc/server';
+import type { H3Event } from 'h3';
+import { db } from '../services/drizzle.service';
 
-/**
- * Creates context for an incoming request
- * @link https://trpc.io/docs/context
- */
-export const createContext = () => {
-  const sqlite = new Database("sqlite.db");
-  const db: BetterSQLite3Database = drizzle(sqlite);
-
-  return {
-    db,
-  };
+export const createContext = (_event: H3Event) => {
+   return {
+      db,
+      session: _event.context.session,
+   };
 };
 
 export type Context = inferAsyncReturnType<typeof createContext>;
