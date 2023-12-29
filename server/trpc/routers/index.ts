@@ -5,12 +5,12 @@ export const appRouter = router({
   hello: publicProcedure
     .input(
       z.object({
-        text: z.string().nullish(),
+        name: z.string().nullish(),
       })
     )
     .query(({ input }) => {
       return {
-        greeting: `hello ${input?.text ?? "world"}`,
+        greeting: `hello ${input?.name ?? "world"}`,
       };
     }),
 });
