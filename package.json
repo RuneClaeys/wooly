@@ -7,17 +7,23 @@
     "dev": "nuxt dev",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
-    "postinstall": "nuxt prepare"
+    "postinstall": "nuxt prepare",
+    "drizzle:migrate": "npm exec drizzle-kit generate:sqlite --out migrations --schema db/schema.ts",
+    "drizzle:push": "npm exec drizzle-kit push:sqlite",
+    "drizzle:studio": "npm exec drizzle-kit studio"
   },
   "devDependencies": {
     "@nuxt/devtools": "latest",
+    "@sidebase/nuxt-auth": "^0.6.3",
     "@types/better-sqlite3": "^7.6.8",
     "drizzle-kit": "^0.20.8",
+    "next-auth": "^4.22.5",
     "nuxt": "^3.9.0",
     "vue": "^3.3.13",
     "vue-router": "^4.2.5"
   },
   "dependencies": {
+    "@formkit/auto-animate": "^0.8.1",
     "@trpc/client": "^10.44.1",
     "@trpc/server": "^10.44.1",
     "better-sqlite3": "^9.2.2",

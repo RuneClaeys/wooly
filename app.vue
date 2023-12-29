@@ -1,26 +1,9 @@
-<script setup lang="ts">
-const { hello } = useTrpcClient();
-
-const form = ref({ name: "" });
-
-const { data, execute } = hello.useQuery(form, { immediate: false });
+<script lang="ts" setup>
+const { signOut } = useAuth();
 </script>
 
 <template>
-  <div>
-    <form @submit.prevent="() => execute()">
-      <label>
-        What is your name?
-        <input v-model="form.name" :placeholder="'name...'" />
+  <NuxtPage />
 
-        <button>Submit</button>
-      </label>
-    </form>
-
-    <div v-if="data">
-      <p>Hello {{ data?.greeting }}</p>
-    </div>
-  </div>
+  <button @click="signOut()">signout</button>
 </template>
-
-<style scoped></style>

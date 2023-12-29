@@ -8,6 +8,20 @@
       "when": 1703583927839,
       "tag": "0000_sudden_junta",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "5",
+      "when": 1703839999291,
+      "tag": "0001_romantic_maggott",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1703847248300,
+      "tag": "0002_narrow_peter_quill",
+      "breakpoints": true
     }
   ]
 }
