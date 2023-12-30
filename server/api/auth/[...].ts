@@ -10,25 +10,32 @@ type GoogleProfile = Profile & {
    family_name?: string;
 };
 
-function checkUserExists(email: string) {
-   return db.select().from(users).where(eq(users.email, email)).get();
+async function checkUserExists(email: string) {
+   const user = await db.query.users.findFirst({ where: eq(users.email, email) });
+   return !!user;
 }
 
-function createUser({ user, profile }: { user: User; profile?: GoogleProfile }) {
-   db.insert(users)
-      .values({
-         email: user.email,
-         firstName: profile?.given_name,
-         lastName: profile?.family_name,
-      })
-      .execute();
+async function createUser({ user, profile }: { user: User; profile?: GoogleProfile }) {
+   try {
+      return await db
+         .insert(users)
+         .values({
+            id: user.id,
+            email: user.email,
+            firstName: profile?.given_name,
+            lastName: profile?.family_name,
+         })
+         .execute();
+   } catch (e) {
+      console.log(e);
+   }
 }
 
-function signIn({ user, profile }: { user: User; profile?: GoogleProfile }) {
+async function signIn({ user, profile }: { user: User; profile?: GoogleProfile }) {
    if (!user.email) return false;
 
-   const exists = checkUserExists(user.email);
-   if (!exists) createUser({ user, profile });
+   const exists = await checkUserExists(user.email);
+   if (!exists) await createUser({ user, profile });
 
    return true;
 }

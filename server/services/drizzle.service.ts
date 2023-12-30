@@ -1,5 +1,9 @@
-import Database from 'better-sqlite3';
-import { BetterSQLite3Database, drizzle } from 'drizzle-orm/better-sqlite3';
+import { connect } from '@planetscale/database';
+import { drizzle } from 'drizzle-orm/planetscale-serverless';
+import * as schema from '~/db/schema';
 
-export const sqlite = new Database('sqlite.db');
-export const db: BetterSQLite3Database = drizzle(sqlite);
+export const connection = connect({
+   url: process.env.PLANETSCALE_DATABASE_URL,
+});
+
+export const db = drizzle(connection, { schema });

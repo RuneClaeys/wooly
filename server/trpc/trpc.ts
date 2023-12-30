@@ -18,12 +18,12 @@ const t = initTRPC.context<Context>().create();
 /**
  * Authentication middleware
  **/
-const authMiddleware = t.middleware(({ ctx, next }) => {
+const authMiddleware = t.middleware(async ({ ctx, next }) => {
    if (!ctx.session || !ctx.session.user) {
       throw new TRPCError({ code: 'UNAUTHORIZED' });
    }
 
-   const user = db.select().from(users).where(eq(users.email, ctx.session.user.email!)).get();
+   const user = await db.query.users.findFirst({ where: eq(users.email, ctx.session.user.email!) });
 
    if (!user) {
       throw new TRPCError({ code: 'UNAUTHORIZED' });

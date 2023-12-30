@@ -2,8 +2,7 @@ CREATE TABLE `projects` (
 	`id` integer PRIMARY KEY NOT NULL,
 	`name` text,
 	`created_at` text DEFAULT CURRENT_TIMESTAMP,
-	`user_id` integer NOT NULL,
-	FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON UPDATE no action ON DELETE no action
+	`user_id` integer
 );
 --> statement-breakpoint
 CREATE TABLE `users` (

@@ -3,7 +3,7 @@ const { signOut } = useAuth();
 </script>
 
 <template>
-  <NuxtPage />
+   <NuxtPage />
 
-  <button @click="signOut()">signout</button>
+   <button @click="signOut()">signout</button>
 </template>
