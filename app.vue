@@ -1,9 +1,7 @@
-<script lang="ts" setup>
-const { signOut } = useAuth();
-</script>
+<script lang="ts" setup></script>
 
 <template>
-   <NuxtPage />
-
-   <button @click="signOut()">signout</button>
+   <NuxtLayout>
+      <NuxtPage />
+   </NuxtLayout>
 </template>

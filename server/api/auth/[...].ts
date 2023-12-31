@@ -43,6 +43,10 @@ async function signIn({ user, profile }: { user: User; profile?: GoogleProfile }
 export default NuxtAuthHandler({
    secret: process.env.AUTH_SECRET,
 
+   pages: {
+      signIn: '/welcome',
+   },
+
    providers: [
       // @ts-expect-error You need to use .default here for it to work during SSR. May be fixed via Vite at some point
       GoogleProvider.default({

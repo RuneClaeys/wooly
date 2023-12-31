@@ -8,7 +8,10 @@ export const projectRouter = router({
    partRouter,
 
    list: protectedProcedure.query(({ ctx }) => {
-      return ctx.db.query.projects.findMany({ with: { parts: true }, where: eq(projects.userId, ctx.session.user.id) });
+      return ctx.db.query.projects.findMany({
+         with: { parts: true },
+         where: eq(projects.userId, ctx.session.user.id),
+      });
    }),
 
    get: protectedProcedure.input(z.number()).query(({ input: projectId, ctx }) => {
