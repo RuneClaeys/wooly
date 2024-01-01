@@ -32,6 +32,9 @@ export const projectsRelations = relations(projects, ({ one, many }) => ({
    parts: many(parts),
 }));
 
+export type InsertProject = typeof projects.$inferInsert;
+export type SelectProject = typeof projects.$inferSelect;
+
 // parts
 export const parts = mysqlTable('parts', {
    id: serial('id').primaryKey(),

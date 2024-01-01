@@ -6,12 +6,14 @@ const { data, execute: refresh } = projectRouter.list.useQuery(undefined);
 //#endregion
 
 //#region Create Project
-const newProject = ref<{ name: string }>({ name: '' });
+const showCeateProjectForm = ref(false);
 
-async function createProject() {
-   await projectRouter.create.mutate(newProject.value);
-   refresh();
-   newProject.value.name = '';
+async function createProject(newProject: Parameters<typeof projectRouter.create.mutate>[0]) {
+   const response = await projectRouter.create.mutate(newProject);
+   if (response) {
+      data.value?.push(response);
+   }
+   showCeateProjectForm.value = false;
 }
 //#endregion
 
@@ -24,59 +26,36 @@ async function deleteProject(id: number) {
 </script>
 
 <template>
-   <div>
-      <div v-auto-animate class="list">
-         <div v-for="project in data ?? []" :key="project.id" class="list__item">
-            <NuxtLink :prefetch="true" :to="{ name: 'projects-id', params: { id: project.id } }">
-               <p>{{ project.name }}</p>
-            </NuxtLink>
-            <button @click="deleteProject(project.id)">x</button>
+   <NuxtLayout :name="'default'">
+      <UContainer>
+         <h3 class="py-3">Projects</h3>
+
+         <div v-auto-animate class="flex flex-col gap-3">
+            <UCard v-for="project in data ?? []" :key="project.id">
+               <div class="flex justify-between items-center">
+                  <p>Project Title</p>
+                  <div class="flex gap-1">
+                     <UButton icon="i-heroicons-pencil-16-solid" variant="ghost" color="gray" @click="deleteProject(project.id)" />
+                     <UButton icon="i-heroicons-trash-16-solid" variant="ghost" color="red" @click="deleteProject(project.id)" />
+                  </div>
+               </div>
+
+               <template #footer>
+                  <small> Status: Active </small>
+               </template>
+            </UCard>
          </div>
-      </div>
+      </UContainer>
 
-      <form @submit.prevent="createProject()">
-         <label>
-            Name:
-            <input type="text" v-model="newProject.name" />
+      <UButton
+         class="fixed bottom-5 right-5"
+         size="xl"
+         square
+         icon="i-heroicons-plus-16-solid"
+         :ui="{ rounded: 'rounded-full' }"
+         @click="showCeateProjectForm = true"
+      />
 
-            <button>Submit</button>
-         </label>
-      </form>
-   </div>
+      <ModalsProject v-model="showCeateProjectForm" @save-project="createProject" />
+   </NuxtLayout>
 </template>
-
-<style scoped>
-.list {
-   list-style: none;
-   padding: 0;
-}
-
-.list__item {
-   display: flex;
-   justify-content: space-between;
-   align-items: center;
-   padding: 0.5rem;
-   border-bottom: 1px solid #ccc;
-}
-
-.list__item:hover {
-   background: #eee;
-}
-
-.list__item button {
-   background: transparent;
-   border: none;
-   cursor: pointer;
-   height: 1.5rem;
-   width: 1.5rem;
-   border-radius: 0.5rem;
-   display: flex;
-   justify-content: center;
-   align-items: center;
-}
-
-.list__item button:hover {
-   background-color: red;
-   color: white;
-}
-</style>
