@@ -1,6 +1,6 @@
 export default defineNuxtConfig({
    devtools: { enabled: true },
-   modules: ['@sidebase/nuxt-auth', '@formkit/auto-animate/nuxt'],
+   modules: ['@sidebase/nuxt-auth', '@formkit/auto-animate/nuxt', '@nuxt/ui', '@nuxt/image'],
 
    build: {
       transpile: ['trpc-nuxt'],
@@ -16,5 +16,9 @@ export default defineNuxtConfig({
       provider: {
          type: 'authjs',
       },
+   },
+
+   colorMode: {
+      preference: 'system',
    },
 });
