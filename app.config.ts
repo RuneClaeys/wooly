@@ -13,6 +13,7 @@ export default defineAppConfig({
          footer: {
             padding: 'px-2 py-2',
          },
+         background: 'bg-white dark:bg-gray-900 hover:bg-gray-100 dark:hover:bg-gray-800',
       },
 
       modal: {

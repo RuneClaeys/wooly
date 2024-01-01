@@ -2,4 +2,8 @@
 
 <template>
    <NuxtPage />
+
+   <UNotifications />
+
+   <ModalsConfirmation />
 </template>

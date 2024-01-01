@@ -1,8 +1,9 @@
 <script setup lang="ts">
 const { projectRouter } = useTrpcClient();
+const { promptConfirmation } = useConfirmation();
 
 //#region List Projects
-const { data, execute: refresh } = projectRouter.list.useQuery(undefined);
+const { data } = projectRouter.list.useQuery(undefined);
 //#endregion
 
 //#region Create Project
@@ -19,33 +20,45 @@ async function createProject(newProject: Parameters<typeof projectRouter.create.
 
 //#region Delete Project
 async function deleteProject(id: number) {
-   await projectRouter.delete.mutate(id);
-   refresh();
+   promptConfirmation({
+      title: 'Delete Project',
+      description: 'Are you sure you want to delete this project?',
+      onConfirm: async (done) => {
+         await projectRouter.delete.mutate(id);
+         done();
+         if (data.value) {
+            data.value = data.value?.filter((p) => p.id !== id);
+         }
+      },
+   });
 }
 //#endregion
 </script>
 
 <template>
    <NuxtLayout :name="'default'">
-      <UContainer>
-         <h3 class="py-3">Projects</h3>
+      <h3 class="py-3">Projects</h3>
 
-         <div v-auto-animate class="flex flex-col gap-3">
-            <UCard v-for="project in data ?? []" :key="project.id">
-               <div class="flex justify-between items-center">
-                  <p>Project Title</p>
-                  <div class="flex gap-1">
-                     <UButton icon="i-heroicons-pencil-16-solid" variant="ghost" color="gray" @click="deleteProject(project.id)" />
-                     <UButton icon="i-heroicons-trash-16-solid" variant="ghost" color="red" @click="deleteProject(project.id)" />
-                  </div>
+      <div v-auto-animate class="flex flex-row flex-wrap gap-3 justify-center">
+         <UCard
+            v-for="project in data ?? []"
+            :key="project.id"
+            class="min-w-full md:min-w-96 cursor-pointer"
+            @click="$router.push({ name: 'projects-id', params: { id: project.id } })"
+         >
+            <div class="flex justify-between items-center">
+               <p>{{ project.name }}</p>
+               <div class="flex gap-1">
+                  <!-- <UButton icon="i-heroicons-pencil-16-solid" variant="ghost" color="gray" @click.stop="deleteProject(project.id)" /> -->
+                  <UButton icon="i-heroicons-trash-16-solid" variant="ghost" color="red" @click.stop="deleteProject(project.id)" />
                </div>
+            </div>
 
-               <template #footer>
-                  <small> Status: Active </small>
-               </template>
-            </UCard>
-         </div>
-      </UContainer>
+            <template #footer>
+               <small> Status: Active </small>
+            </template>
+         </UCard>
+      </div>
 
       <UButton
          class="fixed bottom-5 right-5"
