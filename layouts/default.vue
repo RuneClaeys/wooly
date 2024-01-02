@@ -33,7 +33,7 @@ function navigateBack() {
    <div class="h-100">
       <header class="bg-pink-400 text-white dark:bg-pink-900">
          <UContainer class="flex py-3">
-            <div class="min-w-7 flex justify-center items-center">
+            <div class="min-w-16 flex justify-start items-center">
                <UButton
                   v-if="!root"
                   icon="i-heroicons-arrow-left-16-solid text-white"
@@ -48,7 +48,7 @@ function navigateBack() {
                <h2>{{ title ?? 'Wooly' }}</h2>
             </div>
 
-            <div class="min-w-7 flex justify-center items-center">
+            <div class="min-w-16 flex justify-center items-center">
                <UButton
                   :icon="isDark ? 'i-heroicons-moon-20-solid' : 'i-heroicons-sun-20-solid'"
                   variant="ghost"

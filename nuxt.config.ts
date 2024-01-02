@@ -10,6 +10,10 @@ export default defineNuxtConfig({
       typedPages: true,
    },
 
+   sourcemap: true,
+
+   debug: process.env.NODE_ENV !== 'production',
+
    auth: {
       globalAppMiddleware: true,
       baseURL: process.env.AUHT_ORIGIN,
