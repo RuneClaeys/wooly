@@ -1,15 +1,15 @@
 <script lang="ts" setup>
 import type { FormError } from '@nuxt/ui/dist/runtime/types/form';
-import type { SelectPart } from '~/db/schema';
+import type { SelectProject } from '~/db/schema';
 
 //#region Props & Emits
-const open = defineModel<boolean>('modelValue', { default: false });
-const props = defineProps<{ initialPart?: SelectPart }>();
-const emits = defineEmits<{ (e: 'save-part', part: { name: string }): void }>();
+const open = defineModel('modelValue', { default: false });
+const props = defineProps<{ initialProject?: SelectProject }>();
+const emits = defineEmits<{ (e: 'save-project', payload: { project: { name: string }; done: () => void }): void }>();
 //#endregion
 
 //#region State
-const part = ref<{ name: string }>({ name: props.initialPart?.name ?? '' });
+const project = ref<{ name: string }>({ name: props.initialProject?.name ?? '' });
 
 const validate = (state: any): FormError[] => {
    const errors = [];
@@ -19,8 +19,14 @@ const validate = (state: any): FormError[] => {
 };
 
 function onSubmit() {
-   if (validate(part.value).length > 0) return;
-   emits('save-part', part.value);
+   if (validate(project.value).length > 0) return;
+   emits('save-project', {
+      project: project.value,
+      done: () => {
+         project.value = { name: '' };
+         open.value = false;
+      },
+   });
 }
 
 //#endregion
@@ -30,12 +36,12 @@ function onSubmit() {
    <UModal v-model="open">
       <UCard :ui="{ ring: '', divide: 'divide-y divide-gray-100 dark:divide-gray-800' }">
          <template #header>
-            <p>Create a part</p>
+            <p>Create a project</p>
          </template>
 
-         <UForm :state="part" :validate="validate">
+         <UForm :state="project" :validate="validate">
             <UFormGroup label="Name" name="name">
-               <UInput v-model="part.name" />
+               <UInput v-model="project.name" />
             </UFormGroup>
          </UForm>
 

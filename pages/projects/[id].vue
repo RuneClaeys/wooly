@@ -23,12 +23,13 @@ const { data: parts, execute: refresh, pending } = projectRouter.partRouter.list
 
 //#region Add Part
 const showCeateProjectForm = ref(false);
+const sortDelay = ref<NodeJS.Timeout>();
 
-async function createPart(newPart: { name: string }) {
+async function createPart(payload: { part: { name: string; counter: number }; done: () => void }) {
    const response = await projectRouter.partRouter.create.mutate({
       projectId: +route.params.id,
-      name: newPart.name,
-      count: 0,
+      name: payload.part.name,
+      counter: payload.part.counter,
    });
 
    if (response) refresh();
@@ -51,6 +52,11 @@ async function incrementOrDecrement(part: Required<SelectPart>, increment: boole
    try {
       part.counter += increment ? 1 : -1;
       await projectRouter.partRouter.update.mutate({ ...part });
+      if (sortDelay.value) clearTimeout(sortDelay.value);
+
+      sortDelay.value = setTimeout(() => {
+         refresh();
+      }, 1000);
    } catch {
       part.counter -= increment ? 1 : -1;
    }
@@ -64,7 +70,35 @@ async function incrementOrDecrement(part: Required<SelectPart>, increment: boole
       <LayoutHeading v-model:sorting="sorting" :title="'Parts'" />
 
       <div v-auto-animate class="flex flex-row flex-wrap gap-3 justify-center">
-         <UCard v-if="!pending" v-for="part in parts ?? []" :key="part.id" class="min-w-full md:min-w-96 cursor-pointer">
+         <UCard v-if="pending && !parts?.length" v-for="i in 4" :key="i" class="min-w-full md:min-w-96 cursor-pointer max-h-[90px]">
+            <div class="flex justify-between items-center">
+               <USkeleton class="w-40 h-4" />
+               <div class="flex gap-1">
+                  <USkeleton class="h-4 w-4" />
+               </div>
+            </div>
+
+            <template #footer>
+               <div class="flex justify-between items-center">
+                  <USkeleton class="w-40 h-3" />
+
+                  <div class="flex gap-2 items-center">
+                     <USkeleton class="h-4 w-4" />
+
+                     <USkeleton class="h-4 w-4" />
+
+                     <USkeleton class="h-4 w-4" />
+                  </div>
+               </div>
+            </template>
+         </UCard>
+
+         <UCard
+            v-else-if="parts?.length"
+            v-for="part in parts ?? []"
+            :key="part.id"
+            class="min-w-full md:min-w-96 cursor-pointer max-h-[90px]"
+         >
             <div class="flex justify-between items-center">
                <p>{{ part.name }}</p>
                <div class="flex gap-1">
@@ -95,28 +129,7 @@ async function incrementOrDecrement(part: Required<SelectPart>, increment: boole
             </template>
          </UCard>
 
-         <UCard v-else-if="!parts?.length" v-for="i in 4" :key="i" class="min-w-full md:min-w-96 cursor-pointer">
-            <div class="flex justify-between items-center">
-               <USkeleton class="w-40 h-4" />
-               <div class="flex gap-1">
-                  <USkeleton class="h-4 w-4" />
-               </div>
-            </div>
-
-            <template #footer>
-               <div class="flex justify-between items-center">
-                  <USkeleton class="w-40 h-3" />
-
-                  <div class="flex gap-2 items-center">
-                     <USkeleton class="h-4 w-4" />
-
-                     <USkeleton class="h-4 w-4" />
-
-                     <USkeleton class="h-4 w-4" />
-                  </div>
-               </div>
-            </template>
-         </UCard>
+         <p v-else class="text-gray-400">No parts added yet</p>
       </div>
 
       <UButton
@@ -128,7 +141,7 @@ async function incrementOrDecrement(part: Required<SelectPart>, increment: boole
          @click="showCeateProjectForm = true"
       />
 
-      <ModalsProject v-model="showCeateProjectForm" @save-project="createPart" />
+      <ModalsPart v-model="showCeateProjectForm" @save-part="createPart" />
    </NuxtLayout>
 </template>
 

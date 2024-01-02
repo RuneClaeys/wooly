@@ -20,7 +20,7 @@ export const partRouter = router({
       }),
 
    create: protectedProcedure
-      .input(z.object({ projectId: z.number(), name: z.string(), count: z.number() }))
+      .input(z.object({ projectId: z.number(), name: z.string(), counter: z.number().optional().default(0) }))
       .mutation(async ({ input, ctx }) => {
          const { insertId } = await ctx.db
             .insert(parts)

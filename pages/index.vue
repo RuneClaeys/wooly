@@ -10,10 +10,11 @@ const { data, execute: refresh } = projectRouter.list.useQuery(query, { watch: [
 //#region Create Project
 const showCeateProjectForm = ref(false);
 
-async function createProject(newProject: Parameters<typeof projectRouter.create.mutate>[0]) {
-   const response = await projectRouter.create.mutate(newProject);
+async function createProject(payload: { project: Parameters<typeof projectRouter.create.mutate>[0]; done: () => void }) {
+   const response = await projectRouter.create.mutate(payload.project);
    if (response) refresh();
    showCeateProjectForm.value = false;
+   payload.done();
 }
 //#endregion
 
@@ -40,9 +41,10 @@ async function deleteProject(id: number) {
 
       <div v-auto-animate class="flex flex-row flex-wrap gap-3 justify-center">
          <UCard
+            v-if="data?.length"
             v-for="project in data ?? []"
             :key="project.id"
-            class="min-w-full md:min-w-96 cursor-pointer"
+            class="min-w-full md:min-w-96 cursor-pointer max-h-[90px]"
             :ui="{ background: 'bg-white dark:bg-gray-900 hover:bg-gray-100 dark:hover:bg-gray-800' }"
             @click="$router.push({ name: 'projects-id', params: { id: project.id } })"
          >
@@ -57,6 +59,8 @@ async function deleteProject(id: number) {
                <small> Status: Active </small>
             </template>
          </UCard>
+
+         <p v-else class="text-gray-400">No projects added yet</p>
       </div>
 
       <UButton

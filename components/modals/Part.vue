@@ -1,15 +1,15 @@
 <script lang="ts" setup>
 import type { FormError } from '@nuxt/ui/dist/runtime/types/form';
-import type { SelectProject } from '~/db/schema';
+import type { SelectPart } from '~/db/schema';
 
 //#region Props & Emits
-const open = defineModel('modelValue', { default: false });
-const props = defineProps<{ initialProject?: SelectProject }>();
-const emits = defineEmits<{ (e: 'save-project', project: { name: string }): void }>();
+const open = defineModel<boolean>('modelValue', { default: false });
+const props = defineProps<{ initialPart?: SelectPart }>();
+const emits = defineEmits<{ (e: 'save-part', payload: { part: typeof part.value; done: () => void }): void }>();
 //#endregion
 
 //#region State
-const project = ref<{ name: string }>({ name: props.initialProject?.name ?? '' });
+const part = ref({ name: props.initialPart?.name ?? '', counter: props.initialPart?.counter ?? 0 });
 
 const validate = (state: any): FormError[] => {
    const errors = [];
@@ -19,8 +19,14 @@ const validate = (state: any): FormError[] => {
 };
 
 function onSubmit() {
-   if (validate(project.value).length > 0) return;
-   emits('save-project', project.value);
+   if (validate(part.value).length > 0) return;
+   emits('save-part', {
+      part: part.value,
+      done: () => {
+         part.value = { name: '', counter: 0 };
+         open.value = false;
+      },
+   });
 }
 
 //#endregion
@@ -30,12 +36,16 @@ function onSubmit() {
    <UModal v-model="open">
       <UCard :ui="{ ring: '', divide: 'divide-y divide-gray-100 dark:divide-gray-800' }">
          <template #header>
-            <p>Create a project</p>
+            <p>Create a part</p>
          </template>
 
-         <UForm :state="project" :validate="validate">
+         <UForm class="flex flex-col gap-3" :state="part" :validate="validate">
             <UFormGroup label="Name" name="name">
-               <UInput v-model="project.name" />
+               <UInput v-model="part.name" />
+            </UFormGroup>
+
+            <UFormGroup label="Row Count" name="counter">
+               <UInput v-model="part.counter" :type="'number'" />
             </UFormGroup>
          </UForm>
 
