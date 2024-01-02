@@ -3,7 +3,7 @@ import type { FormError } from '@nuxt/ui/dist/runtime/types/form';
 import type { SelectProject } from '~/db/schema';
 
 //#region Props & Emits
-const open = defineModel<boolean>('modelValue');
+const open = defineModel<boolean>('modelValue', { default: false });
 const props = defineProps<{ initialProject?: SelectProject }>();
 const emits = defineEmits<{ (e: 'save-project', project: { name: string }): void }>();
 //#endregion

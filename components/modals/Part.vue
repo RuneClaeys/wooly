@@ -3,7 +3,7 @@ import type { FormError } from '@nuxt/ui/dist/runtime/types/form';
 import type { SelectPart } from '~/db/schema';
 
 //#region Props & Emits
-const open = defineModel<boolean>('modelValue');
+const open = defineModel<boolean>('modelValue', { default: false });
 const props = defineProps<{ initialPart?: SelectPart }>();
 const emits = defineEmits<{ (e: 'save-part', part: { name: string }): void }>();
 //#endregion
