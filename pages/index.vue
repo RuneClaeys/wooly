@@ -49,7 +49,6 @@ async function deleteProject(id: number) {
             <div class="flex justify-between items-center">
                <p>{{ project.name }}</p>
                <div class="flex gap-1">
-                  <!-- <UButton icon="i-heroicons-pencil-16-solid" variant="ghost" color="gray" @click.stop="deleteProject(project.id)" /> -->
                   <UButton icon="i-heroicons-trash-16-solid" variant="ghost" color="red" @click.stop="deleteProject(project.id)" />
                </div>
             </div>

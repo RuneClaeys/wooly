@@ -30,7 +30,7 @@ function navigateBack() {
 </script>
 
 <template>
-   <div>
+   <div class="h-100">
       <header class="bg-pink-400 text-white dark:bg-pink-900">
          <UContainer class="flex py-3">
             <div class="min-w-7 flex justify-center items-center">

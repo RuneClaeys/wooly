@@ -3,9 +3,13 @@ const { signOut } = useAuth();
 </script>
 
 <template>
-   <div>
-      <button @click="signOut({ redirect: true })">SignOut</button>
-   </div>
+   <NuxtLayout>
+      <div class="flex flex-col items-center p-5 gap-5">
+         <p>Settings</p>
+
+         <UButton @click="signOut()" :icon="'i-heroicons-user-solid'">Sign In with google</UButton>
+      </div>
+   </NuxtLayout>
 </template>
 
 <style lang="scss" scoped></style>
