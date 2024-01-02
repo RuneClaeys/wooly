@@ -1,6 +1,6 @@
 export default defineNuxtConfig({
    devtools: { enabled: true },
-   modules: ['@sidebase/nuxt-auth', '@formkit/auto-animate/nuxt', '@nuxt/ui', '@nuxt/image'],
+   modules: ['@sidebase/nuxt-auth', '@formkit/auto-animate/nuxt', '@nuxt/ui', '@nuxt/image', '@nuxtjs/google-fonts'],
 
    build: {
       transpile: ['trpc-nuxt'],
@@ -20,5 +20,13 @@ export default defineNuxtConfig({
 
    colorMode: {
       preference: 'system',
+   },
+
+   googleFonts: {
+      display: 'swap',
+      download: true,
+      families: {
+         Poppins: true,
+      },
    },
 });

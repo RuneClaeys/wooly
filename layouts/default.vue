@@ -31,12 +31,12 @@ function navigateBack() {
 
 <template>
    <div>
-      <header class="bg-pink-300 dark:bg-pink-900">
+      <header class="bg-pink-400 text-white dark:bg-pink-900">
          <UContainer class="flex py-3">
             <div class="min-w-7 flex justify-center items-center">
                <UButton
                   v-if="!root"
-                  icon="i-heroicons-arrow-left-16-solid"
+                  icon="i-heroicons-arrow-left-16-solid text-white"
                   color="white"
                   variant="ghost"
                   aria-label="Theme"
@@ -51,7 +51,6 @@ function navigateBack() {
             <div class="min-w-7 flex justify-center items-center">
                <UButton
                   :icon="isDark ? 'i-heroicons-moon-20-solid' : 'i-heroicons-sun-20-solid'"
-                  color="white"
                   variant="ghost"
                   aria-label="Theme"
                   @click="toggleColorMode"
@@ -59,7 +58,6 @@ function navigateBack() {
                <UButton
                   v-if="status === 'authenticated'"
                   icon="i-heroicons-cog-6-tooth-20-solid"
-                  color="white"
                   variant="ghost"
                   aria-label="Settings"
                   @click="$router.push('/settings')"

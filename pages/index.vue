@@ -61,7 +61,7 @@ async function deleteProject(id: number) {
       </div>
 
       <UButton
-         class="fixed bottom-5 right-5"
+         class="fixed bottom-5 right-5 dark:bg-pink-900 dark:text-white"
          size="xl"
          square
          icon="i-heroicons-plus-16-solid"
