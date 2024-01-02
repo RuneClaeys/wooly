@@ -26,7 +26,7 @@ export const useSorting = () => {
    });
 
    function sortingChanged(value: Sorting) {
-      router.push({ ...route, query: { ...route.query, orderBy: value.orderBy, order: value.order } });
+      router.replace({ ...route, query: { ...route.query, orderBy: value.orderBy, order: value.order } });
    }
 
    watch(sorting, sortingChanged, { deep: true });

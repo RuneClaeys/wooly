@@ -1,4 +1,4 @@
-import { eq } from 'drizzle-orm';
+import { asc, desc, eq } from 'drizzle-orm';
 import { z } from 'zod';
 import { parts } from '~/db/schema';
 import { genericSort } from '~/server/helpers/zod.helper';
@@ -13,7 +13,10 @@ export const partRouter = router({
          })
       )
       .query(({ ctx, input }) => {
-         return ctx.db.query.parts.findMany({ where: eq(parts.projectId, input.projectId) });
+         return ctx.db.query.parts.findMany({
+            where: eq(parts.projectId, input.projectId),
+            orderBy: input.sorting.order === 'asc' ? asc(parts[input.sorting.orderBy]) : desc(parts[input.sorting.orderBy]),
+         });
       }),
 
    create: protectedProcedure

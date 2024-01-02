@@ -13,7 +13,12 @@ const { data } = projectRouter.get.useQuery(+route.params.id);
 
 const { sorting, query } = useSorting();
 
-const { data: parts } = projectRouter.partRouter.list.useQuery({ projectId: +route.params.id, sorting: query.value });
+const input = computed(() => ({
+   projectId: +route.params.id,
+   sorting: query.value,
+}));
+
+const { data: parts, execute: refresh, pending } = projectRouter.partRouter.list.useQuery(input, { watch: [input], deep: true });
 //#endregion
 
 //#region Add Part
@@ -26,7 +31,7 @@ async function createPart(newPart: { name: string }) {
       count: 0,
    });
 
-   if (response) parts.value?.push(response);
+   if (response) refresh();
    showCeateProjectForm.value = false;
 }
 
@@ -59,7 +64,7 @@ async function incrementOrDecrement(part: Required<SelectPart>, increment: boole
       <LayoutHeading v-model:sorting="sorting" :title="'Parts'" />
 
       <div v-auto-animate class="flex flex-row flex-wrap gap-3 justify-center">
-         <UCard v-for="part in parts ?? []" :key="part.id" class="min-w-full md:min-w-96 cursor-pointer">
+         <UCard v-if="!pending" v-for="part in parts ?? []" :key="part.id" class="min-w-full md:min-w-96 cursor-pointer">
             <div class="flex justify-between items-center">
                <p>{{ part.name }}</p>
                <div class="flex gap-1">
@@ -85,6 +90,29 @@ async function incrementOrDecrement(part: Required<SelectPart>, increment: boole
                         color="green"
                         @click.stop="incrementOrDecrement(part, true)"
                      />
+                  </div>
+               </div>
+            </template>
+         </UCard>
+
+         <UCard v-else-if="!parts?.length" v-for="i in 4" :key="i" class="min-w-full md:min-w-96 cursor-pointer">
+            <div class="flex justify-between items-center">
+               <USkeleton class="w-40 h-4" />
+               <div class="flex gap-1">
+                  <USkeleton class="h-4 w-4" />
+               </div>
+            </div>
+
+            <template #footer>
+               <div class="flex justify-between items-center">
+                  <USkeleton class="w-40 h-3" />
+
+                  <div class="flex gap-2 items-center">
+                     <USkeleton class="h-4 w-4" />
+
+                     <USkeleton class="h-4 w-4" />
+
+                     <USkeleton class="h-4 w-4" />
                   </div>
                </div>
             </template>

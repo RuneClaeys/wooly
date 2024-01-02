@@ -4,7 +4,7 @@ const { promptConfirmation } = useConfirmation();
 
 //#region List Projects
 const { sorting, query } = useSorting();
-const { data } = projectRouter.list.useQuery(query, { watch: [query], deep: true });
+const { data, execute: refresh } = projectRouter.list.useQuery(query, { watch: [query], deep: true });
 //#endregion
 
 //#region Create Project
@@ -12,9 +12,7 @@ const showCeateProjectForm = ref(false);
 
 async function createProject(newProject: Parameters<typeof projectRouter.create.mutate>[0]) {
    const response = await projectRouter.create.mutate(newProject);
-   if (response) {
-      data.value?.push(response);
-   }
+   if (response) refresh();
    showCeateProjectForm.value = false;
 }
 //#endregion
@@ -45,6 +43,7 @@ async function deleteProject(id: number) {
             v-for="project in data ?? []"
             :key="project.id"
             class="min-w-full md:min-w-96 cursor-pointer"
+            :ui="{ background: 'bg-white dark:bg-gray-900 hover:bg-gray-100 dark:hover:bg-gray-800' }"
             @click="$router.push({ name: 'projects-id', params: { id: project.id } })"
          >
             <div class="flex justify-between items-center">
