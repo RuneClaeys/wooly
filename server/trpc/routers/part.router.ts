@@ -1,12 +1,20 @@
 import { eq } from 'drizzle-orm';
 import { z } from 'zod';
 import { parts } from '~/db/schema';
+import { genericSort } from '~/server/helpers/zod.helper';
 import { protectedProcedure, router } from '../trpc';
 
 export const partRouter = router({
-   list: protectedProcedure.input(z.number()).query(({ ctx, input }) => {
-      return ctx.db.query.parts.findMany({ where: eq(parts.projectId, input) });
-   }),
+   list: protectedProcedure
+      .input(
+         z.object({
+            projectId: z.number(),
+            sorting: genericSort,
+         })
+      )
+      .query(({ ctx, input }) => {
+         return ctx.db.query.parts.findMany({ where: eq(parts.projectId, input.projectId) });
+      }),
 
    create: protectedProcedure
       .input(z.object({ projectId: z.number(), name: z.string(), count: z.number() }))

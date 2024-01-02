@@ -21,6 +21,7 @@ export const projects = mysqlTable('projects', {
    id: serial('id').primaryKey(),
    name: text('name'),
    createdAt: timestamp('created_at').default(sql`CURRENT_TIMESTAMP`),
+   updatedAt: timestamp('updated_at').default(sql`CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP`),
    userId: varchar('user_id', { length: 255 }).notNull(),
 });
 
@@ -41,6 +42,7 @@ export const parts = mysqlTable('parts', {
    name: text('name'),
    counter: int('count').notNull().default(0),
    createdAt: timestamp('created_at').default(sql`CURRENT_TIMESTAMP`),
+   updatedAt: timestamp('updated_at').default(sql`CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP`),
    projectId: int('project_id').notNull(),
 });
 
@@ -51,5 +53,11 @@ export const partsRelations = relations(parts, ({ one }) => ({
    }),
 }));
 
-export type SelectPart = Omit<typeof parts.$inferSelect, 'createdAt'> & { createdAt?: string | null };
-export type InsertPart = Omit<typeof parts.$inferInsert, 'createdAt'> & { createdAt?: string | null };
+export type SelectPart = Omit<typeof parts.$inferSelect, 'createdAt' | 'updatedAt'> & {
+   createdAt?: string | null;
+   updatedAt?: string | null;
+};
+export type InsertPart = Omit<typeof parts.$inferInsert, 'createdAt' | 'updatedAt'> & {
+   createdAt?: string | null;
+   updatedAt?: string | null;
+};

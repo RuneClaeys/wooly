@@ -3,7 +3,8 @@ const { projectRouter } = useTrpcClient();
 const { promptConfirmation } = useConfirmation();
 
 //#region List Projects
-const { data } = projectRouter.list.useQuery(undefined);
+const { sorting, query } = useSorting();
+const { data } = projectRouter.list.useQuery(query, { watch: [query], deep: true });
 //#endregion
 
 //#region Create Project
@@ -37,7 +38,7 @@ async function deleteProject(id: number) {
 
 <template>
    <NuxtLayout :name="'default'">
-      <h3 class="py-3">Projects</h3>
+      <LayoutHeading v-model:sorting="sorting" :title="'Projects'" />
 
       <div v-auto-animate class="flex flex-row flex-wrap gap-3 justify-center">
          <UCard

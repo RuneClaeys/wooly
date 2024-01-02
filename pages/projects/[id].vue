@@ -5,10 +5,15 @@ import type { SelectPart } from '~/db/schema';
 const toast = useToast();
 const route = useRoute('projects-id');
 const { projectRouter } = useTrpcClient();
+const { promptConfirmation } = useConfirmation();
 //#endregion
 
 //#region Get Project
 const { data } = projectRouter.get.useQuery(+route.params.id);
+
+const { sorting, query } = useSorting();
+
+const { data: parts } = projectRouter.partRouter.list.useQuery({ projectId: +route.params.id, sorting: query.value });
 //#endregion
 
 //#region Add Part
@@ -21,14 +26,20 @@ async function createPart(newPart: { name: string }) {
       count: 0,
    });
 
-   if (response) data.value?.parts.push(response);
+   if (response) parts.value?.push(response);
    showCeateProjectForm.value = false;
-   toast.add({ title: 'Part created', description: 'Part has been created' });
 }
 
 async function deletePart(id: number) {
-   await projectRouter.partRouter.delete.mutate(id);
-   data.value!.parts = data.value!.parts.filter((part) => part.id !== id);
+   promptConfirmation({
+      title: 'Delete Project',
+      description: 'Are you sure you want to delete this project?',
+      onConfirm: async (done) => {
+         await projectRouter.partRouter.delete.mutate(id);
+         done();
+         parts.value = (parts.value ?? []).filter((part) => part.id !== id);
+      },
+   });
 }
 
 async function incrementOrDecrement(part: Required<SelectPart>, increment: boolean) {
@@ -45,10 +56,10 @@ async function incrementOrDecrement(part: Required<SelectPart>, increment: boole
 
 <template>
    <NuxtLayout :root="false" :title="data?.name ?? 'loading...'">
-      <h3 class="py-3">Parts</h3>
+      <LayoutHeading v-model:sorting="sorting" :title="'Parts'" />
 
       <div v-auto-animate class="flex flex-row flex-wrap gap-3 justify-center">
-         <UCard v-for="part in data?.parts ?? []" :key="part.id" class="min-w-full md:min-w-96 cursor-pointer">
+         <UCard v-for="part in parts ?? []" :key="part.id" class="min-w-full md:min-w-96 cursor-pointer">
             <div class="flex justify-between items-center">
                <p>{{ part.name }}</p>
                <div class="flex gap-1">
