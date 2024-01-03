@@ -11,6 +11,13 @@ const emits = defineEmits<{ (e: 'save-project', payload: { id?: number; project:
 //#region State
 const project = ref({ name: props.initialProject?.name ?? '', finished: props.initialProject?.finished ?? false });
 
+watch(
+   () => props.initialProject,
+   (initialProject) => {
+      project.value = { name: initialProject?.name ?? '', finished: initialProject?.finished ?? false };
+   }
+);
+
 const validate = (state: any): FormError[] => {
    const errors = [];
    if (!state.name) errors.push({ path: 'name', message: 'Required' });
