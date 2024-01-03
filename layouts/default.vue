@@ -49,12 +49,14 @@ function navigateBack() {
             </div>
 
             <div class="min-w-16 flex justify-center items-center">
-               <UButton
-                  :icon="isDark ? 'i-heroicons-moon-20-solid' : 'i-heroicons-sun-20-solid'"
-                  variant="ghost"
-                  aria-label="Theme"
-                  @click="toggleColorMode"
-               />
+               <ClientOnly>
+                  <UButton
+                     :icon="isDark ? 'i-heroicons-moon-20-solid' : 'i-heroicons-sun-20-solid'"
+                     variant="ghost"
+                     aria-label="Theme"
+                     @click="toggleColorMode"
+                  />
+               </ClientOnly>
                <UButton
                   v-if="status === 'authenticated'"
                   icon="i-heroicons-cog-6-tooth-20-solid"
