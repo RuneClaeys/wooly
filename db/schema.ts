@@ -1,5 +1,5 @@
 import { relations, sql } from 'drizzle-orm';
-import { int, mysqlTable, serial, text, timestamp, varchar } from 'drizzle-orm/mysql-core';
+import { boolean, int, mysqlTable, serial, text, timestamp, varchar } from 'drizzle-orm/mysql-core';
 
 // Users
 export const users = mysqlTable('users', {
@@ -20,6 +20,7 @@ export type SelectUser = typeof users.$inferSelect;
 export const projects = mysqlTable('projects', {
    id: serial('id').primaryKey(),
    name: text('name'),
+   finished: boolean('finished').notNull().default(false),
    createdAt: timestamp('created_at').default(sql`CURRENT_TIMESTAMP`),
    updatedAt: timestamp('updated_at').default(sql`CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP`),
    userId: varchar('user_id', { length: 255 }).notNull(),
@@ -33,8 +34,14 @@ export const projectsRelations = relations(projects, ({ one, many }) => ({
    parts: many(parts),
 }));
 
-export type InsertProject = typeof projects.$inferInsert;
-export type SelectProject = typeof projects.$inferSelect;
+export type InsertProject = Omit<typeof projects.$inferInsert, 'createdAt' | 'updatedAt'> & {
+   createdAt?: string | null;
+   updatedAt?: string | null;
+};
+export type SelectProject = Omit<typeof projects.$inferSelect, 'createdAt' | 'updatedAt'> & {
+   createdAt?: string | null;
+   updatedAt?: string | null;
+};
 
 // parts
 export const parts = mysqlTable('parts', {

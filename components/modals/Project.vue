@@ -5,11 +5,11 @@ import type { SelectProject } from '~/db/schema';
 //#region Props & Emits
 const open = defineModel('modelValue', { default: false });
 const props = defineProps<{ initialProject?: SelectProject }>();
-const emits = defineEmits<{ (e: 'save-project', payload: { project: { name: string }; done: () => void }): void }>();
+const emits = defineEmits<{ (e: 'save-project', payload: { id?: number; project: typeof project.value; done: () => void }): void }>();
 //#endregion
 
 //#region State
-const project = ref<{ name: string }>({ name: props.initialProject?.name ?? '' });
+const project = ref({ name: props.initialProject?.name ?? '', finished: props.initialProject?.finished ?? false });
 
 const validate = (state: any): FormError[] => {
    const errors = [];
@@ -23,7 +23,7 @@ function onSubmit() {
    emits('save-project', {
       project: project.value,
       done: () => {
-         project.value = { name: '' };
+         if (!props.initialProject) project.value = { name: '', finished: false };
          open.value = false;
       },
    });
@@ -34,14 +34,17 @@ function onSubmit() {
 
 <template>
    <UModal v-model="open">
-      <UCard :ui="{ ring: '', divide: 'divide-y divide-gray-100 dark:divide-gray-800' }">
+      <UCard>
          <template #header>
             <p>Create a project</p>
          </template>
 
-         <UForm :state="project" :validate="validate">
+         <UForm class="flex flex-col gap-3" :state="project" :validate="validate">
             <UFormGroup label="Name" name="name">
                <UInput v-model="project.name" />
+            </UFormGroup>
+            <UFormGroup class="flex gap-3" label="Finished" name="finished">
+               <UToggle v-model="project.finished" />
             </UFormGroup>
          </UForm>
 

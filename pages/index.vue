@@ -1,10 +1,19 @@
 <script setup lang="ts">
+import type { SelectProject } from '~/db/schema';
+
 const { projectRouter } = useTrpcClient();
 const { promptConfirmation } = useConfirmation();
 
 //#region List Projects
-const { sorting, query } = useSorting();
-const { data, execute: refresh } = projectRouter.list.useQuery(query, { watch: [query], deep: true });
+const status = ref<'active' | 'finished'>('active');
+const { sorting, query } = useSorting('projects');
+
+const input = computed(() => ({
+   finished: status.value === 'finished',
+   query: query.value,
+}));
+
+const { data, execute: refresh } = projectRouter.list.useQuery(input, { watch: [input], deep: true });
 //#endregion
 
 //#region Create Project
@@ -16,6 +25,24 @@ async function createProject(payload: { project: Parameters<typeof projectRouter
    showCeateProjectForm.value = false;
    payload.done();
 }
+//#endregion
+
+//#region Edit Project
+const showEditProjectForm = ref(false);
+const projectToEdit = ref<SelectProject | undefined>(undefined);
+
+async function changeProject(payload: { project: { name: string; finished: boolean }; done: () => void }) {
+   const response = await projectRouter.update.mutate({ ...payload.project, id: projectToEdit.value!.id });
+   if (response) refresh();
+   showEditProjectForm.value = false;
+   payload.done();
+}
+
+function editProject(project: SelectProject) {
+   projectToEdit.value = { ...project };
+   showEditProjectForm.value = true;
+}
+
 //#endregion
 
 //#region Delete Project
@@ -37,7 +64,18 @@ async function deleteProject(id: number) {
 
 <template>
    <NuxtLayout :name="'default'">
-      <LayoutHeading v-model:sorting="sorting" :title="'Projects'" />
+      <LayoutHeading v-model:sorting="sorting" :title="'Projects'">
+         <template #otherFilters>
+            <USelect
+               v-model="status"
+               :options="[
+                  { name: 'Actief', value: 'active' },
+                  { name: 'Finished', value: 'finished' },
+               ]"
+               option-attribute="name"
+            />
+         </template>
+      </LayoutHeading>
 
       <div v-auto-animate class="flex flex-row flex-wrap gap-3 justify-center">
          <UCard
@@ -51,12 +89,13 @@ async function deleteProject(id: number) {
             <div class="flex justify-between items-center">
                <p>{{ project.name }}</p>
                <div class="flex gap-1">
+                  <UButton icon="i-heroicons-pencil-16-solid" variant="ghost" color="grey" @click.stop="editProject(project)" />
                   <UButton icon="i-heroicons-trash-16-solid" variant="ghost" color="red" @click.stop="deleteProject(project.id)" />
                </div>
             </div>
 
             <template #footer>
-               <small> Status: Active </small>
+               <small>Status: {{ project.finished ? 'Finished' : 'Active' }}</small>
             </template>
          </UCard>
 
@@ -73,5 +112,6 @@ async function deleteProject(id: number) {
       />
 
       <ModalsProject v-model="showCeateProjectForm" @save-project="createProject" />
+      <ModalsProject v-model="showEditProjectForm" :initial-project="projectToEdit" @save-project="changeProject" />
    </NuxtLayout>
 </template>

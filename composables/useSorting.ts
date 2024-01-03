@@ -3,7 +3,7 @@ type Order = 'asc' | 'desc';
 
 export type Sorting = { orderBy: OrderBy; order: Order };
 
-export const useSorting = () => {
+export const useSorting = (listKey: string) => {
    const route = useRoute();
    const router = useRouter();
 
@@ -20,13 +20,28 @@ export const useSorting = () => {
       { name: 'Aflopend', value: 'desc' },
    ];
 
-   const sorting = ref<Sorting>({
-      orderBy: (query.value.orderBy as OrderBy) ?? 'createdAt',
-      order: (query.value.order as Order) ?? 'desc',
-   });
+   function getInitialValues() {
+      if (process.server) {
+         return {
+            orderBy: (query.value.orderBy as OrderBy) ?? 'createdAt',
+            order: (query.value.order as Order) ?? 'desc',
+         };
+      }
+
+      const savedQuery = JSON.parse(window.localStorage.getItem(`${listKey}-query`) ?? '{}');
+
+      return {
+         orderBy: (query.value.orderBy as OrderBy) ?? savedQuery.orderBy ?? 'createdAt',
+         order: (query.value.order as Order) ?? savedQuery.order ?? 'desc',
+      };
+   }
+
+   const sorting = ref<Sorting>(getInitialValues());
 
    function sortingChanged(value: Sorting) {
-      router.replace({ ...route, query: { ...route.query, orderBy: value.orderBy, order: value.order } });
+      const newQuery = { ...query.value, orderBy: value.orderBy, order: value.order };
+      router.replace({ ...route, query: newQuery });
+      window.localStorage.setItem(`${listKey}-query`, JSON.stringify({ ...newQuery }));
    }
 
    watch(sorting, sortingChanged, { deep: true });

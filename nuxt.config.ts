@@ -1,6 +1,6 @@
 export default defineNuxtConfig({
    devtools: { enabled: true },
-   modules: ['@sidebase/nuxt-auth', '@formkit/auto-animate/nuxt', '@nuxt/ui', '@nuxt/image', '@nuxtjs/google-fonts'],
+   modules: ['@sidebase/nuxt-auth', '@formkit/auto-animate/nuxt', '@nuxt/ui', '@nuxt/image', '@nuxtjs/google-fonts', '@vueuse/nuxt'],
 
    build: {
       transpile: ['trpc-nuxt'],

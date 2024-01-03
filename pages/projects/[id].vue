@@ -11,7 +11,7 @@ const { promptConfirmation } = useConfirmation();
 //#region Get Project
 const { data } = projectRouter.get.useQuery(+route.params.id);
 
-const { sorting, query } = useSorting();
+const { sorting, query } = useSorting('parts');
 
 const input = computed(() => ({
    projectId: +route.params.id,
