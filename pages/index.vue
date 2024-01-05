@@ -13,7 +13,7 @@ const input = computed(() => ({
    query: query.value,
 }));
 
-const { data, execute: refresh } = projectRouter.list.useQuery(input, { watch: [input], deep: true });
+const { data, execute: refresh, pending } = projectRouter.list.useQuery(input, { watch: [input], deep: true });
 //#endregion
 
 //#region Create Project
@@ -99,7 +99,7 @@ async function deleteProject(id: number) {
             </template>
          </UCard>
 
-         <p v-else class="text-gray-400">No projects added yet</p>
+         <p v-else-if="!pending" class="text-gray-400">No projects added yet</p>
       </div>
 
       <UButton

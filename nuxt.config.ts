@@ -1,5 +1,8 @@
 export default defineNuxtConfig({
    devtools: { enabled: true },
+
+   ssr: false,
+
    modules: [
       '@sidebase/nuxt-auth',
       '@formkit/auto-animate/nuxt',
