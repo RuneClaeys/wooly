@@ -28,8 +28,8 @@ defineProps({
             <div class="min-w-16 flex justify-start items-center">
                <UButton
                   v-if="!root"
-                  icon="i-heroicons-arrow-left-16-solid text-white"
-                  color="white"
+                  icon="i-heroicons-arrow-left-16-solid"
+                  color="black"
                   variant="ghost"
                   aria-label="Theme"
                   @click="navigateTo(navigateBackTo)"
@@ -41,18 +41,18 @@ defineProps({
             </div>
 
             <div class="min-w-16 flex justify-center items-center">
-               <ClientOnly>
-                  <UButton
-                     :icon="isDark ? 'i-heroicons-moon-20-solid' : 'i-heroicons-sun-20-solid'"
-                     variant="ghost"
-                     aria-label="Theme"
-                     @click="toggleColorMode"
-                  />
-               </ClientOnly>
+               <UButton
+                  :icon="isDark ? 'i-heroicons-moon-20-solid' : 'i-heroicons-sun-20-solid'"
+                  variant="ghost"
+                  color="black"
+                  aria-label="Theme"
+                  @click="toggleColorMode"
+               />
                <UButton
                   v-if="status === 'authenticated'"
                   icon="i-heroicons-cog-6-tooth-20-solid"
                   variant="ghost"
+                  color="black"
                   aria-label="Settings"
                   @click="$router.push('/settings')"
                />

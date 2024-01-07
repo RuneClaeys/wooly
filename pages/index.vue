@@ -48,8 +48,8 @@ function editProject(project: SelectProject) {
 //#region Delete Project
 async function deleteProject(id: number) {
    promptConfirmation({
-      title: 'Delete Project',
-      description: 'Are you sure you want to delete this project?',
+      title: 'Project verwijderen',
+      description: 'Ben je zeker dat je dit project wil verwijderen',
       onConfirm: async (done) => {
          await projectRouter.delete.mutate(id);
          done();
@@ -64,13 +64,13 @@ async function deleteProject(id: number) {
 
 <template>
    <NuxtLayout :name="'default'">
-      <LayoutHeading v-model:sorting="sorting" :title="'Projects'">
+      <LayoutHeading v-model:sorting="sorting" :title="'Projecten'">
          <template #otherFilters>
             <USelect
                v-model="status"
                :options="[
                   { name: 'Actief', value: 'active' },
-                  { name: 'Finished', value: 'finished' },
+                  { name: 'Afgewerkt', value: 'finished' },
                ]"
                option-attribute="name"
             />
@@ -95,11 +95,11 @@ async function deleteProject(id: number) {
             </div>
 
             <template #footer>
-               <small>Status: {{ project.finished ? 'Finished' : 'Active' }}</small>
+               <small>Status: {{ project.finished ? 'Afgewerkt' : 'Actief' }}</small>
             </template>
          </UCard>
 
-         <p v-else-if="!pending" class="text-gray-400">No projects added yet</p>
+         <p v-else-if="!pending" class="text-gray-400">Er zijn nog geen projecten</p>
       </div>
 
       <UButton

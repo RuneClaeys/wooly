@@ -38,8 +38,8 @@ async function createPart(payload: { part: { name: string; counter: number }; do
 
 async function deletePart(id: number) {
    promptConfirmation({
-      title: 'Delete Part',
-      description: 'Are you sure you want to delete this part?',
+      title: 'Onderdeel verwijderen',
+      description: 'Ben je zeker dat je dit onderdeel wil verwijderen',
       onConfirm: async (done) => {
          await projectRouter.partRouter.delete.mutate(id);
          done();
@@ -66,8 +66,8 @@ async function incrementOrDecrement(part: Required<SelectPart>, increment: boole
 </script>
 
 <template>
-   <NuxtLayout :root="false" :title="data?.name ?? 'loading...'" :navigate-back-to="'/'">
-      <LayoutHeading v-model:sorting="sorting" :title="'Parts'" />
+   <NuxtLayout :root="false" :title="data?.name ?? 'Laden...'" :navigate-back-to="'/'">
+      <LayoutHeading v-model:sorting="sorting" :title="'Onderdelen'" />
 
       <div v-auto-animate class="flex flex-row flex-wrap gap-3 justify-center">
          <UCard v-if="pending && !parts?.length" v-for="i in 4" :key="i" class="min-w-full md:min-w-96 cursor-pointer max-h-[90px]">
@@ -129,7 +129,7 @@ async function incrementOrDecrement(part: Required<SelectPart>, increment: boole
             </template>
          </UCard>
 
-         <p v-else class="text-gray-400">No parts added yet</p>
+         <p v-else class="text-gray-400">Nog geen onderedelen</p>
       </div>
 
       <UButton

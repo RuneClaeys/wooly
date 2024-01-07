@@ -49,6 +49,7 @@ const showFilters = ref(false);
 
             <UButton
                class="self-start"
+               color="pink"
                :icon="showFilters ? 'i-heroicons-x-mark-16-solid' : 'i-heroicons-bars-3-bottom-right-16-solid'"
                @click.stop="showFilters = !showFilters"
             />

@@ -5,9 +5,9 @@ const { signOut } = useAuth();
 <template>
    <NuxtLayout :root="false">
       <div class="flex flex-col items-center p-5 gap-5">
-         <p>Settings</p>
+         <p>Instellingen</p>
 
-         <UButton @click="signOut()" :icon="'i-heroicons-arrow-right-end-on-rectangle-16-solid'">Sign Out</UButton>
+         <UButton @click="signOut()" :icon="'i-heroicons-arrow-right-end-on-rectangle-16-solid'">Afmelden</UButton>
       </div>
    </NuxtLayout>
 </template>

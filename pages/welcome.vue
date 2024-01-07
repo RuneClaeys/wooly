@@ -12,9 +12,9 @@ const { signIn } = useAuth();
 <template>
    <NuxtLayout>
       <div class="flex flex-col items-center p-5 gap-5">
-         <p>Hello welcome to Wooly DIY</p>
+         <p>Welkom op Wooly</p>
 
-         <UButton @click="signIn('google')" :icon="'i-heroicons-user-solid'">Sign In with google</UButton>
+         <UButton @click="signIn('google')" :icon="'i-heroicons-user-solid'">Log in met Google</UButton>
       </div>
    </NuxtLayout>
 </template>
