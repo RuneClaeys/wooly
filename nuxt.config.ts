@@ -77,7 +77,7 @@ export default defineNuxtConfig({
             },
             {
                name: 'theme-color',
-               content: '#ffffff',
+               content: '#f472b6',
             },
          ],
       },
@@ -93,7 +93,7 @@ export default defineNuxtConfig({
          name: 'Wooly',
          short_name: 'Wooly',
          description: 'Wooly is an app to keep track of your knitting and crocheting projects.',
-         lang: 'en',
+         lang: 'nl',
          theme_color: '#f472b6',
          background_color: '#ffffff',
          display: 'standalone',
