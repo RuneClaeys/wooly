@@ -109,6 +109,43 @@ export default defineNuxtConfig({
                type: 'image/png',
             },
          ],
+         screenshots: [
+            {
+               src: '/screenshots/screen-1.png',
+               sizes: '1284x2778',
+               type: 'image/png',
+               form_factor: 'narrow',
+               label: 'Wooly',
+            },
+            {
+               src: '/screenshots/screen-2.png',
+               sizes: '2778x1284',
+               type: 'image/png',
+               form_factor: 'narrow',
+               label: 'Wooly',
+            },
+            {
+               src: '/screenshots/screen-3.png',
+               sizes: '2778x1284',
+               type: 'image/png',
+               form_factor: 'narrow',
+               label: 'Wooly',
+            },
+            {
+               src: '/screenshots/screen-4.png',
+               sizes: '2778x1284',
+               type: 'image/png',
+               form_factor: 'narrow',
+               label: 'Wooly',
+            },
+            {
+               src: '/screenshots/screen-5.png',
+               sizes: '2778x1284',
+               type: 'image/png',
+               form_factor: 'narrow',
+               label: 'Wooly',
+            },
+         ],
       },
    },
 });
