@@ -92,11 +92,13 @@ export default defineNuxtConfig({
       manifest: {
          name: 'Wooly',
          short_name: 'Wooly',
-         description: 'Wooly is an app to keep track of your knitting and crocheting projects.',
-         lang: 'nl',
-         theme_color: '#f472b6',
-         background_color: '#ffffff',
+         start_url: '/',
          display: 'standalone',
+         background_color: '#ffffff',
+         lang: 'nl',
+         scope: '/',
+         description: 'Wooly is an app to keep track of your knitting and crocheting projects.',
+         theme_color: '#f472b6',
          icons: [
             {
                src: '/android-chrome-192x192.png',
@@ -146,6 +148,13 @@ export default defineNuxtConfig({
                label: 'Wooly',
             },
          ],
+         id: 'wooly',
+         dir: 'ltr',
+         orientation: 'portrait',
+         display_override: ['standalone', 'fullscreen', 'minimal-ui', 'browser', 'window-controls-overlay'],
+         iarc_rating_id: '7+',
+         prefer_related_applications: false,
+         categories: ['productivity', 'utilities'],
       },
    },
 });
