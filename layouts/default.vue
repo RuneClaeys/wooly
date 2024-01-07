@@ -16,16 +16,8 @@ function toggleColorMode() {
 defineProps({
    title: { type: String, default: 'Wooly' },
    root: { type: Boolean, default: true },
+   navigateBackTo: { type: String, default: '/' },
 });
-//#endregion
-
-//#region Navigation
-function navigateBack() {
-   if (window.history.state.back) {
-      return router.push(window.history.state.back);
-   }
-   return router.push('/');
-}
 //#endregion
 </script>
 
@@ -40,7 +32,7 @@ function navigateBack() {
                   color="white"
                   variant="ghost"
                   aria-label="Theme"
-                  @click="navigateBack"
+                  @click="navigateTo(navigateBackTo)"
                />
             </div>
 

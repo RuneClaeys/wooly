@@ -38,8 +38,8 @@ async function createPart(payload: { part: { name: string; counter: number }; do
 
 async function deletePart(id: number) {
    promptConfirmation({
-      title: 'Delete Project',
-      description: 'Are you sure you want to delete this project?',
+      title: 'Delete Part',
+      description: 'Are you sure you want to delete this part?',
       onConfirm: async (done) => {
          await projectRouter.partRouter.delete.mutate(id);
          done();
@@ -66,7 +66,7 @@ async function incrementOrDecrement(part: Required<SelectPart>, increment: boole
 </script>
 
 <template>
-   <NuxtLayout :root="false" :title="data?.name ?? 'loading...'">
+   <NuxtLayout :root="false" :title="data?.name ?? 'loading...'" :navigate-back-to="'/'">
       <LayoutHeading v-model:sorting="sorting" :title="'Parts'" />
 
       <div v-auto-animate class="flex flex-row flex-wrap gap-3 justify-center">

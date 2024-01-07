@@ -21,9 +21,17 @@ export const projectRouter = router({
    }),
 
    create: protectedProcedure
-      .input(z.object({ name: z.string().trim().min(1, { message: 'The name is required' }) }))
+      .input(
+         z.object({
+            name: z.string().trim().min(1, { message: 'The name is required' }),
+            finished: z.boolean().optional().default(false),
+         })
+      )
       .mutation(async ({ input, ctx }) => {
-         const { insertId } = await ctx.db.insert(projects).values({ name: input.name, userId: ctx.session.user.id }).execute();
+         const { insertId } = await ctx.db
+            .insert(projects)
+            .values({ name: input.name, userId: ctx.session.user.id, finished: input.finished })
+            .execute();
          return ctx.db.query.projects.findFirst({ where: eq(projects.id, +insertId) });
       }),
 
