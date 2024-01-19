@@ -1,0 +1,11 @@
+{
+   "app-name": "Wooly",
+   "settings": {
+      "logout": "Afmelden",
+      "setting": "Instelling | Instellingen"
+   },
+   "welcome": {
+      "login-with-google": "Aanmelden met google",
+      "welcome-to-app": "Welkom bij {appName}"
+   }
+}

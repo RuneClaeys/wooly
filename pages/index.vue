@@ -63,55 +63,57 @@ async function deleteProject(id: number) {
 </script>
 
 <template>
-   <NuxtLayout :name="'default'">
-      <LayoutHeading v-model:sorting="sorting" :title="'Projecten'">
-         <template #otherFilters>
-            <USelect
-               v-model="status"
-               :options="[
-                  { name: 'Actief', value: 'active' },
-                  { name: 'Afgewerkt', value: 'finished' },
-               ]"
-               :size="'2xs'"
-               option-attribute="name"
-            />
-         </template>
-      </LayoutHeading>
+   <div>
+      <NuxtLayout :name="'default'">
+         <LayoutHeading v-model:sorting="sorting" :title="'Projecten'">
+            <template #otherFilters>
+               <USelect
+                  v-model="status"
+                  :options="[
+                     { name: 'Actief', value: 'active' },
+                     { name: 'Afgewerkt', value: 'finished' },
+                  ]"
+                  :size="'2xs'"
+                  option-attribute="name"
+               />
+            </template>
+         </LayoutHeading>
 
-      <div v-auto-animate class="flex flex-row flex-wrap gap-3 justify-center">
-         <UCard
-            v-if="data?.length"
-            v-for="project in data ?? []"
-            :key="project.id"
-            class="min-w-full md:min-w-96 cursor-pointer max-h-[90px]"
-            :ui="{ background: 'bg-white dark:bg-gray-900 hover:bg-gray-100 dark:hover:bg-gray-800' }"
-            @click="$router.push({ name: 'projects-id', params: { id: project.id } })"
-         >
-            <div class="flex flex-col">
-               <div class="flex justify-between items-center">
-                  <p>{{ project.name }}</p>
-                  <div class="flex gap-1">
-                     <UButton icon="i-heroicons-pencil-16-solid" variant="ghost" color="grey" @click.stop="editProject(project)" />
-                     <UButton icon="i-heroicons-trash-16-solid" variant="ghost" color="red" @click.stop="deleteProject(project.id)" />
+         <div v-auto-animate class="flex flex-row flex-wrap gap-3 justify-center">
+            <UCard
+               v-if="data?.length"
+               v-for="project in data ?? []"
+               :key="project.id"
+               class="min-w-full md:min-w-96 cursor-pointer max-h-[90px]"
+               :ui="{ background: 'bg-white dark:bg-gray-900 hover:bg-gray-100 dark:hover:bg-gray-800' }"
+               @click="$router.push({ name: 'projects-id', params: { id: project.id } })"
+            >
+               <div class="flex flex-col">
+                  <div class="flex justify-between items-center">
+                     <p>{{ project.name }}</p>
+                     <div class="flex gap-1">
+                        <UButton icon="i-heroicons-pencil-16-solid" variant="ghost" color="grey" @click.stop="editProject(project)" />
+                        <UButton icon="i-heroicons-trash-16-solid" variant="ghost" color="red" @click.stop="deleteProject(project.id)" />
+                     </div>
                   </div>
+                  <small>Status: {{ project.finished ? 'Afgewerkt' : 'Actief' }}</small>
                </div>
-               <small>Status: {{ project.finished ? 'Afgewerkt' : 'Actief' }}</small>
-            </div>
-         </UCard>
+            </UCard>
 
-         <p v-else-if="!pending" class="text-gray-400">Er zijn nog geen projecten</p>
-      </div>
+            <p v-else-if="!pending" class="text-gray-400">Er zijn nog geen projecten</p>
+         </div>
 
-      <UButton
-         class="fixed bottom-5 right-5 dark:bg-pink-900 dark:text-white"
-         size="xl"
-         square
-         icon="i-heroicons-plus-16-solid"
-         :ui="{ rounded: 'rounded-full' }"
-         @click="showCeateProjectForm = true"
-      />
+         <UButton
+            class="fixed bottom-5 right-5 dark:bg-pink-900 dark:text-white"
+            size="xl"
+            square
+            icon="i-heroicons-plus-16-solid"
+            :ui="{ rounded: 'rounded-full' }"
+            @click="showCeateProjectForm = true"
+         />
 
-      <ModalsProject v-model="showCeateProjectForm" @save-project="createProject" />
-      <ModalsProject v-model="showEditProjectForm" :initial-project="projectToEdit" @save-project="changeProject" />
-   </NuxtLayout>
+         <ModalsProject v-model="showCeateProjectForm" @save-project="createProject" />
+         <ModalsProject v-model="showEditProjectForm" :initial-project="projectToEdit" @save-project="changeProject" />
+      </NuxtLayout>
+   </div>
 </template>

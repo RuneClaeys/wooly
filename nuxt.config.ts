@@ -2,6 +2,7 @@ import { app } from './config/app.config';
 import { auth } from './config/auth.config';
 import { colorMode } from './config/color-mode.config';
 import { googleFonts } from './config/google-fonts.config';
+import { i18n } from './config/i18n.config';
 import { pwa } from './config/pwa.config';
 
 export default defineNuxtConfig({
@@ -15,6 +16,7 @@ export default defineNuxtConfig({
       '@nuxtjs/google-fonts',
       '@vueuse/nuxt',
       '@vite-pwa/nuxt',
+      '@nuxtjs/i18n',
    ],
 
    build: {
@@ -30,4 +32,5 @@ export default defineNuxtConfig({
    googleFonts,
    app,
    pwa,
+   i18n,
 });

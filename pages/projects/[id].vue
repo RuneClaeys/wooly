@@ -83,56 +83,63 @@ function editPart(part: SelectPart) {
 </script>
 
 <template>
-   <NuxtLayout :root="false" :title="data?.name ?? 'Laden...'" :navigate-back-to="'/'">
-      <LayoutHeading v-model:sorting="sorting" :title="'Onderdelen'" />
+   <div>
+      <NuxtLayout :root="false" :title="data?.name ?? 'Laden...'" :navigate-back-to="'/'">
+         <LayoutHeading v-model:sorting="sorting" :title="'Onderdelen'" />
 
-      <div v-auto-animate class="flex flex-row flex-wrap gap-3 justify-center">
-         <UCard v-if="parts?.length" v-for="part in parts ?? []" :key="part.id" class="min-w-full md:min-w-96 cursor-pointer max-h-[90px]">
-            <div class="flex flex-col gap-2">
-               <div class="flex justify-between items-center">
-                  <p>{{ part.name }}</p>
-                  <div class="flex gap-1">
-                     <UButton icon="i-heroicons-pencil-16-solid" variant="ghost" color="grey" @click.stop="editPart(part)" />
-                     <UButton icon="i-heroicons-trash-16-solid" variant="ghost" color="red" @click.stop="deletePart(part.id)" />
+         <div v-auto-animate class="flex flex-row flex-wrap gap-3 justify-center">
+            <UCard
+               v-if="parts?.length"
+               v-for="part in parts ?? []"
+               :key="part.id"
+               class="min-w-full md:min-w-96 cursor-pointer max-h-[90px]"
+            >
+               <div class="flex flex-col gap-2">
+                  <div class="flex justify-between items-center">
+                     <p>{{ part.name }}</p>
+                     <div class="flex gap-1">
+                        <UButton icon="i-heroicons-pencil-16-solid" variant="ghost" color="grey" @click.stop="editPart(part)" />
+                        <UButton icon="i-heroicons-trash-16-solid" variant="ghost" color="red" @click.stop="deletePart(part.id)" />
+                     </div>
+                  </div>
+                  <div class="flex justify-between items-center">
+                     <small>Aantal rijen</small>
+
+                     <div class="flex gap-2 items-center">
+                        <UButton
+                           icon="i-heroicons-minus-16-solid"
+                           variant="ghost"
+                           color="red"
+                           @click.stop="incrementOrDecrement(part, false)"
+                        />
+                        <p>{{ part.counter }}</p>
+                        <UButton
+                           icon="i-heroicons-plus-16-solid"
+                           variant="ghost"
+                           color="green"
+                           @click.stop="incrementOrDecrement(part, true)"
+                        />
+                     </div>
                   </div>
                </div>
-               <div class="flex justify-between items-center">
-                  <small>Aantal rijen</small>
+            </UCard>
 
-                  <div class="flex gap-2 items-center">
-                     <UButton
-                        icon="i-heroicons-minus-16-solid"
-                        variant="ghost"
-                        color="red"
-                        @click.stop="incrementOrDecrement(part, false)"
-                     />
-                     <p>{{ part.counter }}</p>
-                     <UButton
-                        icon="i-heroicons-plus-16-solid"
-                        variant="ghost"
-                        color="green"
-                        @click.stop="incrementOrDecrement(part, true)"
-                     />
-                  </div>
-               </div>
-            </div>
-         </UCard>
+            <p v-else class="text-gray-400">Nog geen onderedelen</p>
+         </div>
 
-         <p v-else class="text-gray-400">Nog geen onderedelen</p>
-      </div>
+         <UButton
+            class="fixed bottom-5 right-5"
+            size="xl"
+            square
+            icon="i-heroicons-plus-16-solid"
+            :ui="{ rounded: 'rounded-full' }"
+            @click="showCeateProjectForm = true"
+         />
 
-      <UButton
-         class="fixed bottom-5 right-5"
-         size="xl"
-         square
-         icon="i-heroicons-plus-16-solid"
-         :ui="{ rounded: 'rounded-full' }"
-         @click="showCeateProjectForm = true"
-      />
-
-      <ModalsPart v-model="showCeateProjectForm" @save-part="createPart" />
-      <ModalsPart v-model="showEditProjectForm" :initial-part="partToEdit" @save-part="changePart" />
-   </NuxtLayout>
+         <ModalsPart v-model="showCeateProjectForm" @save-part="createPart" />
+         <ModalsPart v-model="showEditProjectForm" :initial-part="partToEdit" @save-part="changePart" />
+      </NuxtLayout>
+   </div>
 </template>
 
 <style lang="scss" scoped></style>

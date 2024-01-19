@@ -1,0 +1,11 @@
+{
+   "app-name": "Wooly",
+   "settings": {
+      "logout": "Sign out",
+      "setting": "Setting | Settigs"
+   },
+   "welcome": {
+      "login-with-google": "Sign in with Google",
+      "welcome-to-app": "Welcome to {appName}"
+   }
+}
