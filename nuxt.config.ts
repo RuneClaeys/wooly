@@ -1,8 +1,6 @@
 export default defineNuxtConfig({
    devtools: { enabled: true },
 
-   ssr: false,
-
    modules: [
       '@sidebase/nuxt-auth',
       '@formkit/auto-animate/nuxt',
@@ -22,8 +20,6 @@ export default defineNuxtConfig({
    },
 
    sourcemap: true,
-
-   debug: process.env.NODE_ENV !== 'production',
 
    auth: {
       globalAppMiddleware: true,
