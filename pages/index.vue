@@ -72,6 +72,7 @@ async function deleteProject(id: number) {
                   { name: 'Actief', value: 'active' },
                   { name: 'Afgewerkt', value: 'finished' },
                ]"
+               :size="'2xs'"
                option-attribute="name"
             />
          </template>
@@ -86,17 +87,16 @@ async function deleteProject(id: number) {
             :ui="{ background: 'bg-white dark:bg-gray-900 hover:bg-gray-100 dark:hover:bg-gray-800' }"
             @click="$router.push({ name: 'projects-id', params: { id: project.id } })"
          >
-            <div class="flex justify-between items-center">
-               <p>{{ project.name }}</p>
-               <div class="flex gap-1">
-                  <UButton icon="i-heroicons-pencil-16-solid" variant="ghost" color="grey" @click.stop="editProject(project)" />
-                  <UButton icon="i-heroicons-trash-16-solid" variant="ghost" color="red" @click.stop="deleteProject(project.id)" />
+            <div class="flex flex-col">
+               <div class="flex justify-between items-center">
+                  <p>{{ project.name }}</p>
+                  <div class="flex gap-1">
+                     <UButton icon="i-heroicons-pencil-16-solid" variant="ghost" color="grey" @click.stop="editProject(project)" />
+                     <UButton icon="i-heroicons-trash-16-solid" variant="ghost" color="red" @click.stop="deleteProject(project.id)" />
+                  </div>
                </div>
-            </div>
-
-            <template #footer>
                <small>Status: {{ project.finished ? 'Afgewerkt' : 'Actief' }}</small>
-            </template>
+            </div>
          </UCard>
 
          <p v-else-if="!pending" class="text-gray-400">Er zijn nog geen projecten</p>

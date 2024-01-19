@@ -99,14 +99,13 @@ async function incrementOrDecrement(part: Required<SelectPart>, increment: boole
             :key="part.id"
             class="min-w-full md:min-w-96 cursor-pointer max-h-[90px]"
          >
-            <div class="flex justify-between items-center">
-               <p>{{ part.name }}</p>
-               <div class="flex gap-1">
-                  <UButton icon="i-heroicons-trash-16-solid" variant="ghost" color="red" @click.stop="deletePart(part.id)" />
+            <div class="flex flex-col gap-2">
+               <div class="flex justify-between items-center">
+                  <p>{{ part.name }}</p>
+                  <div class="flex gap-1">
+                     <UButton icon="i-heroicons-trash-16-solid" variant="ghost" color="red" @click.stop="deletePart(part.id)" />
+                  </div>
                </div>
-            </div>
-
-            <template #footer>
                <div class="flex justify-between items-center">
                   <small>Aantal rijen</small>
 
@@ -126,7 +125,7 @@ async function incrementOrDecrement(part: Required<SelectPart>, increment: boole
                      />
                   </div>
                </div>
-            </template>
+            </div>
          </UCard>
 
          <p v-else class="text-gray-400">Nog geen onderedelen</p>
