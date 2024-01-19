@@ -61,6 +61,23 @@ async function incrementOrDecrement(part: Required<SelectPart>, increment: boole
       part.counter -= increment ? 1 : -1;
    }
 }
+//#endregion
+
+//#region Edit Part
+const showEditProjectForm = ref(false);
+const partToEdit = ref<SelectPart | undefined>(undefined);
+
+async function changePart(payload: { part: { name: string; counter: number }; done: () => void }) {
+   const response = await projectRouter.partRouter.update.mutate({ ...payload.part, id: partToEdit.value!.id });
+   if (response) refresh();
+   showEditProjectForm.value = false;
+   payload.done();
+}
+
+function editPart(part: SelectPart) {
+   partToEdit.value = { ...part };
+   showEditProjectForm.value = true;
+}
 
 //#endregion
 </script>
@@ -70,39 +87,12 @@ async function incrementOrDecrement(part: Required<SelectPart>, increment: boole
       <LayoutHeading v-model:sorting="sorting" :title="'Onderdelen'" />
 
       <div v-auto-animate class="flex flex-row flex-wrap gap-3 justify-center">
-         <UCard v-if="pending && !parts?.length" v-for="i in 4" :key="i" class="min-w-full md:min-w-96 cursor-pointer max-h-[90px]">
-            <div class="flex justify-between items-center">
-               <USkeleton class="w-40 h-4" />
-               <div class="flex gap-1">
-                  <USkeleton class="h-4 w-4" />
-               </div>
-            </div>
-
-            <template #footer>
-               <div class="flex justify-between items-center">
-                  <USkeleton class="w-40 h-3" />
-
-                  <div class="flex gap-2 items-center">
-                     <USkeleton class="h-4 w-4" />
-
-                     <USkeleton class="h-4 w-4" />
-
-                     <USkeleton class="h-4 w-4" />
-                  </div>
-               </div>
-            </template>
-         </UCard>
-
-         <UCard
-            v-else-if="parts?.length"
-            v-for="part in parts ?? []"
-            :key="part.id"
-            class="min-w-full md:min-w-96 cursor-pointer max-h-[90px]"
-         >
+         <UCard v-if="parts?.length" v-for="part in parts ?? []" :key="part.id" class="min-w-full md:min-w-96 cursor-pointer max-h-[90px]">
             <div class="flex flex-col gap-2">
                <div class="flex justify-between items-center">
                   <p>{{ part.name }}</p>
                   <div class="flex gap-1">
+                     <UButton icon="i-heroicons-pencil-16-solid" variant="ghost" color="grey" @click.stop="editPart(part)" />
                      <UButton icon="i-heroicons-trash-16-solid" variant="ghost" color="red" @click.stop="deletePart(part.id)" />
                   </div>
                </div>
@@ -141,6 +131,7 @@ async function incrementOrDecrement(part: Required<SelectPart>, increment: boole
       />
 
       <ModalsPart v-model="showCeateProjectForm" @save-part="createPart" />
+      <ModalsPart v-model="showEditProjectForm" :initial-part="partToEdit" @save-part="changePart" />
    </NuxtLayout>
 </template>
 

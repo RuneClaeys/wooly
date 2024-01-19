@@ -11,6 +11,13 @@ const emits = defineEmits<{ (e: 'save-part', payload: { part: typeof part.value;
 //#region State
 const part = ref({ name: props.initialPart?.name ?? '', counter: props.initialPart?.counter ?? 0 });
 
+watch(
+   () => props.initialPart,
+   (initialPart) => {
+      part.value = { name: initialPart?.name ?? '', counter: initialPart?.counter ?? 0 };
+   }
+);
+
 const validate = (state: any): FormError[] => {
    const errors = [];
    if (!state.name) errors.push({ path: 'name', message: 'Required' });
@@ -23,7 +30,7 @@ function onSubmit() {
    emits('save-part', {
       part: part.value,
       done: () => {
-         part.value = { name: '', counter: 0 };
+         if (!props.initialPart) part.value = { name: '', counter: 0 };
          open.value = false;
       },
    });
