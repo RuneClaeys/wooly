@@ -27,6 +27,11 @@ export default defineNuxtConfig({
       typedPages: true,
    },
 
+   routeRules: {
+      '/api/**': { cors: true },
+      '/': { prerender: true },
+   },
+
    auth,
    colorMode,
    googleFonts,

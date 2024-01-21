@@ -12,7 +12,7 @@ export const pwa: NuxtConfig['pwa'] = {
       start_url: '/',
       display: 'standalone',
       background_color: '#ffffff',
-      lang: 'nl',
+      lang: 'en',
       scope: '/',
       description: 'Wooly is an app to keep track of your knitting and crocheting projects.',
       theme_color: '#f472b6',
