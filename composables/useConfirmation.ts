@@ -8,29 +8,27 @@ const confirmationPrompt = ref<{
 }>();
 
 export const useConfirmation = () => {
+   const { t } = useI18n();
    const showConfirmation = computed(() => !!confirmationPrompt.value);
 
    function closeConfirmation() {
       confirmationPrompt.value = undefined;
    }
 
-   function promptConfirmation(input: typeof confirmationPrompt.value) {
-      const baseConfirmationPrompt = {
-         title: 'Are you sure?',
-         description: 'This action cannot be undone.',
-         confirmText: 'Yes',
-         cancelText: 'Cancel',
-         onConfirm: closeConfirmation,
-         onCancel: closeConfirmation,
+   function promptDeleteConfirmation(type: string, onConfirm: (done: () => void) => void) {
+      confirmationPrompt.value = {
+         title: t('actions.delete-type', { type }),
+         description: t('actions.confirm-delete-type', { type }),
+         confirmText: t('actions.delete'),
+         cancelText: t('actions.cancel'),
+         onConfirm,
       };
-
-      confirmationPrompt.value = { ...baseConfirmationPrompt, ...input };
    }
 
    return {
       confirmationPrompt,
       showConfirmation,
       closeConfirmation,
-      promptConfirmation,
+      promptDeleteConfirmation,
    };
 };

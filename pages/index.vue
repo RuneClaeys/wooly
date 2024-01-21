@@ -2,7 +2,8 @@
 import type { SelectProject } from '~/db/schema';
 
 const { projectRouter } = useTrpcClient();
-const { promptConfirmation } = useConfirmation();
+const { promptDeleteConfirmation } = useConfirmation();
+const { t } = useI18n();
 
 //#region List Projects
 const status = ref<'active' | 'finished'>('active');
@@ -47,16 +48,12 @@ function editProject(project: SelectProject) {
 
 //#region Delete Project
 async function deleteProject(id: number) {
-   promptConfirmation({
-      title: 'Project verwijderen',
-      description: 'Ben je zeker dat je dit project wil verwijderen',
-      onConfirm: async (done) => {
-         await projectRouter.delete.mutate(id);
-         done();
-         if (data.value) {
-            data.value = data.value?.filter((p) => p.id !== id);
-         }
-      },
+   promptDeleteConfirmation(t('projects.project'), async (done) => {
+      await projectRouter.delete.mutate(id);
+      done();
+      if (data.value) {
+         data.value = data.value?.filter((p) => p.id !== id);
+      }
    });
 }
 //#endregion
@@ -65,13 +62,13 @@ async function deleteProject(id: number) {
 <template>
    <div>
       <NuxtLayout :name="'default'">
-         <LayoutHeading v-model:sorting="sorting" :title="'Projecten'">
+         <LayoutHeading v-model:sorting="sorting" :title="$t('projects.project', 2)">
             <template #otherFilters>
                <USelect
                   v-model="status"
                   :options="[
-                     { name: 'Actief', value: 'active' },
-                     { name: 'Afgewerkt', value: 'finished' },
+                     { name: t('generic.active'), value: 'active' },
+                     { name: t('generic.completed'), value: 'finished' },
                   ]"
                   :size="'2xs'"
                   option-attribute="name"
@@ -96,11 +93,11 @@ async function deleteProject(id: number) {
                         <UButton icon="i-heroicons-trash-16-solid" variant="ghost" color="red" @click.stop="deleteProject(project.id)" />
                      </div>
                   </div>
-                  <small>Status: {{ project.finished ? 'Afgewerkt' : 'Actief' }}</small>
+                  <small>{{ $t('generic.status') }}: {{ project.finished ? 'Afgewerkt' : 'Actief' }}</small>
                </div>
             </UCard>
 
-            <p v-else-if="!pending" class="text-gray-400">Er zijn nog geen projecten</p>
+            <p v-else-if="!pending" class="text-gray-400">{{ $t('generic.no-results-for-type', { type: $t('projects.project', 2) }) }}</p>
          </div>
 
          <UButton

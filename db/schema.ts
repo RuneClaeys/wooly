@@ -7,6 +7,7 @@ export const users = mysqlTable('users', {
    firstName: text('first_name'),
    lastName: text('last_name'),
    email: varchar('email', { length: 255 }).unique(),
+   locale: varchar('locale', { length: 255 }).notNull().default('en'),
    createdAt: timestamp('created_at').default(sql`CURRENT_TIMESTAMP`),
 });
 

@@ -1,11 +1,44 @@
 {
-   "app-name": "Wooly",
-   "settings": {
-      "logout": "Afmelden",
-      "setting": "Instelling | Instellingen"
-   },
-   "welcome": {
-      "login-with-google": "Aanmelden met google",
-      "welcome-to-app": "Welkom bij {appName}"
-   }
+  "actions": {
+    "confirm-delete-type": "Je staat op het punt om een {type} te verwijderen, ben je zeker? Deze actie kan niet ongedaan gemaakt worden.",
+    "delete-type": "{type} verwijderen",
+    "cancel": "Annuleer",
+    "delete": "Verwijder | Verwijderen",
+    "create-type": "{type} maken",
+    "save": "Opslaan"
+  },
+  "app-name": "Wooly",
+  "generic": {
+    "active": "Actief",
+    "completed": "Afgewerkt",
+    "status": "Status",
+    "no-results-for-type": "Er zijn nog geen {type}",
+    "name": "Naam",
+    "loading": "Laden",
+    "language": "Taal"
+  },
+  "projects": {
+    "project": "Project | Projecten"
+  },
+  "settings": {
+    "logout": "Afmelden",
+    "setting": "Instelling | Instellingen"
+  },
+  "welcome": {
+    "login-with-google": "Aanmelden met google",
+    "welcome-to-app": "Welkom bij {appName}"
+  },
+  "form": {
+    "field-required": "Dit veld is verplicht"
+  },
+  "parts": {
+    "part": "Onderdeel | Onderdelen",
+    "row-count": "Aantal rijen"
+  },
+  "filters": {
+    "newest-first": "Nieuwste eerst",
+    "oldest-first": "Oudste eerst",
+    "created-on": "Aangemaakt op",
+    "last-changed-at": "Laatst bewerkt"
+  }
 }
