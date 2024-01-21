@@ -2,10 +2,17 @@ import type { NuxtConfig } from 'nuxt/config';
 
 export const pwa: NuxtConfig['pwa'] = {
    registerType: 'autoUpdate',
-   strategies: 'generateSW',
+
    workbox: {
-      globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
+      globPatterns: ['**/*.{js,css,html,png,svg,ico}'],
+      navigateFallback: '/',
    },
+
+   client: {
+      installPrompt: true,
+      periodicSyncForUpdates: 3600,
+   },
+
    manifest: {
       name: 'Wooly',
       short_name: 'Wooly',
@@ -72,5 +79,12 @@ export const pwa: NuxtConfig['pwa'] = {
       iarc_rating_id: '7+',
       prefer_related_applications: false,
       categories: ['productivity', 'utilities'],
+   },
+
+   devOptions: {
+      enabled: true,
+      suppressWarnings: true,
+      navigateFallbackAllowlist: [/^\/$/],
+      type: 'module',
    },
 };
