@@ -2,10 +2,10 @@
 import type { SelectPart } from '~/db/schema';
 
 //#region Globals
-const toast = useToast();
 const route = useRoute('projects-id');
 const { projectRouter } = useTrpcClient();
-const { promptConfirmation } = useConfirmation();
+const { promptDeleteConfirmation } = useConfirmation();
+const { t } = useI18n();
 //#endregion
 
 //#region Get Project
@@ -37,14 +37,10 @@ async function createPart(payload: { part: { name: string; counter: number }; do
 }
 
 async function deletePart(id: number) {
-   promptConfirmation({
-      title: 'Onderdeel verwijderen',
-      description: 'Ben je zeker dat je dit onderdeel wil verwijderen',
-      onConfirm: async (done) => {
-         await projectRouter.partRouter.delete.mutate(id);
-         done();
-         parts.value = (parts.value ?? []).filter((part) => part.id !== id);
-      },
+   promptDeleteConfirmation(t('parts.part'), async (done) => {
+      await projectRouter.partRouter.delete.mutate(id);
+      done();
+      parts.value = (parts.value ?? []).filter((part) => part.id !== id);
    });
 }
 
@@ -84,8 +80,8 @@ function editPart(part: SelectPart) {
 
 <template>
    <div>
-      <NuxtLayout :root="false" :title="data?.name ?? 'Laden...'" :navigate-back-to="'/'">
-         <LayoutHeading v-model:sorting="sorting" :title="'Onderdelen'" />
+      <NuxtLayout :root="false" :title="data?.name ?? $t('generic.loading')" :navigate-back-to="'/'">
+         <LayoutHeading v-model:sorting="sorting" :title="$t('parts.part', 2)" />
 
          <div v-auto-animate class="flex flex-row flex-wrap gap-3 justify-center">
             <UCard
@@ -103,7 +99,7 @@ function editPart(part: SelectPart) {
                      </div>
                   </div>
                   <div class="flex justify-between items-center">
-                     <small>Aantal rijen</small>
+                     <small>{{ $t('parts.row-count') }}</small>
 
                      <div class="flex gap-2 items-center">
                         <UButton
@@ -124,7 +120,7 @@ function editPart(part: SelectPart) {
                </div>
             </UCard>
 
-            <p v-else class="text-gray-400">Nog geen onderedelen</p>
+            <p v-else class="text-gray-400">{{ $t('generic.no-results-for-type', { type: $t('parts.part', 2) }) }}</p>
          </div>
 
          <UButton

@@ -2,6 +2,10 @@
 import type { FormError } from '@nuxt/ui/dist/runtime/types/form';
 import type { SelectPart } from '~/db/schema';
 
+//#region Globals
+const { t } = useI18n();
+//#endregion
+
 //#region Props & Emits
 const open = defineModel<boolean>('modelValue', { default: false });
 const props = defineProps<{ initialPart?: SelectPart }>();
@@ -20,7 +24,7 @@ watch(
 
 const validate = (state: any): FormError[] => {
    const errors = [];
-   if (!state.name) errors.push({ path: 'name', message: 'Required' });
+   if (!state.name) errors.push({ path: 'name', message: t('form.field-required') });
 
    return errors;
 };
@@ -43,23 +47,23 @@ function onSubmit() {
    <UModal v-model="open">
       <UCard :ui="{ ring: '', divide: 'divide-y divide-gray-100 dark:divide-gray-800' }">
          <template #header>
-            <p>Create a part</p>
+            <p>{{ $t('actions.create-type', { type: $t('parts.part') }) }}</p>
          </template>
 
          <UForm class="flex flex-col gap-3" :state="part" :validate="validate">
-            <UFormGroup label="Name" name="name">
+            <UFormGroup :label="$t('generic.name')" name="name">
                <UInput v-model="part.name" />
             </UFormGroup>
 
-            <UFormGroup label="Row Count" name="counter">
+            <UFormGroup :label="$t('parts.row-count')" name="counter">
                <UInput v-model="part.counter" :type="'number'" />
             </UFormGroup>
          </UForm>
 
          <template #footer>
             <div class="flex justify-end">
-               <UButton variant="ghost" color="gray" @click="open = false">Cancel</UButton>
-               <UButton color="primary" @click="onSubmit">Save</UButton>
+               <UButton variant="ghost" color="gray" @click="open = false">{{ $t('actions.cancel') }}</UButton>
+               <UButton color="primary" @click="onSubmit">{{ $t('actions.save') }}</UButton>
             </div>
          </template>
       </UCard>
