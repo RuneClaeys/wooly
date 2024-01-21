@@ -89,8 +89,20 @@ async function deleteProject(id: number) {
                   <div class="flex justify-between items-center">
                      <p>{{ project.name }}</p>
                      <div class="flex gap-1">
-                        <UButton icon="i-heroicons-pencil-16-solid" variant="ghost" color="grey" @click.stop="editProject(project)" />
-                        <UButton icon="i-heroicons-trash-16-solid" variant="ghost" color="red" @click.stop="deleteProject(project.id)" />
+                        <UButton
+                           icon="i-heroicons-pencil-16-solid"
+                           variant="ghost"
+                           color="grey"
+                           :aria-label="$t('actions.change')"
+                           @click.stop="editProject(project)"
+                        />
+                        <UButton
+                           icon="i-heroicons-trash-16-solid"
+                           variant="ghost"
+                           color="red"
+                           :aria-label="$t('actions.delete')"
+                           @click.stop="deleteProject(project.id)"
+                        />
                      </div>
                   </div>
                   <small>{{ $t('generic.status') }}: {{ project.finished ? 'Afgewerkt' : 'Actief' }}</small>
@@ -105,6 +117,7 @@ async function deleteProject(id: number) {
             size="xl"
             square
             icon="i-heroicons-plus-16-solid"
+            :aria-label="$t('actions.create-type', { type: $t('projects.project') })"
             :ui="{ rounded: 'rounded-full' }"
             @click="showCeateProjectForm = true"
          />

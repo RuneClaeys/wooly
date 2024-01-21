@@ -106,6 +106,7 @@ function editPart(part: SelectPart) {
                            icon="i-heroicons-minus-16-solid"
                            variant="ghost"
                            color="red"
+                           :aria-label="$t('actions.change')"
                            @click.stop="incrementOrDecrement(part, false)"
                         />
                         <p>{{ part.counter }}</p>
@@ -113,6 +114,7 @@ function editPart(part: SelectPart) {
                            icon="i-heroicons-plus-16-solid"
                            variant="ghost"
                            color="green"
+                           :aria-label="$t('actions.delete')"
                            @click.stop="incrementOrDecrement(part, true)"
                         />
                      </div>
@@ -129,6 +131,7 @@ function editPart(part: SelectPart) {
             square
             icon="i-heroicons-plus-16-solid"
             :ui="{ rounded: 'rounded-full' }"
+            :aria-label="$t('actions.create-type', { type: $t('parts.part') })"
             @click="showCeateProjectForm = true"
          />
 

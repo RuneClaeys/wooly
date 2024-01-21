@@ -1,44 +1,45 @@
 {
-   "actions": {
-      "cancel": "Cancel",
-      "confirm-delete-type": "You're about to delete a {type}, are you sure? This action cannot be undone.",
-      "create-type": "create {type}",
-      "delete": "Delete",
-      "delete-type": "delete {type}",
-      "save": "Save"
-   },
-   "app-name": "Wooly",
-   "filters": {
-      "created-on": "Created on",
-      "last-changed-at": "Last edited",
-      "newest-first": "Newest first",
-      "oldest-first": "Oldest first"
-   },
-   "form": {
-      "field-required": "This field is required"
-   },
-   "generic": {
-      "active": "Active",
-      "completed": "Finished",
-      "language": "Language",
-      "loading": "load",
-      "name": "Name",
-      "no-results-for-type": "There are no {type} yet",
-      "status": "Status"
-   },
-   "parts": {
-      "part": "Part | Components",
-      "row-count": "Number of rows"
-   },
-   "projects": {
-      "project": "Project | Projects"
-   },
-   "settings": {
-      "logout": "Sign out",
-      "setting": "Setting | Settings"
-   },
-   "welcome": {
-      "login-with-google": "Sign in with Google",
-      "welcome-to-app": "Welcome to {appName}"
-   }
+  "actions": {
+    "cancel": "Cancel",
+    "confirm-delete-type": "You're about to delete a {type}, are you sure? This action cannot be undone.",
+    "create-type": "create {type}",
+    "delete": "Delete",
+    "delete-type": "delete {type}",
+    "save": "Save",
+    "change": "To adjust"
+  },
+  "app-name": "Wooly",
+  "filters": {
+    "created-on": "Created on",
+    "last-changed-at": "Last edited",
+    "newest-first": "Newest first",
+    "oldest-first": "Oldest first"
+  },
+  "form": {
+    "field-required": "This field is required"
+  },
+  "generic": {
+    "active": "Active",
+    "completed": "Finished",
+    "language": "Language",
+    "loading": "load",
+    "name": "Name",
+    "no-results-for-type": "There are no {type} yet",
+    "status": "Status"
+  },
+  "parts": {
+    "part": "Part | Components",
+    "row-count": "Number of rows"
+  },
+  "projects": {
+    "project": "Project | Projects"
+  },
+  "settings": {
+    "logout": "Sign out",
+    "setting": "Setting | Settings"
+  },
+  "welcome": {
+    "login-with-google": "Sign in with Google",
+    "welcome-to-app": "Welcome to {appName}"
+  }
 }
