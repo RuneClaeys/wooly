@@ -9,6 +9,7 @@ async function getUserInfo(status: SessionStatus) {
    if (status !== 'authenticated') return;
 
    const user = await userRouter.me.query();
+   document.body.lang = user.locale ?? 'en';
    setLocale(user.locale ?? 'en');
 }
 

@@ -2,6 +2,7 @@ import type { NuxtConfig } from 'nuxt/schema';
 
 export const app: NuxtConfig['app'] = {
    head: {
+      title: 'Wooly',
       link: [
          {
             rel: 'apple-touch-icon',
