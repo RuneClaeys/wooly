@@ -1,14 +1,37 @@
 <script lang="ts" setup>
 const { signOut } = useAuth();
+const { userRouter } = useTrpcClient();
+
+const { locale, setLocale } = useI18n();
+
+const locales = computed(() => [
+   { value: 'en', name: 'English' },
+   { value: 'nl', name: 'Nederlands' },
+]);
+
+function updateLocale(locale: 'en' | 'nl') {
+   setLocale(locale);
+   userRouter.updateLocale.mutate(locale);
+}
 </script>
 
 <template>
    <div>
       <NuxtLayout :root="false">
-         <div class="flex flex-col items-center p-5 gap-5">
+         <div class="flex flex-col p-5 gap-5">
             <p>{{ $t('settings.setting', 2) }}</p>
 
-            <UButton @click="signOut()" :icon="'i-heroicons-arrow-right-end-on-rectangle-16-solid'">
+            <UFormGroup :label="$t('generic.language')" :name="'language'" :class="'max-w-60'">
+               <USelect
+                  :model-value="locale"
+                  :name="'language'"
+                  :options="locales"
+                  option-attribute="name"
+                  @update:model-value="updateLocale"
+               />
+            </UFormGroup>
+
+            <UButton @click="signOut()" variant="link" :icon="'i-heroicons-arrow-right-end-on-rectangle-16-solid'" :class="'max-w-40 p-0'">
                {{ $t('settings.logout') }}
             </UButton>
          </div>

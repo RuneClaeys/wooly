@@ -1,5 +1,38 @@
 {
+   "actions": {
+      "cancel": "Annuleer",
+      "confirm-delete-type": "Je staat op het punt om een {type} te verwijderen, ben je zeker? Deze actie kan niet ongedaan gemaakt worden.",
+      "create-type": "{type} maken",
+      "delete": "Verwijder | Verwijderen",
+      "delete-type": "{type} verwijderen",
+      "save": "Opslaan"
+   },
    "app-name": "Wooly",
+   "filters": {
+      "created-on": "Aangemaakt op",
+      "last-changed-at": "Laatst bewerkt",
+      "newest-first": "Nieuwste eerst",
+      "oldest-first": "Oudste eerst"
+   },
+   "form": {
+      "field-required": "Dit veld is verplicht"
+   },
+   "generic": {
+      "active": "Actief",
+      "completed": "Afgewerkt",
+      "language": "Taal",
+      "loading": "Laden",
+      "name": "Naam",
+      "no-results-for-type": "Er zijn nog geen {type}",
+      "status": "Status"
+   },
+   "parts": {
+      "part": "Onderdeel | Onderdelen",
+      "row-count": "Aantal rijen"
+   },
+   "projects": {
+      "project": "Project | Projecten"
+   },
    "settings": {
       "logout": "Afmelden",
       "setting": "Instelling | Instellingen"
