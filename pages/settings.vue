@@ -38,5 +38,3 @@ function updateLocale(locale: 'en' | 'nl') {
       </NuxtLayout>
    </div>
 </template>
-
-<style lang="scss" scoped></style>

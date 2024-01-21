@@ -69,5 +69,3 @@ function onSubmit() {
       </UCard>
    </UModal>
 </template>
-
-<style lang="scss" scoped></style>

@@ -44,7 +44,7 @@ function onSubmit() {
 </script>
 
 <template>
-   <UModal v-model="open">
+   <UModal v-model="open" :fullscreen="true">
       <UCard>
          <template #header>
             <p>{{ $t('actions.create-type', { type: $t('projects.project') }) }}</p>
@@ -68,5 +68,3 @@ function onSubmit() {
       </UCard>
    </UModal>
 </template>
-
-<style lang="scss" scoped></style>

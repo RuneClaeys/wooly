@@ -6,6 +6,8 @@ import { i18n } from './config/i18n.config';
 import { pwa } from './config/pwa.config';
 
 export default defineNuxtConfig({
+   ssr: false,
+
    devtools: { enabled: true },
 
    modules: [
@@ -29,7 +31,6 @@ export default defineNuxtConfig({
 
    routeRules: {
       '/api/**': { cors: true },
-      '/': { prerender: true },
    },
 
    auth,

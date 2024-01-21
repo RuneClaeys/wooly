@@ -137,5 +137,3 @@ function editPart(part: SelectPart) {
       </NuxtLayout>
    </div>
 </template>
-
-<style lang="scss" scoped></style>

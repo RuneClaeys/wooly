@@ -65,5 +65,3 @@ defineProps({
       </UContainer>
    </div>
 </template>
-
-<style lang="scss" scoped></style>

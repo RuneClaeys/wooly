@@ -44,7 +44,7 @@ export default NuxtAuthHandler({
    secret: process.env.AUTH_SECRET,
 
    pages: {
-      signIn: '/welcome',
+      signIn: '/login',
    },
 
    providers: [

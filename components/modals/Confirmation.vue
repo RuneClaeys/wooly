@@ -29,5 +29,3 @@ const { showConfirmation, confirmationPrompt, closeConfirmation } = useConfirmat
       </UCard>
    </UModal>
 </template>
-
-<style lang="scss" scoped></style>
