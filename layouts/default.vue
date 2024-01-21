@@ -1,7 +1,6 @@
 <script lang="ts" setup>
 //#region Globals
 const { status } = useAuth();
-const router = useRouter();
 
 const colorMode = useColorMode();
 const isDark = computed(() => colorMode.value === 'dark');

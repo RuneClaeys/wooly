@@ -4,7 +4,7 @@ export const pwa: NuxtConfig['pwa'] = {
    registerType: 'autoUpdate',
 
    workbox: {
-      globPatterns: ['**/*.{js,css,html,png,svg,ico,json}'],
+      globPatterns: ['**/*.{js,json,css,html,txt,svg,png,ico,webp,woff,woff2,ttf,eot,otf,wasm}'],
       navigateFallback: '/',
    },
 
@@ -23,6 +23,13 @@ export const pwa: NuxtConfig['pwa'] = {
       scope: '/',
       description: 'Wooly is an app to keep track of your knitting and crocheting projects.',
       theme_color: '#f472b6',
+      id: 'wooly',
+      dir: 'ltr',
+      orientation: 'portrait',
+      display_override: ['standalone', 'fullscreen', 'minimal-ui', 'browser', 'window-controls-overlay'],
+      iarc_rating_id: '7+',
+      prefer_related_applications: false,
+      categories: ['productivity', 'utilities'],
       icons: [
          {
             src: '/android-chrome-192x192.png',
@@ -72,13 +79,6 @@ export const pwa: NuxtConfig['pwa'] = {
             label: 'Wooly',
          },
       ],
-      id: 'wooly',
-      dir: 'ltr',
-      orientation: 'portrait',
-      display_override: ['standalone', 'fullscreen', 'minimal-ui', 'browser', 'window-controls-overlay'],
-      iarc_rating_id: '7+',
-      prefer_related_applications: false,
-      categories: ['productivity', 'utilities'],
    },
 
    devOptions: {
