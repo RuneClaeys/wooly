@@ -4,7 +4,7 @@ export const pwa: NuxtConfig['pwa'] = {
    registerType: 'autoUpdate',
 
    workbox: {
-      globPatterns: ['**/*.{js,css,html,png,svg,ico}'],
+      globPatterns: ['**/*.{js,css,html,png,svg,ico,json}'],
       navigateFallback: '/',
    },
 
