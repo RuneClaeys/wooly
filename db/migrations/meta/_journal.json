@@ -8,6 +8,13 @@
       "when": 1709993993412,
       "tag": "0000_watery_barracuda",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "5",
+      "when": 1709996603338,
+      "tag": "0001_condemned_arclight",
+      "breakpoints": true
     }
   ]
 }

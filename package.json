@@ -31,7 +31,6 @@
    "dependencies": {
       "@formkit/auto-animate": "^0.8.1",
       "@nuxt/ui": "^2.11.1",
-      "@planetscale/database": "^1.13.0",
       "@trpc/client": "^10.44.1",
       "@trpc/server": "^10.44.1",
       "@vercel/postgres": "^0.7.2",

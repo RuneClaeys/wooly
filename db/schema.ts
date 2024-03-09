@@ -24,7 +24,9 @@ export const projects = pgTable('projects', {
    finished: boolean('finished').notNull().default(false),
    createdAt: timestamp('created_at').defaultNow(),
    updatedAt: timestamp('updated_at').defaultNow(),
-   userId: varchar('user_id', { length: 255 }).notNull(),
+   userId: varchar('user_id', { length: 255 })
+      .references(() => users.id, { onDelete: 'cascade' })
+      .notNull(),
 });
 
 export const projectsRelations = relations(projects, ({ one, many }) => ({
@@ -51,7 +53,9 @@ export const parts = pgTable('parts', {
    counter: integer('count').notNull().default(0),
    createdAt: timestamp('created_at').defaultNow(),
    updatedAt: timestamp('updated_at').defaultNow(),
-   projectId: integer('project_id').notNull(),
+   projectId: integer('project_id')
+      .references(() => projects.id, { onDelete: 'cascade' })
+      .notNull(),
 });
 
 export const partsRelations = relations(parts, ({ one }) => ({

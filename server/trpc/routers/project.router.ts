@@ -1,4 +1,4 @@
-import { asc, desc, eq } from 'drizzle-orm';
+import { and, asc, desc, eq } from 'drizzle-orm';
 import { z } from 'zod';
 import { projects } from '~/db/schema';
 import { genericSort } from '~/server/helpers/zod.helper';
@@ -11,7 +11,7 @@ export const projectRouter = router({
    list: protectedProcedure.input(z.object({ finished: z.boolean().default(false), query: genericSort })).query(({ ctx, input }) => {
       const { finished, query } = input;
       return ctx.db.query.projects.findMany({
-         where: () => eq(projects.userId, ctx.session.user.id) && eq(projects.finished, finished),
+         where: and(eq(projects.userId, ctx.session.user.id), eq(projects.finished, finished)),
          orderBy: query?.order === 'asc' ? asc(projects[query.orderBy]) : desc(projects[query.orderBy]),
       });
    }),
