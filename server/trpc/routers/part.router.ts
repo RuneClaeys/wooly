@@ -22,11 +22,11 @@ export const partRouter = router({
    create: protectedProcedure
       .input(z.object({ projectId: z.number(), name: z.string(), counter: z.number().optional().default(0) }))
       .mutation(async ({ input, ctx }) => {
-         const { insertId } = await ctx.db
+         return await ctx.db
             .insert(parts)
             .values({ ...input })
+            .returning()
             .execute();
-         return ctx.db.query.parts.findFirst({ where: eq(parts.id, +insertId) });
       }),
 
    delete: protectedProcedure.input(z.number()).mutation(({ input: partId, ctx }) => {
@@ -38,7 +38,7 @@ export const partRouter = router({
       .mutation(({ input, ctx }) => {
          return ctx.db
             .update(parts)
-            .set({ ...input })
+            .set({ ...input, updatedAt: new Date() })
             .where(eq(parts.id, input.id))
             .execute();
       }),

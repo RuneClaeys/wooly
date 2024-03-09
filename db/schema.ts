@@ -1,14 +1,14 @@
-import { relations, sql } from 'drizzle-orm';
-import { boolean, int, mysqlTable, serial, text, timestamp, varchar } from 'drizzle-orm/mysql-core';
+import { relations } from 'drizzle-orm';
+import { boolean, integer, pgTable, serial, text, timestamp, varchar } from 'drizzle-orm/pg-core';
 
 // Users
-export const users = mysqlTable('users', {
+export const users = pgTable('users', {
    id: varchar('id', { length: 255 }).primaryKey(),
    firstName: text('first_name'),
    lastName: text('last_name'),
    email: varchar('email', { length: 255 }).unique(),
    locale: varchar('locale', { length: 255 }).notNull().default('en'),
-   createdAt: timestamp('created_at').default(sql`CURRENT_TIMESTAMP`),
+   createdAt: timestamp('created_at').defaultNow(),
 });
 
 export const usersRelations = relations(users, ({ many }) => ({
@@ -18,12 +18,12 @@ export const usersRelations = relations(users, ({ many }) => ({
 export type SelectUser = typeof users.$inferSelect;
 
 // Projects
-export const projects = mysqlTable('projects', {
+export const projects = pgTable('projects', {
    id: serial('id').primaryKey(),
    name: text('name'),
    finished: boolean('finished').notNull().default(false),
-   createdAt: timestamp('created_at').default(sql`CURRENT_TIMESTAMP`),
-   updatedAt: timestamp('updated_at').default(sql`CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP`),
+   createdAt: timestamp('created_at').defaultNow(),
+   updatedAt: timestamp('updated_at').defaultNow(),
    userId: varchar('user_id', { length: 255 }).notNull(),
 });
 
@@ -45,13 +45,13 @@ export type SelectProject = Omit<typeof projects.$inferSelect, 'createdAt' | 'up
 };
 
 // parts
-export const parts = mysqlTable('parts', {
+export const parts = pgTable('parts', {
    id: serial('id').primaryKey(),
    name: text('name'),
-   counter: int('count').notNull().default(0),
-   createdAt: timestamp('created_at').default(sql`CURRENT_TIMESTAMP`),
-   updatedAt: timestamp('updated_at').default(sql`CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP`),
-   projectId: int('project_id').notNull(),
+   counter: integer('count').notNull().default(0),
+   createdAt: timestamp('created_at').defaultNow(),
+   updatedAt: timestamp('updated_at').defaultNow(),
+   projectId: integer('project_id').notNull(),
 });
 
 export const partsRelations = relations(parts, ({ one }) => ({

@@ -28,11 +28,11 @@ export const projectRouter = router({
          })
       )
       .mutation(async ({ input, ctx }) => {
-         const { insertId } = await ctx.db
+         return await ctx.db
             .insert(projects)
             .values({ name: input.name, userId: ctx.session.user.id, finished: input.finished })
+            .returning()
             .execute();
-         return ctx.db.query.projects.findFirst({ where: eq(projects.id, +insertId) });
       }),
 
    update: protectedProcedure
@@ -44,7 +44,11 @@ export const projectRouter = router({
          })
       )
       .mutation(async ({ input, ctx }) => {
-         await ctx.db.update(projects).set({ name: input.name, finished: input.finished }).where(eq(projects.id, input.id)).execute();
+         await ctx.db
+            .update(projects)
+            .set({ name: input.name, finished: input.finished, updatedAt: new Date() })
+            .where(eq(projects.id, input.id))
+            .execute();
          return ctx.db.query.projects.findFirst({ where: eq(projects.id, input.id) });
       }),
 
