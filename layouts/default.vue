@@ -11,12 +11,10 @@ function toggleColorMode() {
 }
 //#endregion
 
-//#region Props & Emits
-defineProps({
-   title: { type: String, default: 'Wooly' },
-   root: { type: Boolean, default: true },
-   navigateBackTo: { type: String, default: '/' },
-});
+//#region Props
+const title = computed(() => defaultLayoutProps.value?.title);
+const navigateBackTo = computed(() => defaultLayoutProps.value?.navigateBackTo);
+const root = computed(() => defaultLayoutProps.value?.root);
 //#endregion
 </script>
 

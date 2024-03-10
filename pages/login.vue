@@ -1,4 +1,6 @@
 <script lang="ts" setup>
+const { t } = useI18n();
+
 definePageMeta({
    auth: {
       unauthenticatedOnly: true,
@@ -7,18 +9,19 @@ definePageMeta({
 });
 
 const { signIn } = useAuth();
+
+useDefaultLayout(() => ({
+   title: t('generic.login'),
+   root: true,
+}));
 </script>
 
 <template>
-   <div>
-      <NuxtLayout>
-         <div class="flex flex-col items-center p-5 gap-5">
-            <p>{{ $t('welcome.welcome-to-app', { appName: $t('app-name') }) }}</p>
+   <div class="flex flex-col items-center p-5 gap-5">
+      <p>{{ $t('welcome.welcome-to-app', { appName: $t('app-name') }) }}</p>
 
-            <UButton @click="signIn('google')" :icon="'i-heroicons-user-solid'">
-               {{ $t('welcome.login-with-google') }}
-            </UButton>
-         </div>
-      </NuxtLayout>
+      <UButton @click="signIn('google')" :icon="'i-heroicons-user-solid'">
+         {{ $t('welcome.login-with-google') }}
+      </UButton>
    </div>
 </template>

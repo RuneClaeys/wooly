@@ -25,7 +25,8 @@
     "loading": "Laden",
     "name": "Naam",
     "no-results-for-type": "Er zijn nog geen {type}",
-    "status": "Status"
+    "status": "Status",
+    "login": "Aanmelden"
   },
   "parts": {
     "part": "Onderdeel | Onderdelen",

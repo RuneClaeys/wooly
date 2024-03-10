@@ -18,7 +18,21 @@ watch(status, getUserInfo, { immediate: true });
 
 <template>
    <VitePwaManifest />
-   <NuxtPage />
    <UNotifications />
    <ModalsConfirmation />
+
+   <NuxtLayout>
+      <NuxtPage />
+   </NuxtLayout>
 </template>
+
+<style>
+.page-enter-active,
+.page-leave-active {
+   transition: all 0.2s ease-in-out;
+}
+.page-enter-from,
+.page-leave-to {
+   opacity: 0;
+}
+</style>

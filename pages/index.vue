@@ -1,9 +1,16 @@
 <script setup lang="ts">
 import type { SelectProject } from '~/db/schema';
 
+//#region Globals
 const { projectRouter } = useTrpcClient();
 const { promptDeleteConfirmation } = useConfirmation();
 const { t } = useI18n();
+
+useDefaultLayout(() => ({
+   title: 'Wooly',
+   root: true,
+}));
+//#endregion
 
 //#region List Projects
 const status = ref<'active' | 'finished'>('active');
@@ -61,69 +68,67 @@ async function deleteProject(id: number) {
 
 <template>
    <div>
-      <NuxtLayout :name="'default'">
-         <LayoutHeading v-model:sorting="sorting" :title="$t('projects.project', 2)">
-            <template #otherFilters>
-               <USelect
-                  v-model="status"
-                  :options="[
-                     { name: t('generic.active'), value: 'active' },
-                     { name: t('generic.completed'), value: 'finished' },
-                  ]"
-                  :size="'2xs'"
-                  option-attribute="name"
-               />
-            </template>
-         </LayoutHeading>
+      <LayoutHeading v-model:sorting="sorting" :title="$t('projects.project', 2)">
+         <template #otherFilters>
+            <USelect
+               v-model="status"
+               :options="[
+                  { name: t('generic.active'), value: 'active' },
+                  { name: t('generic.completed'), value: 'finished' },
+               ]"
+               :size="'2xs'"
+               option-attribute="name"
+            />
+         </template>
+      </LayoutHeading>
 
-         <div v-auto-animate class="flex flex-row flex-wrap gap-3 justify-center">
-            <UCard
-               v-if="data?.length"
-               v-for="project in data ?? []"
-               :key="project.id"
-               class="min-w-full md:min-w-96 cursor-pointer max-h-[90px]"
-               :ui="{ background: 'bg-white dark:bg-gray-900 hover:bg-gray-100 dark:hover:bg-gray-800' }"
-               @click="$router.push({ name: 'projects-id', params: { id: project.id } })"
-            >
-               <div class="flex flex-col">
-                  <div class="flex justify-between items-center">
-                     <p>{{ project.name }}</p>
-                     <div class="flex gap-1">
-                        <UButton
-                           icon="i-heroicons-pencil-16-solid"
-                           variant="ghost"
-                           color="grey"
-                           :aria-label="$t('actions.change')"
-                           @click.stop="editProject(project)"
-                        />
-                        <UButton
-                           icon="i-heroicons-trash-16-solid"
-                           variant="ghost"
-                           color="red"
-                           :aria-label="$t('actions.delete')"
-                           @click.stop="deleteProject(project.id)"
-                        />
-                     </div>
+      <div v-auto-animate class="flex flex-row flex-wrap gap-3 justify-center">
+         <UCard
+            v-if="data?.length"
+            v-for="project in data ?? []"
+            :key="project.id"
+            class="min-w-full md:min-w-96 cursor-pointer max-h-[90px]"
+            :ui="{ background: 'bg-white dark:bg-gray-900 hover:bg-gray-100 dark:hover:bg-gray-800' }"
+            @click="$router.push({ name: 'projects-id', params: { id: project.id } })"
+         >
+            <div class="flex flex-col">
+               <div class="flex justify-between items-center">
+                  <p>{{ project.name }}</p>
+                  <div class="flex gap-1">
+                     <UButton
+                        icon="i-heroicons-pencil-16-solid"
+                        variant="ghost"
+                        color="grey"
+                        :aria-label="$t('actions.change')"
+                        @click.stop="editProject(project)"
+                     />
+                     <UButton
+                        icon="i-heroicons-trash-16-solid"
+                        variant="ghost"
+                        color="red"
+                        :aria-label="$t('actions.delete')"
+                        @click.stop="deleteProject(project.id)"
+                     />
                   </div>
-                  <small>{{ $t('generic.status') }}: {{ project.finished ? 'Afgewerkt' : 'Actief' }}</small>
                </div>
-            </UCard>
+               <small>{{ $t('generic.status') }}: {{ project.finished ? 'Afgewerkt' : 'Actief' }}</small>
+            </div>
+         </UCard>
 
-            <p v-else-if="!pending" class="text-gray-400">{{ $t('generic.no-results-for-type', { type: $t('projects.project', 2) }) }}</p>
-         </div>
+         <p v-else-if="!pending" class="text-gray-400">{{ $t('generic.no-results-for-type', { type: $t('projects.project', 2) }) }}</p>
+      </div>
 
-         <UButton
-            class="fixed bottom-5 right-5 dark:bg-pink-900 dark:text-white"
-            size="xl"
-            square
-            icon="i-heroicons-plus-16-solid"
-            :aria-label="$t('actions.create-type', { type: $t('projects.project') })"
-            :ui="{ rounded: 'rounded-full' }"
-            @click="showCeateProjectForm = true"
-         />
+      <UButton
+         class="fixed bottom-5 right-5 dark:bg-pink-900 dark:text-white"
+         size="xl"
+         square
+         icon="i-heroicons-plus-16-solid"
+         :aria-label="$t('actions.create-type', { type: $t('projects.project') })"
+         :ui="{ rounded: 'rounded-full' }"
+         @click="showCeateProjectForm = true"
+      />
 
-         <ModalsProject v-model="showCeateProjectForm" @save-project="createProject" />
-         <ModalsProject v-model="showEditProjectForm" :initial-project="projectToEdit" @save-project="changeProject" />
-      </NuxtLayout>
+      <ModalsProject v-model="showCeateProjectForm" @save-project="createProject" />
+      <ModalsProject v-model="showEditProjectForm" :initial-project="projectToEdit" @save-project="changeProject" />
    </div>
 </template>

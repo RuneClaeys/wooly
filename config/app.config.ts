@@ -38,4 +38,9 @@ export const app: NuxtConfig['app'] = {
          },
       ],
    },
+
+   pageTransition: {
+      name: 'page',
+      mode: 'out-in',
+   },
 };
