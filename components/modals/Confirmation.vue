@@ -1,5 +1,12 @@
 <script lang="ts" setup>
 const { showConfirmation, confirmationPrompt, closeConfirmation } = useConfirmation();
+
+function cancel() {
+   if (confirmationPrompt.value?.onCancel) {
+      return confirmationPrompt.value.onCancel(closeConfirmation);
+   }
+   return closeConfirmation();
+}
 </script>
 
 <template>
@@ -12,13 +19,8 @@ const { showConfirmation, confirmationPrompt, closeConfirmation } = useConfirmat
          <p>{{ confirmationPrompt?.description }}</p>
 
          <template #footer>
-            <div class="flex justify-end">
-               <UButton
-                  v-if="confirmationPrompt?.onCancel"
-                  variant="ghost"
-                  color="gray"
-                  @click="confirmationPrompt.onCancel(closeConfirmation)"
-               >
+            <div class="flex justify-between">
+               <UButton variant="ghost" color="gray" @click="cancel">
                   {{ confirmationPrompt?.cancelText }}
                </UButton>
                <UButton v-if="confirmationPrompt?.onConfirm" color="primary" @click="confirmationPrompt.onConfirm(closeConfirmation)">

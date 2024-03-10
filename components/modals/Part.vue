@@ -61,7 +61,7 @@ function onSubmit() {
          </UForm>
 
          <template #footer>
-            <div class="flex justify-end">
+            <div class="flex justify-between">
                <UButton variant="ghost" color="gray" @click="open = false">{{ $t('actions.cancel') }}</UButton>
                <UButton color="primary" @click="onSubmit">{{ $t('actions.save') }}</UButton>
             </div>

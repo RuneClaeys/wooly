@@ -4,7 +4,7 @@
     "confirm-delete-type": "You're about to delete a {type}, are you sure? This action cannot be undone.",
     "create-type": "create {type}",
     "delete": "Delete",
-    "delete-type": "delete {type}",
+    "delete-type": "Delete {type}",
     "save": "Save",
     "change": "To adjust"
   },
