@@ -18,7 +18,7 @@ function updateLocale(locale: 'en' | 'nl') {
 <template>
    <div>
       <NuxtLayout :root="false">
-         <div class="flex flex-col p-5 gap-5">
+         <div class="flex flex-col py-5 gap-5">
             <p>{{ $t('settings.setting', 2) }}</p>
 
             <UFormGroup :label="$t('generic.language')" :name="'language'" :class="'max-w-60'">
