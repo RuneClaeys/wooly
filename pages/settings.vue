@@ -2,7 +2,7 @@
 const { signOut } = useAuth();
 const { userRouter } = useTrpcClient();
 const { t } = useI18n();
-
+const { locale: changeDayjsLocale } = useDayjs();
 const { locale, setLocale } = useI18n();
 
 const locales = computed(() => [
@@ -12,6 +12,7 @@ const locales = computed(() => [
 
 function updateLocale(locale: 'en' | 'nl') {
    setLocale(locale);
+   changeDayjsLocale(locale);
    userRouter.updateLocale.mutate(locale);
 }
 

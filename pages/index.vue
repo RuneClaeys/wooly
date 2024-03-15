@@ -21,7 +21,7 @@ const input = computed(() => ({
    query: query.value,
 }));
 
-const { data, execute: refresh, pending, error } = projectRouter.list.useQuery(input, { watch: [input], deep: true });
+const { data, execute: refresh, pending } = projectRouter.list.useQuery(input, { watch: [input], deep: true });
 //#endregion
 
 //#region Create Project
@@ -111,7 +111,12 @@ async function deleteProject(id: number) {
                      />
                   </div>
                </div>
-               <small>{{ $t('generic.status') }}: {{ project.finished ? 'Afgewerkt' : 'Actief' }}</small>
+               <small v-if="project.createdAt" class="flex gap-1">
+                  <span>{{ $t('generic.started_at') }}: </span>
+                  <span>{{ $dayjs(project.createdAt).format('DD MMMM YYYY') }}</span>
+                  <span>{{ $t('generic.at') }}</span>
+                  <span>{{ $dayjs(project.createdAt).format('HHumm') }}</span>
+               </small>
             </div>
          </UCard>
 

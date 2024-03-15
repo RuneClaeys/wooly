@@ -4,6 +4,7 @@ import type { SessionStatus } from '@sidebase/nuxt-auth/dist/runtime/types';
 const { setLocale } = useI18n();
 const { status } = useAuth();
 const { userRouter } = useTrpcClient();
+const { locale } = useDayjs();
 
 async function getUserInfo(status: SessionStatus) {
    if (status !== 'authenticated') return;
@@ -11,6 +12,7 @@ async function getUserInfo(status: SessionStatus) {
    const user = await userRouter.me.query();
    document.body.lang = user.locale ?? 'en';
    setLocale(user.locale ?? 'en');
+   locale(user.locale ?? 'en');
 }
 
 watch(status, getUserInfo, { immediate: true });

@@ -26,7 +26,10 @@
     "name": "Naam",
     "no-results-for-type": "Er zijn nog geen {type}",
     "status": "Status",
-    "login": "Aanmelden"
+    "login": "Aanmelden",
+    "started_at": "Gestart op",
+    "updated_at": "Laatst aan gewerkt",
+    "at": "om"
   },
   "parts": {
     "part": "Onderdeel | Onderdelen",

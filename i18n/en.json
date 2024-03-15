@@ -26,7 +26,10 @@
     "name": "Name",
     "no-results-for-type": "There are no {type} yet",
     "status": "Status",
-    "login": "Login"
+    "login": "Login",
+    "started_at": "Started on",
+    "updated_at": "Recently worked on it",
+    "at": "at"
   },
   "parts": {
     "part": "Part | Components",
