@@ -14,11 +14,11 @@ useDefaultLayout(() => ({
 
 //#region List Projects
 const status = ref<'active' | 'finished'>('active');
-const { sorting, query } = useSorting('projects');
+const { sorting } = useSorting('projects');
 
 const input = computed(() => ({
    finished: status.value === 'finished',
-   query: query.value,
+   query: sorting.value,
 }));
 
 const { data, execute: refresh, pending } = projectRouter.list.useQuery(input, { watch: [input], deep: true });

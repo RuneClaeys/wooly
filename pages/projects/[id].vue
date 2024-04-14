@@ -12,11 +12,11 @@ const { t } = useI18n();
 //#region Get Project
 const { data } = projectRouter.get.useQuery(+route.params.id);
 
-const { sorting, query } = useSorting('parts');
+const { sorting } = useSorting('parts');
 
 const input = computed(() => ({
    projectId: +route.params.id,
-   sorting: query.value,
+   sorting: sorting.value,
 }));
 
 const { data: parts, execute: refresh, pending } = projectRouter.partRouter.list.useQuery(input, { watch: [input], deep: true });

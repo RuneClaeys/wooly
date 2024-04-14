@@ -27,7 +27,7 @@ async function createUser({ user, profile }: { user: User; profile?: GoogleProfi
          })
          .execute();
    } catch (e) {
-      console.log(e);
+      console.warn('Failed to create user');
    }
 }
 

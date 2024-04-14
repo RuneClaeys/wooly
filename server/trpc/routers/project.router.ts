@@ -10,6 +10,7 @@ export const projectRouter = router({
 
    list: protectedProcedure.input(z.object({ finished: z.boolean().default(false), query: genericSort })).query(({ ctx, input }) => {
       const { finished, query } = input;
+
       return ctx.db.query.projects.findMany({
          where: and(eq(projects.userId, ctx.session.user.id), eq(projects.finished, finished)),
          orderBy: query?.order === 'asc' ? asc(projects[query.orderBy]) : desc(projects[query.orderBy]),
@@ -44,12 +45,13 @@ export const projectRouter = router({
          })
       )
       .mutation(async ({ input, ctx }) => {
-         await ctx.db
+         const [result] = await ctx.db
             .update(projects)
             .set({ name: input.name, finished: input.finished, updatedAt: new Date() })
             .where(eq(projects.id, input.id))
+            .returning()
             .execute();
-         return ctx.db.query.projects.findFirst({ where: eq(projects.id, input.id) });
+         return result;
       }),
 
    delete: protectedProcedure.input(z.number()).mutation(({ input: projectId, ctx }) => {

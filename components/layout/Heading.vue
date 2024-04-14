@@ -12,20 +12,23 @@ defineProps({
    sorting: { type: Object as PropType<Sorting>, default: undefined },
 });
 
-defineEmits(['update:sorting']);
+const emits = defineEmits(['update:sorting']);
 //#endregion
 
 //#region
 const orderByOptions = computed(() => [
-   { name: t('generic.name'), value: 'name' },
-   { name: t('filters.created-on'), value: 'createdAt' },
-   { name: t('filters.last-changed-at'), value: 'updatedAt' },
+   { name: t('generic.name'), value: 'name', order: 'asc' },
+   { name: t('filters.created-on'), value: 'createdAt', order: 'desc' },
+   { name: t('filters.last-changed-at'), value: 'updatedAt', order: 'desc' },
 ]);
 
-const orderOptions = computed(() => [
-   { name: t('filters.newest-first'), value: 'asc' },
-   { name: t('filters.oldest-first'), value: 'desc' },
-]);
+function setSorting(value: string) {
+   const orderBy = orderByOptions.value.find((option) => option.value === value);
+
+   if (orderBy) {
+      emits('update:sorting', { orderBy: orderBy.value, order: orderBy.order });
+   }
+}
 //#endregion
 </script>
 
@@ -40,16 +43,8 @@ const orderOptions = computed(() => [
                :options="orderByOptions"
                :size="'2xs'"
                option-attribute="name"
-               @update:model-value="$emit('update:sorting', { ...sorting, orderBy: $event })"
+               @update:model-value="setSorting($event)"
             />
-            <USelect
-               :model-value="sorting.order"
-               :options="orderOptions"
-               :size="'2xs'"
-               option-attribute="name"
-               @update:model-value="$emit('update:sorting', { ...sorting, order: $event })"
-            />
-
             <slot name="otherFilters"></slot>
          </ClientOnly>
       </div>
