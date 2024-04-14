@@ -19,7 +19,7 @@ const root = computed(() => defaultLayoutProps.value?.root);
 </script>
 
 <template>
-   <div class="h-100">
+   <div class="h-dvh overflow-hidden flex flex-col">
       <header class="bg-pink-400 text-white dark:bg-pink-900">
          <UContainer class="flex py-3">
             <div class="min-w-16 flex justify-start items-center">
@@ -57,8 +57,8 @@ const root = computed(() => defaultLayoutProps.value?.root);
          </UContainer>
       </header>
 
-      <UContainer>
+      <main class="h-100 overflow-auto p-3">
          <slot></slot>
-      </UContainer>
+      </main>
    </div>
 </template>
