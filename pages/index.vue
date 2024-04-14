@@ -82,7 +82,7 @@ async function deleteProject(id: number) {
          </template>
       </LayoutHeading>
 
-      <div v-auto-animate class="flex flex-row flex-wrap gap-3 justify-center">
+      <div v-auto-animate class="flex flex-row flex-wrap gap-3 justify-center pb-20">
          <UCard
             v-if="data?.length"
             v-for="project in data ?? []"

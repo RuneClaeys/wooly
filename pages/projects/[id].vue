@@ -89,7 +89,7 @@ useDefaultLayout(() => ({
    <div>
       <LayoutHeading v-model:sorting="sorting" :title="$t('parts.part', 2)" />
 
-      <div v-auto-animate class="flex flex-row flex-wrap gap-3 justify-center">
+      <div v-auto-animate class="flex flex-row flex-wrap gap-3 justify-center pb-20">
          <UCard v-if="parts?.length" v-for="part in parts ?? []" :key="part.id" class="min-w-full md:min-w-96 cursor-pointer max-h-[90px]">
             <div class="flex flex-col gap-2">
                <div class="flex justify-between items-center">
