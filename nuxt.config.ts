@@ -12,6 +12,7 @@ export default defineNuxtConfig({
    ssr: false,
 
    modules: [
+      '@vueuse/nuxt',
       '@sidebase/nuxt-auth',
       '@formkit/auto-animate/nuxt',
       '@nuxt/ui',

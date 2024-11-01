@@ -24,7 +24,6 @@ const { data: parts, execute: refresh, pending } = projectRouter.partRouter.list
 
 //#region Add Part
 const showCeateProjectForm = ref(false);
-const sortDelay = ref<NodeJS.Timeout>();
 
 async function createPart(payload: { part: { name: string; counter: number }; done: () => void }) {
    const response = await projectRouter.partRouter.create.mutate({
@@ -45,15 +44,14 @@ async function deletePart(id: number) {
    });
 }
 
+const debouncedUpdate = useDebounceFn(async (part: Required<SelectPart>) => {
+   await projectRouter.partRouter.update.mutate({ ...part });
+}, 300);
+
 async function incrementOrDecrement(part: Required<SelectPart>, increment: boolean) {
    try {
       part.counter += increment ? 1 : -1;
-      await projectRouter.partRouter.update.mutate({ ...part });
-      if (sortDelay.value) clearTimeout(sortDelay.value);
-
-      sortDelay.value = setTimeout(() => {
-         refresh();
-      }, 1000);
+      debouncedUpdate(part);
    } catch {
       part.counter -= increment ? 1 : -1;
    }
