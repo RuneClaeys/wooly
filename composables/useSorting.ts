@@ -21,7 +21,7 @@ export const useSorting = (listKey: string) => {
    ];
 
    function getInitialValues() {
-      if (process.server) {
+      if (import.meta.server) {
          return {
             orderBy: (query.value.orderBy as OrderBy) ?? 'createdAt',
             order: (query.value.order as Order) ?? 'desc',

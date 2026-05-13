@@ -26,7 +26,7 @@ const root = computed(() => defaultLayoutProps.value?.root);
                <UButton
                   v-if="!root"
                   icon="i-heroicons-arrow-left-16-solid"
-                  color="black"
+                  color="neutral"
                   variant="ghost"
                   aria-label="Theme"
                   @click="navigateTo(navigateBackTo)"
@@ -41,7 +41,7 @@ const root = computed(() => defaultLayoutProps.value?.root);
                <UButton
                   :icon="isDark ? 'i-heroicons-moon-20-solid' : 'i-heroicons-sun-20-solid'"
                   variant="ghost"
-                  color="black"
+                  color="neutral"
                   aria-label="Theme"
                   @click="toggleColorMode"
                />
@@ -49,7 +49,7 @@ const root = computed(() => defaultLayoutProps.value?.root);
                   v-if="status === 'authenticated'"
                   icon="i-heroicons-cog-6-tooth-20-solid"
                   variant="ghost"
-                  color="black"
+                  color="neutral"
                   aria-label="Settings"
                   @click="$router.push('/settings')"
                />

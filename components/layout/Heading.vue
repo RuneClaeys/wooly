@@ -17,9 +17,9 @@ const emits = defineEmits(['update:sorting']);
 
 //#region
 const orderByOptions = computed(() => [
-   { name: t('generic.name'), value: 'name', order: 'asc' },
-   { name: t('filters.created-on'), value: 'createdAt', order: 'desc' },
-   { name: t('filters.last-changed-at'), value: 'updatedAt', order: 'desc' },
+   { label: t('generic.name'), value: 'name', order: 'asc' },
+   { label: t('filters.created-on'), value: 'createdAt', order: 'desc' },
+   { label: t('filters.last-changed-at'), value: 'updatedAt', order: 'desc' },
 ]);
 
 function setSorting(value: string) {
@@ -40,9 +40,8 @@ function setSorting(value: string) {
          <ClientOnly>
             <USelect
                :model-value="sorting.orderBy"
-               :options="orderByOptions"
+               :items="orderByOptions"
                :size="'2xs'"
-               option-attribute="name"
                @update:model-value="setSorting($event)"
             />
             <slot name="otherFilters"></slot>

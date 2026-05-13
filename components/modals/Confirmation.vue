@@ -10,7 +10,7 @@ function cancel() {
 </script>
 
 <template>
-   <UModal :model-value="showConfirmation" @close="confirmationPrompt?.onCancel">
+   <UModal :open="showConfirmation" @close="confirmationPrompt?.onCancel">
       <UCard>
          <template #header>
             <p>{{ confirmationPrompt?.title }}</p>
@@ -20,7 +20,7 @@ function cancel() {
 
          <template #footer>
             <div class="flex justify-between">
-               <UButton variant="ghost" color="gray" @click="cancel">
+               <UButton variant="ghost" color="neutral" @click="cancel">
                   {{ confirmationPrompt?.cancelText }}
                </UButton>
                <UButton v-if="confirmationPrompt?.onConfirm" color="primary" @click="confirmationPrompt.onConfirm(closeConfirmation)">

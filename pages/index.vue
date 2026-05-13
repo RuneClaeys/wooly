@@ -72,12 +72,11 @@ async function deleteProject(id: number) {
          <template #otherFilters>
             <USelect
                v-model="status"
-               :options="[
-                  { name: t('generic.active'), value: 'active' },
-                  { name: t('generic.completed'), value: 'finished' },
+               :items="[
+                  { label: t('generic.active'), value: 'active' },
+                  { label: t('generic.completed'), value: 'finished' },
                ]"
-               :size="'2xs'"
-               option-attribute="name"
+               size="2xs"
             />
          </template>
       </LayoutHeading>
@@ -87,8 +86,7 @@ async function deleteProject(id: number) {
             v-if="data?.length"
             v-for="project in data ?? []"
             :key="project.id"
-            class="min-w-full md:min-w-96 cursor-pointer max-h-[90px]"
-            :ui="{ background: 'bg-white dark:bg-gray-900 hover:bg-gray-100 dark:hover:bg-gray-800' }"
+            class="min-w-full md:min-w-96 cursor-pointer max-h-[90px] bg-white dark:bg-gray-900 hover:bg-gray-100 dark:hover:bg-gray-800"
             @click="$router.push({ name: 'projects-id', params: { id: project.id } })"
          >
             <div class="flex flex-col">
@@ -98,7 +96,7 @@ async function deleteProject(id: number) {
                      <UButton
                         icon="i-heroicons-pencil-16-solid"
                         variant="ghost"
-                        color="grey"
+                        color="neutral"
                         :aria-label="$t('actions.change')"
                         @click.stop="editProject(project)"
                      />
@@ -124,12 +122,11 @@ async function deleteProject(id: number) {
       </div>
 
       <UButton
-         class="fixed bottom-5 right-5 dark:bg-pink-900 dark:text-white"
+         class="fixed bottom-5 right-5 dark:bg-pink-900 dark:text-white rounded-full"
          size="xl"
          square
          icon="i-heroicons-plus-16-solid"
          :aria-label="$t('actions.create-type', { type: $t('projects.project') })"
-         :ui="{ rounded: 'rounded-full' }"
          @click="showCeateProjectForm = true"
       />
 

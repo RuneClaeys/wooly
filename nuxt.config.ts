@@ -1,6 +1,5 @@
 import { app } from './config/app.config';
 import { auth } from './config/auth.config';
-import { colorMode } from './config/color-mode.config';
 import { dayjs } from './config/dayjs.config';
 import { googleFonts } from './config/google-fonts.config';
 import { i18n } from './config/i18n.config';
@@ -11,6 +10,10 @@ export default defineNuxtConfig({
 
    ssr: false,
 
+   future: {
+      compatibilityVersion: 4,
+   },
+
    modules: [
       '@vueuse/nuxt',
       '@sidebase/nuxt-auth',
@@ -18,18 +21,15 @@ export default defineNuxtConfig({
       '@nuxt/ui',
       '@nuxt/image',
       '@nuxtjs/google-fonts',
-      '@vueuse/nuxt',
       '@vite-pwa/nuxt',
       '@nuxtjs/i18n',
       'dayjs-nuxt',
    ],
 
+   css: ['~/assets/css/tailwind.css'],
+
    build: {
       transpile: ['trpc-nuxt'],
-   },
-
-   experimental: {
-      typedPages: true,
    },
 
    routeRules: {
@@ -37,7 +37,6 @@ export default defineNuxtConfig({
    },
 
    auth,
-   colorMode,
    googleFonts,
    app,
    pwa,

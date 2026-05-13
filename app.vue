@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import type { SessionStatus } from '@sidebase/nuxt-auth/dist/runtime/types';
+import type { SessionStatus } from '@sidebase/nuxt-auth';
 
 const { setLocale } = useI18n();
 const { status } = useAuth();
@@ -19,13 +19,14 @@ watch(status, getUserInfo, { immediate: true });
 </script>
 
 <template>
-   <VitePwaManifest />
-   <UNotifications />
-   <ModalsConfirmation />
+   <UApp>
+      <VitePwaManifest />
+      <ModalsConfirmation />
 
-   <NuxtLayout>
-      <NuxtPage />
-   </NuxtLayout>
+      <NuxtLayout>
+         <NuxtPage />
+      </NuxtLayout>
+   </UApp>
 </template>
 
 <style>

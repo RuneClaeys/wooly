@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import type { FormError } from '@nuxt/ui/dist/runtime/types/form';
+import type { FormError } from '#ui/types';
 import type { SelectProject } from '~/db/schema';
 
 //#region Globals
@@ -44,24 +44,24 @@ function onSubmit() {
 </script>
 
 <template>
-   <UModal v-model="open">
+   <UModal v-model:open="open">
       <UCard>
          <template #header>
             <p>{{ $t('actions.create-type', { type: $t('projects.project') }) }}</p>
          </template>
 
          <UForm class="flex flex-col gap-3" :state="project" :validate="validate">
-            <UFormGroup :label="$t('generic.name')" name="name">
+            <UFormField :label="$t('generic.name')" name="name">
                <UInput v-model="project.name" />
-            </UFormGroup>
-            <UFormGroup class="flex gap-3" :label="$t('generic.completed')" name="finished">
-               <UToggle v-model="project.finished" />
-            </UFormGroup>
+            </UFormField>
+            <UFormField class="flex gap-3" :label="$t('generic.completed')" name="finished">
+               <USwitch v-model="project.finished" />
+            </UFormField>
          </UForm>
 
          <template #footer>
             <div class="flex justify-between">
-               <UButton variant="ghost" color="gray" @click="open = false">{{ $t('actions.cancel') }}</UButton>
+               <UButton variant="ghost" color="neutral" @click="open = false">{{ $t('actions.cancel') }}</UButton>
                <UButton color="primary" @click="onSubmit">{{ $t('actions.save') }}</UButton>
             </div>
          </template>

@@ -93,7 +93,7 @@ useDefaultLayout(() => ({
                <div class="flex justify-between items-center">
                   <p>{{ part.name }}</p>
                   <div class="flex gap-1">
-                     <UButton icon="i-heroicons-pencil-16-solid" variant="ghost" color="grey" @click.stop="editPart(part)" />
+                     <UButton icon="i-heroicons-pencil-16-solid" variant="ghost" color="neutral" @click.stop="editPart(part)" />
                      <UButton icon="i-heroicons-trash-16-solid" variant="ghost" color="red" @click.stop="deletePart(part.id)" />
                   </div>
                </div>
@@ -125,11 +125,10 @@ useDefaultLayout(() => ({
       </div>
 
       <UButton
-         class="fixed bottom-5 right-5"
+         class="fixed bottom-5 right-5 rounded-full"
          size="xl"
          square
          icon="i-heroicons-plus-16-solid"
-         :ui="{ rounded: 'rounded-full' }"
          :aria-label="$t('actions.create-type', { type: $t('parts.part') })"
          @click="showCeateProjectForm = true"
       />

@@ -6,8 +6,8 @@ const { locale: changeDayjsLocale } = useDayjs();
 const { locale, setLocale } = useI18n();
 
 const locales = computed(() => [
-   { value: 'en', name: 'English' },
-   { value: 'nl', name: 'Nederlands' },
+   { value: 'en', label: 'English' },
+   { value: 'nl', label: 'Nederlands' },
 ]);
 
 function updateLocale(locale: 'en' | 'nl') {
@@ -26,9 +26,9 @@ useDefaultLayout(() => ({
    <div class="flex flex-col py-5 gap-5">
       <p>{{ $t('settings.setting', 2) }}</p>
 
-      <UFormGroup :label="$t('generic.language')" :name="'language'" :class="'max-w-60'">
-         <USelect :model-value="locale" :name="'language'" :options="locales" option-attribute="name" @update:model-value="updateLocale" />
-      </UFormGroup>
+      <UFormField :label="$t('generic.language')" :name="'language'" :class="'max-w-60'">
+         <USelect :model-value="locale" :name="'language'" :items="locales" @update:model-value="updateLocale" />
+      </UFormField>
 
       <UButton @click="signOut()" variant="link" :icon="'i-heroicons-arrow-right-end-on-rectangle-16-solid'" :class="'max-w-40 p-0'">
          {{ $t('settings.logout') }}
