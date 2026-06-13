@@ -4,6 +4,11 @@ import type { SelectProject } from '~/db/schema';
 const { projectRouter } = useTrpcClient();
 const { promptDeleteConfirmation } = useConfirmation();
 const { t } = useI18n();
+const colorMode = useColorMode();
+
+const isDark = computed(() => colorMode.value === 'dark');
+const fabColor = computed(() => (isDark.value ? 'neutral' : 'primary'));
+const fabVariant = computed(() => (isDark.value ? 'soft' : 'solid'));
 
 //#region List Projects
 const status = ref<'active' | 'finished'>('active');
@@ -77,16 +82,16 @@ async function deleteProject(id: number) {
             {{ error.message }}
          </div>
 
-         <div v-auto-animate class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3" :class="{ 'opacity-80': pending }">
+         <div v-auto-animate class="grid grid-cols-1 gap-3" :class="{ 'opacity-80': pending }">
             <UCard
                v-for="project in data ?? []"
                :key="project.id"
-               class="wooly-shell wooly-pop cursor-pointer transition duration-200 hover:-translate-y-0.5"
+               class="wooly-shell wooly-pop w-full cursor-pointer transition duration-200 hover:-translate-y-0.5"
                @click="$router.push({ name: 'projects-id', params: { id: project.id } })"
             >
                <div class="flex items-start justify-between gap-2">
                   <div class="space-y-2">
-                     <p class="wooly-title text-base text-pink-900 dark:text-pink-100">{{ project.name }}</p>
+                     <p class="wooly-title text-base">{{ project.name }}</p>
                      <UBadge :color="project.finished ? 'neutral' : 'success'" variant="soft" size="sm">
                         {{ project.finished ? $t('generic.completed') : $t('generic.active') }}
                      </UBadge>
@@ -117,14 +122,15 @@ async function deleteProject(id: number) {
          </div>
 
          <div v-if="!pending && !data?.length" class="wooly-shell px-6 py-10 text-center">
-            <p class="text-pink-900 dark:text-pink-100">{{ $t('generic.no-results-for-type', { type: $t('projects.project', 2) }) }}</p>
+            <p class="wooly-muted">{{ $t('generic.no-results-for-type', { type: $t('projects.project', 2) }) }}</p>
          </div>
 
          <UButton
             class="wooly-fab tap-target tap-target-icon"
             size="xl"
             icon="i-heroicons-plus-16-solid"
-            color="primary"
+            :color="fabColor"
+            :variant="fabVariant"
             :aria-label="$t('actions.create-type', { type: $t('projects.project') })"
             @click="showCreateProjectForm = true"
          />

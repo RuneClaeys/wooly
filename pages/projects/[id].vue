@@ -6,6 +6,11 @@ const route = useRoute('projects-id');
 const { projectRouter, partRouter } = useTrpcClient();
 const { promptDeleteConfirmation } = useConfirmation();
 const { t } = useI18n();
+const colorMode = useColorMode();
+
+const isDark = computed(() => colorMode.value === 'dark');
+const fabColor = computed(() => (isDark.value ? 'neutral' : 'primary'));
+const fabVariant = computed(() => (isDark.value ? 'soft' : 'solid'));
 //#endregion
 
 //#region Get Project
@@ -84,8 +89,8 @@ function editPart(part: SelectPart) {
       <div class="space-y-4 pb-[calc(6.5rem+env(safe-area-inset-bottom))]">
          <LayoutHeading v-model:sorting="sorting" :title="$t('parts.part', 2)" />
 
-         <div v-auto-animate class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3" :class="{ 'opacity-75': pending }">
-            <UCard v-for="part in parts ?? []" :key="part.id" class="wooly-shell wooly-pop">
+         <div v-auto-animate class="grid grid-cols-1 gap-3" :class="{ 'opacity-75': pending }">
+            <UCard v-for="part in parts ?? []" :key="part.id" class="wooly-shell wooly-pop w-full">
                <div class="space-y-4">
                   <div class="flex items-start justify-between gap-2">
                      <p class="wooly-title text-base text-pink-900 dark:text-pink-100">{{ part.name }}</p>
@@ -153,7 +158,8 @@ function editPart(part: SelectPart) {
             class="wooly-fab tap-target tap-target-icon"
             size="xl"
             icon="i-heroicons-plus-16-solid"
-            color="primary"
+            :color="fabColor"
+            :variant="fabVariant"
             :aria-label="$t('actions.create-type', { type: $t('parts.part') })"
             @click="showCreatePartForm = true"
          />

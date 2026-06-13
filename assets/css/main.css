@@ -3,40 +3,81 @@
 
 :root {
    --wooly-bg-1: #fff7fb;
-   --wooly-bg-2: #fff0f8;
-   --wooly-bg-3: #ffe2f2;
-   --wooly-card: rgba(255, 255, 255, 0.86);
-   --wooly-card-border: rgba(245, 160, 201, 0.45);
-   --wooly-shadow: 0 14px 34px rgba(204, 84, 149, 0.16);
+   --wooly-bg-2: #ffeef8;
+   --wooly-bg-3: #ffd8ed;
+   --wooly-bg-4: #fffdfd;
+   --wooly-card: rgba(255, 255, 255, 0.88);
+   --wooly-card-border: rgba(245, 160, 201, 0.42);
+   --wooly-shell-highlight: rgba(255, 255, 255, 0.6);
+   --wooly-shadow: 0 16px 40px rgba(204, 84, 149, 0.2);
+   --wooly-text-main: #4a1b3e;
+   --wooly-text-soft: #7a3565;
+   --wooly-pattern: rgba(239, 113, 174, 0.07);
 }
 
 .dark {
-   --wooly-bg-1: #241427;
-   --wooly-bg-2: #2c1830;
-   --wooly-bg-3: #3a1f3d;
-   --wooly-card: rgba(54, 28, 58, 0.76);
-   --wooly-card-border: rgba(248, 178, 216, 0.26);
-   --wooly-shadow: 0 18px 42px rgba(0, 0, 0, 0.34);
+   --wooly-bg-1: #0f1019;
+   --wooly-bg-2: #1a1e31;
+   --wooly-bg-3: #2a2440;
+   --wooly-bg-4: #101522;
+   --wooly-card: rgba(29, 33, 52, 0.78);
+   --wooly-card-border: rgba(255, 167, 220, 0.24);
+   --wooly-shell-highlight: rgba(255, 255, 255, 0.06);
+   --wooly-shadow: 0 22px 56px rgba(0, 0, 0, 0.5);
+   --wooly-text-main: #fbd5f1;
+   --wooly-text-soft: #f4b5de;
+   --wooly-pattern: rgba(255, 196, 231, 0.07);
 }
 
 body {
+   position: relative;
    min-height: 100vh;
+   color: var(--wooly-text-main);
    background:
       radial-gradient(circle at 12% 15%, var(--wooly-bg-3), transparent 42%),
-      radial-gradient(circle at 82% 4%, var(--wooly-bg-2), transparent 34%), linear-gradient(180deg, var(--wooly-bg-1) 0%, #ffffff 100%);
+      radial-gradient(circle at 82% 4%, var(--wooly-bg-2), transparent 34%),
+      linear-gradient(180deg, var(--wooly-bg-1) 0%, var(--wooly-bg-4) 100%);
+}
+
+body::before {
+   content: '';
+   position: fixed;
+   inset: 0;
+   pointer-events: none;
+   z-index: 0;
+   opacity: 0.55;
+   background:
+      repeating-linear-gradient(130deg, transparent 0, transparent 14px, var(--wooly-pattern) 14px, var(--wooly-pattern) 16px),
+      repeating-linear-gradient(-130deg, transparent 0, transparent 14px, var(--wooly-pattern) 14px, var(--wooly-pattern) 16px);
 }
 
 .wooly-shell {
+   position: relative;
+   overflow: hidden;
    border: 1px solid var(--wooly-card-border);
    border-radius: 1.4rem;
    background: var(--wooly-card);
-   backdrop-filter: blur(6px);
+   backdrop-filter: blur(10px) saturate(120%);
    box-shadow: var(--wooly-shadow);
+}
+
+.wooly-shell::before {
+   content: '';
+   position: absolute;
+   inset: 0;
+   pointer-events: none;
+   border-radius: inherit;
+   background: linear-gradient(160deg, var(--wooly-shell-highlight) 0%, transparent 42%);
 }
 
 .wooly-title {
    font-weight: 700;
    letter-spacing: 0.01em;
+   color: var(--wooly-text-main);
+}
+
+.wooly-muted {
+   color: var(--wooly-text-soft);
 }
 
 .tap-target {
@@ -58,6 +99,19 @@ body {
    bottom: calc(env(safe-area-inset-bottom) + 1rem);
    border-radius: 9999px;
    box-shadow: var(--wooly-shadow);
+}
+
+.dark .wooly-fab {
+   border: 1px solid rgba(255, 178, 226, 0.28);
+   box-shadow: 0 16px 42px rgba(4, 7, 16, 0.5);
+}
+
+.wooly-orb {
+   animation: woolyFloat 9s ease-in-out infinite;
+}
+
+.wooly-orb-slow {
+   animation-duration: 12s;
 }
 
 @media (min-width: 640px) {
@@ -98,9 +152,22 @@ body {
    }
 }
 
+@keyframes woolyFloat {
+   0%,
+   100% {
+      transform: translateY(0) scale(1);
+   }
+
+   50% {
+      transform: translateY(-14px) scale(1.04);
+   }
+}
+
 @media (prefers-reduced-motion: reduce) {
    .wooly-fade-up,
-   .wooly-pop {
+   .wooly-pop,
+   .wooly-orb,
+   .wooly-orb-slow {
       animation: none;
    }
 }
