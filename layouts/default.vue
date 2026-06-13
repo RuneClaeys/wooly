@@ -26,7 +26,7 @@ defineProps({
       </div>
 
       <header class="sticky top-0 z-20 pt-[max(0.75rem,env(safe-area-inset-top))]">
-         <UContainer class="w-full max-w-[1200px]">
+         <UContainer class="w-full max-w-300">
             <div class="wooly-shell wooly-pop flex items-center justify-between gap-3 px-3 py-2 md:px-5 md:py-3">
                <div class="flex min-w-16 items-center justify-start gap-2">
                   <UBadge variant="soft" color="primary" class="hidden md:inline-flex">Wooly</UBadge>
@@ -72,12 +72,11 @@ defineProps({
                   />
                </div>
             </div>
-
          </UContainer>
       </header>
 
       <main class="relative z-10 pt-5 md:pt-7">
-         <UContainer class="w-full max-w-[1200px]">
+         <UContainer class="w-full max-w-300">
             <section class="wooly-fade-up">
                <slot />
             </section>

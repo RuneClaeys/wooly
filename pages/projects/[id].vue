@@ -86,7 +86,7 @@ function editPart(part: SelectPart) {
 
 <template>
    <NuxtLayout :root="false" :title="data?.name ?? $t('generic.loading')" navigate-back-to="/">
-      <div class="space-y-4 pb-[calc(6.5rem+env(safe-area-inset-bottom))]">
+      <div class="space-y-4 pb-[calc(9rem+env(safe-area-inset-bottom))]">
          <LayoutHeading v-model:sorting="sorting" :title="$t('parts.part', 2)" />
 
          <div v-auto-animate class="grid grid-cols-1 gap-3" :class="{ 'opacity-75': pending }">

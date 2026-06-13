@@ -52,11 +52,11 @@ function onSubmit() {
       </template>
 
       <template #footer>
-         <div class="flex flex-col-reverse justify-end gap-2 sm:flex-row">
-            <UButton class="tap-target w-full sm:w-auto" variant="soft" color="neutral" @click="open = false">{{
+         <div class="flex justify-end gap-2">
+            <UButton class="tap-target" variant="soft" color="neutral" @click="open = false">{{
                $t('actions.cancel')
             }}</UButton>
-            <UButton class="tap-target w-full sm:w-auto" color="primary" @click="onSubmit">{{ $t('actions.save') }}</UButton>
+            <UButton class="tap-target" color="primary" @click="onSubmit">{{ $t('actions.save') }}</UButton>
          </div>
       </template>
    </UModal>

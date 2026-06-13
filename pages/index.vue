@@ -71,7 +71,7 @@ async function deleteProject(id: number) {
 
 <template>
    <NuxtLayout>
-      <div class="space-y-4 pb-[calc(6.5rem+env(safe-area-inset-bottom))]">
+      <div class="space-y-4 pb-[calc(9rem+env(safe-area-inset-bottom))]">
          <LayoutHeading v-model:sorting="sorting" :title="$t('projects.project', 2)">
             <template #otherFilters>
                <USelect v-model="status" :items="statusOptions" size="md" class="w-full md:w-44" />
