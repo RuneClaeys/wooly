@@ -53,9 +53,7 @@ function onSubmit() {
 
       <template #footer>
          <div class="flex justify-end gap-2">
-            <UButton class="tap-target" variant="soft" color="neutral" @click="open = false">{{
-               $t('actions.cancel')
-            }}</UButton>
+            <UButton class="tap-target" variant="soft" color="neutral" @click="open = false">{{ $t('actions.cancel') }}</UButton>
             <UButton class="tap-target" color="primary" @click="onSubmit">{{ $t('actions.save') }}</UButton>
          </div>
       </template>
