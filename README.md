@@ -73,3 +73,28 @@ bun run preview
 ```
 
 Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.
+
+## Database (Local)
+
+Set `POSTGRES_URL` in your environment, then run migrations and seed data.
+
+```bash
+npm run db:push
+npm run db:seed
+```
+
+Seeder modes:
+
+```bash
+# Reset tables and seed (default)
+npm run db:seed
+
+# Keep current data and append/update starter records
+npm run db:seed:append
+```
+
+The starter seed creates:
+
+- 2 users (`alex@example.local`, `noor@example.local`)
+- 5 projects (mix of active and finished)
+- 13 parts across those projects
