@@ -8,6 +8,8 @@ import { pwa } from './config/pwa.config';
 export default defineNuxtConfig({
    ssr: false,
 
+   css: ['~/assets/css/main.css'],
+
    devtools: { enabled: true },
 
    modules: [
@@ -19,6 +21,7 @@ export default defineNuxtConfig({
       '@vueuse/nuxt',
       '@vite-pwa/nuxt',
       '@nuxtjs/i18n',
+      'dayjs-nuxt',
    ],
 
    build: {
@@ -39,4 +42,9 @@ export default defineNuxtConfig({
    app,
    pwa,
    i18n,
+
+   dayjs: {
+      locales: ['en', 'nl'],
+      defaultLocale: 'en',
+   },
 });

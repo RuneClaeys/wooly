@@ -18,12 +18,12 @@ const { data, execute: refresh, pending, error } = projectRouter.list.useQuery(i
 //#endregion
 
 //#region Create Project
-const showCeateProjectForm = ref(false);
+const showCreateProjectForm = ref(false);
 
 async function createProject(payload: { project: Parameters<typeof projectRouter.create.mutate>[0]; done: () => void }) {
    const response = await projectRouter.create.mutate(payload.project);
    if (response) refresh();
-   showCeateProjectForm.value = false;
+   showCreateProjectForm.value = false;
    payload.done();
 }
 //#endregion
@@ -106,10 +106,10 @@ async function deleteProject(id: number) {
             square
             icon="i-heroicons-plus-16-solid"
             :ui="{ rounded: 'rounded-full' }"
-            @click="showCeateProjectForm = true"
+            @click="showCreateProjectForm = true"
          />
 
-         <ModalsProject v-model="showCeateProjectForm" @save-project="createProject" />
+         <ModalsProject v-model="showCreateProjectForm" @save-project="createProject" />
          <ModalsProject v-model="showEditProjectForm" :initial-project="projectToEdit" @save-project="changeProject" />
       </NuxtLayout>
    </div>

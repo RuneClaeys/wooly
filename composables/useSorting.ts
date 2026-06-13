@@ -9,17 +9,6 @@ export const useSorting = (listKey: string) => {
 
    const query = computed(() => route.query);
 
-   const ORDER_BY = [
-      { name: 'Naam', value: 'name' },
-      { name: 'Aangemaakt op', value: 'createdAt' },
-      { name: 'Laast bewerkt', value: 'updatedAt' },
-   ];
-
-   const ORDER = [
-      { name: 'Oplopend', value: 'asc' },
-      { name: 'Aflopend', value: 'desc' },
-   ];
-
    function getInitialValues() {
       if (process.server) {
          return {
@@ -47,8 +36,6 @@ export const useSorting = (listKey: string) => {
    watch(sorting, sortingChanged, { deep: true });
 
    return {
-      ORDER_BY,
-      ORDER,
       query,
       sorting,
    };

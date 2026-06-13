@@ -1,100 +1,96 @@
-# Nuxt 3 Minimal Starter
+# Wooly
 
-Look at the [Nuxt 3 documentation](https://nuxt.com/docs/getting-started/introduction) to learn more.
+Wooly is a Nuxt 3 + TypeScript app for tracking projects and their parts.
 
-## Setup
+## Stack
 
-Make sure to install the dependencies:
+- Nuxt 3 + Vue 3 + TypeScript
+- tRPC (client/server contract)
+- Drizzle ORM + PostgreSQL
+- Auth.js via `@sidebase/nuxt-auth` (Google provider)
+- Nuxt UI + TailwindCSS
+
+## Requirements
+
+- Node.js 20+
+- A PostgreSQL database
+- Google OAuth credentials
+
+## Environment Variables
+
+Create a `.env` file with:
 
 ```bash
-# npm
+POSTGRES_URL=postgres://...
+AUTH_SECRET=...
+AUTH_ORIGIN=http://localhost:3000/api/auth
+GOOGLE_AUTH_CLIENT_ID=...
+GOOGLE_AUTH_CLIENT_SECRET=...
+```
+
+Notes:
+
+- `AUTH_ORIGIN` must include `/api/auth` for auth callbacks.
+- Seeder and Drizzle both use `POSTGRES_URL`.
+
+## Install
+
+```bash
 npm install
-
-# pnpm
-pnpm install
-
-# yarn
-yarn install
-
-# bun
-bun install
 ```
 
-## Development Server
-
-Start the development server on `http://localhost:3000`:
+## Run Locally
 
 ```bash
-# npm
 npm run dev
-
-# pnpm
-pnpm run dev
-
-# yarn
-yarn dev
-
-# bun
-bun run dev
 ```
 
-## Production
+App runs on `http://localhost:3000`.
 
-Build the application for production:
+## Database
+
+Generate migrations:
 
 ```bash
-# npm
-npm run build
-
-# pnpm
-pnpm run build
-
-# yarn
-yarn build
-
-# bun
-bun run build
+npm run db:migrate
 ```
 
-Locally preview production build:
-
-```bash
-# npm
-npm run preview
-
-# pnpm
-pnpm run preview
-
-# yarn
-yarn preview
-
-# bun
-bun run preview
-```
-
-Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.
-
-## Database (Local)
-
-Set `POSTGRES_URL` in your environment, then run migrations and seed data.
+Push schema to database:
 
 ```bash
 npm run db:push
-npm run db:seed
 ```
 
-Seeder modes:
+Open Drizzle Studio:
 
 ```bash
-# Reset tables and seed (default)
+npm run drizzle:studio
+```
+
+Seed database:
+
+```bash
+# reset + seed default records
 npm run db:seed
 
-# Keep current data and append/update starter records
+# append/update without reset
 npm run db:seed:append
 ```
 
-The starter seed creates:
+## Build And Preview
 
-- 2 users (`alex@example.local`, `noor@example.local`)
-- 5 projects (mix of active and finished)
-- 13 parts across those projects
+```bash
+npm run build
+npm run preview
+```
+
+## Scripts
+
+- `npm run dev`: start local dev server
+- `npm run build`: build production app
+- `npm run preview`: preview production build
+- `npm run db:migrate`: generate Drizzle migration files
+- `npm run db:push`: apply schema directly to DB
+- `npm run drizzle:studio`: open DB studio
+- `npm run db:seed`: reset and seed sample data
+- `npm run db:seed:append`: append/update sample data

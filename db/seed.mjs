@@ -1,4 +1,23 @@
-import { sql } from '@vercel/postgres';
+import 'dotenv/config';
+import { Pool } from 'pg';
+
+const pool = new Pool({
+   host: process.env.DB_HOST || 'localhost',
+   port: parseInt(process.env.DB_PORT || '5432'),
+   user: process.env.DB_USER || 'wooly_user',
+   password: process.env.DB_PASSWORD || 'wooly_password',
+   database: process.env.DB_NAME || 'wooly',
+   ssl: false,
+});
+
+async function query(text, params) {
+   const client = await pool.connect();
+   try {
+      return await client.query(text, params);
+   } finally {
+      client.release();
+   }
+}
 
 const shouldReset = !process.argv.includes('--append');
 
@@ -44,58 +63,49 @@ const parts = [
 ];
 
 async function seed() {
-   if (!process.env.POSTGRES_URL) {
-      throw new Error('POSTGRES_URL is missing. Add it to your environment before running the seeder.');
-   }
-
-   await sql`BEGIN`;
-
+   const client = await pool.connect();
+   
    try {
+      await client.query('BEGIN');
+
       if (shouldReset) {
-         await sql`TRUNCATE TABLE parts, projects, users RESTART IDENTITY CASCADE`;
+         await client.query('TRUNCATE TABLE parts, projects, users RESTART IDENTITY CASCADE');
       }
 
       for (const user of users) {
-         await sql`
-            INSERT INTO users (id, first_name, last_name, email, locale)
-            VALUES (${user.id}, ${user.firstName}, ${user.lastName}, ${user.email}, ${user.locale})
-            ON CONFLICT (id) DO UPDATE
-            SET
-               first_name = EXCLUDED.first_name,
-               last_name = EXCLUDED.last_name,
-               email = EXCLUDED.email,
-               locale = EXCLUDED.locale
-         `;
+         await client.query(
+            `INSERT INTO users (id, first_name, last_name, email, locale)
+             VALUES ($1, $2, $3, $4, $5)
+             ON CONFLICT (id) DO UPDATE
+             SET first_name = EXCLUDED.first_name, last_name = EXCLUDED.last_name, email = EXCLUDED.email, locale = EXCLUDED.locale`,
+            [user.id, user.firstName, user.lastName, user.email, user.locale]
+         );
       }
 
       const projectIdByKey = new Map();
 
       for (const project of projects) {
-         const existing = await sql`
-            SELECT id
-            FROM projects
-            WHERE name = ${project.name} AND user_id = ${project.userId}
-            LIMIT 1
-         `;
+         const existing = await client.query(
+            'SELECT id FROM projects WHERE name = $1 AND user_id = $2 LIMIT 1',
+            [project.name, project.userId]
+         );
 
          if (existing.rows.length > 0) {
             const projectId = existing.rows[0].id;
             projectIdByKey.set(project.key, projectId);
 
-            await sql`
-               UPDATE projects
-               SET finished = ${project.finished}, updated_at = NOW()
-               WHERE id = ${projectId}
-            `;
+            await client.query(
+               'UPDATE projects SET finished = $1, updated_at = NOW() WHERE id = $2',
+               [project.finished, projectId]
+            );
 
             continue;
          }
 
-         const inserted = await sql`
-            INSERT INTO projects (name, finished, user_id)
-            VALUES (${project.name}, ${project.finished}, ${project.userId})
-            RETURNING id
-         `;
+         const inserted = await client.query(
+            'INSERT INTO projects (name, finished, user_id) VALUES ($1, $2, $3) RETURNING id',
+            [project.name, project.finished, project.userId]
+         );
 
          projectIdByKey.set(project.key, inserted.rows[0].id);
       }
@@ -107,13 +117,13 @@ async function seed() {
             throw new Error(`No project id found for key: ${part.projectKey}`);
          }
 
-         await sql`
-            INSERT INTO parts (name, count, project_id)
-            VALUES (${part.name}, ${part.counter}, ${projectId})
-         `;
+         await client.query(
+            'INSERT INTO parts (name, count, project_id) VALUES ($1, $2, $3)',
+            [part.name, part.counter, projectId]
+         );
       }
 
-      await sql`COMMIT`;
+      await client.query('COMMIT');
 
       console.log('Seed completed successfully.');
       console.log(`Users: ${users.length}`);
@@ -121,8 +131,11 @@ async function seed() {
       console.log(`Parts: ${parts.length}`);
       console.log(shouldReset ? 'Mode: reset + seed' : 'Mode: append seed');
    } catch (error) {
-      await sql`ROLLBACK`;
+      await client.query('ROLLBACK');
       throw error;
+   } finally {
+      client.release();
+      await pool.end();
    }
 }
 

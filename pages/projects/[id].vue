@@ -3,7 +3,7 @@ import type { SelectPart } from '~/db/schema';
 
 //#region Globals
 const route = useRoute('projects-id');
-const { projectRouter } = useTrpcClient();
+const { projectRouter, partRouter } = useTrpcClient();
 const { promptDeleteConfirmation } = useConfirmation();
 const { t } = useI18n();
 //#endregion
@@ -18,27 +18,27 @@ const input = computed(() => ({
    sorting: query.value,
 }));
 
-const { data: parts, execute: refresh, pending } = projectRouter.partRouter.list.useQuery(input, { watch: [input], deep: true });
+const { data: parts, execute: refresh, pending } = partRouter.list.useQuery(input, { watch: [input], deep: true });
 //#endregion
 
 //#region Add Part
-const showCeateProjectForm = ref(false);
+const showCreatePartForm = ref(false);
 const sortDelay = ref<NodeJS.Timeout>();
 
 async function createPart(payload: { part: { name: string; counter: number }; done: () => void }) {
-   const response = await projectRouter.partRouter.create.mutate({
+   const response = await partRouter.create.mutate({
       projectId: +route.params.id,
       name: payload.part.name,
       counter: payload.part.counter,
    });
 
    if (response) refresh();
-   showCeateProjectForm.value = false;
+   showCreatePartForm.value = false;
 }
 
 async function deletePart(id: number) {
    promptDeleteConfirmation(t('parts.part'), async (done) => {
-      await projectRouter.partRouter.delete.mutate(id);
+      await partRouter.delete.mutate(id);
       done();
       parts.value = (parts.value ?? []).filter((part) => part.id !== id);
    });
@@ -47,7 +47,7 @@ async function deletePart(id: number) {
 async function incrementOrDecrement(part: Required<SelectPart>, increment: boolean) {
    try {
       part.counter += increment ? 1 : -1;
-      await projectRouter.partRouter.update.mutate({ ...part });
+      await partRouter.update.mutate({ ...part });
       if (sortDelay.value) clearTimeout(sortDelay.value);
 
       sortDelay.value = setTimeout(() => {
@@ -64,7 +64,7 @@ const showEditProjectForm = ref(false);
 const partToEdit = ref<SelectPart | undefined>(undefined);
 
 async function changePart(payload: { part: { name: string; counter: number }; done: () => void }) {
-   const response = await projectRouter.partRouter.update.mutate({ ...payload.part, id: partToEdit.value!.id });
+   const response = await partRouter.update.mutate({ ...payload.part, id: partToEdit.value!.id });
    if (response) refresh();
    showEditProjectForm.value = false;
    payload.done();
@@ -129,10 +129,10 @@ function editPart(part: SelectPart) {
             square
             icon="i-heroicons-plus-16-solid"
             :ui="{ rounded: 'rounded-full' }"
-            @click="showCeateProjectForm = true"
+            @click="showCreatePartForm = true"
          />
 
-         <ModalsPart v-model="showCeateProjectForm" @save-part="createPart" />
+         <ModalsPart v-model="showCreatePartForm" @save-part="createPart" />
          <ModalsPart v-model="showEditProjectForm" :initial-part="partToEdit" @save-part="changePart" />
       </NuxtLayout>
    </div>

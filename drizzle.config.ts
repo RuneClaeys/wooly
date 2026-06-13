@@ -5,7 +5,12 @@ export default {
    schema: './db/schema.ts',
    dialect: 'postgresql',
    dbCredentials: {
-      uri: process.env.PLANETSCALE_DATABASE_URL as string,
+      host: process.env.DB_HOST || 'localhost',
+      port: parseInt(process.env.DB_PORT || '5432'),
+      user: process.env.DB_USER || 'postgres',
+      password: process.env.DB_PASSWORD || 'postgres',
+      database: process.env.DB_NAME || 'wooly',
+      ssl: false,
    },
    out: './db/migrations',
 } satisfies Config;
