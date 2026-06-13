@@ -5,8 +5,8 @@ const { userRouter } = useTrpcClient();
 const { locale, setLocale } = useI18n();
 
 const locales = computed(() => [
-   { value: 'en', name: 'English' },
-   { value: 'nl', name: 'Nederlands' },
+   { value: 'en', label: 'English' },
+   { value: 'nl', label: 'Nederlands' },
 ]);
 
 function updateLocale(locale: 'en' | 'nl') {
@@ -16,25 +16,29 @@ function updateLocale(locale: 'en' | 'nl') {
 </script>
 
 <template>
-   <div>
-      <NuxtLayout :root="false">
-         <div class="flex flex-col p-5 gap-5">
-            <p>{{ $t('settings.setting', 2) }}</p>
+   <NuxtLayout :root="false" :title="$t('settings.setting', 2)">
+      <div class="mx-auto max-w-2xl">
+         <UCard class="wooly-shell wooly-pop">
+            <template #header>
+               <h2 class="wooly-title text-lg text-pink-900 dark:text-pink-100">{{ $t('settings.setting', 2) }}</h2>
+            </template>
 
-            <UFormGroup :label="$t('generic.language')" :name="'language'" :class="'max-w-60'">
-               <USelect
-                  :model-value="locale"
-                  :name="'language'"
-                  :options="locales"
-                  option-attribute="name"
-                  @update:model-value="updateLocale"
-               />
-            </UFormGroup>
+            <div class="flex flex-col gap-5">
+               <UFormField :label="$t('generic.language')" name="language" class="max-w-xs">
+                  <USelect :model-value="locale" :items="locales" @update:model-value="updateLocale" />
+               </UFormField>
 
-            <UButton @click="signOut()" variant="link" :icon="'i-heroicons-arrow-right-end-on-rectangle-16-solid'" :class="'max-w-40 p-0'">
-               {{ $t('settings.logout') }}
-            </UButton>
-         </div>
-      </NuxtLayout>
-   </div>
+               <UButton
+                  @click="signOut()"
+                  variant="soft"
+                  color="neutral"
+                  icon="i-heroicons-arrow-right-end-on-rectangle-16-solid"
+                  class="max-w-44"
+               >
+                  {{ $t('settings.logout') }}
+               </UButton>
+            </div>
+         </UCard>
+      </div>
+   </NuxtLayout>
 </template>

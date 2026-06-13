@@ -1,30 +1,26 @@
 <script lang="ts" setup>
-import type { FormError } from '@nuxt/ui/dist/runtime/types/form';
 import type { SelectProject } from '~/db/schema';
 
-//#region Globals
 const { t } = useI18n();
-//#endregion
 
-//#region Props & Emits
 const open = defineModel('modelValue', { default: false });
 const props = defineProps<{ initialProject?: SelectProject }>();
 const emits = defineEmits<{ (e: 'save-project', payload: { id?: number; project: typeof project.value; done: () => void }): void }>();
-//#endregion
 
-//#region State
 const project = ref({ name: props.initialProject?.name ?? '', finished: props.initialProject?.finished ?? false });
+
+const modalTitle = computed(() => (props.initialProject ? t('actions.edit-project') : t('actions.create-project')));
 
 watch(
    () => props.initialProject,
    (initialProject) => {
       project.value = { name: initialProject?.name ?? '', finished: initialProject?.finished ?? false };
-   }
+   },
 );
 
-const validate = (state: any): FormError[] => {
-   const errors = [];
-   if (!state.name) errors.push({ path: 'name', message: t('form.field-required') });
+const validate = (state: typeof project.value) => {
+   const errors: Array<{ name: string; message: string }> = [];
+   if (!state.name) errors.push({ name: 'name', message: t('form.field-required') });
 
    return errors;
 };
@@ -39,32 +35,32 @@ function onSubmit() {
       },
    });
 }
-
-//#endregion
 </script>
 
 <template>
-   <UModal v-model="open" :fullscreen="true">
-      <UCard>
-         <template #header>
-            <p>{{ $t('actions.create-type', { type: $t('projects.project') }) }}</p>
-         </template>
+   <UModal v-model:open="open" :title="modalTitle" :ui="{ content: 'mx-2 w-[calc(100%-1rem)] sm:mx-0 sm:max-w-lg' }">
+      <template #body>
+         <UForm class="flex flex-col gap-4" :state="project" :validate="validate">
+            <UFormField :label="$t('generic.name')" name="name" required>
+               <UInput v-model="project.name" class="w-full" />
+            </UFormField>
 
-         <UForm class="flex flex-col gap-3" :state="project" :validate="validate">
-            <UFormGroup :label="$t('generic.name')" name="name">
-               <UInput v-model="project.name" />
-            </UFormGroup>
-            <UFormGroup class="flex gap-3" :label="$t('generic.completed')" name="finished">
-               <UToggle v-model="project.finished" />
-            </UFormGroup>
+            <UFormField class="rounded-xl bg-pink-50/70 p-3 dark:bg-pink-950/30" :label="$t('generic.completed')" name="finished">
+               <div class="flex items-center justify-between gap-3">
+                  <p class="text-sm text-pink-900 dark:text-pink-100">{{ $t('generic.status') }}</p>
+                  <USwitch v-model="project.finished" color="primary" class="tap-target" />
+               </div>
+            </UFormField>
          </UForm>
+      </template>
 
-         <template #footer>
-            <div class="flex justify-end">
-               <UButton variant="ghost" color="gray" @click="open = false">{{ $t('actions.cancel') }}</UButton>
-               <UButton color="primary" @click="onSubmit">{{ $t('actions.save') }}</UButton>
-            </div>
-         </template>
-      </UCard>
+      <template #footer>
+         <div class="flex flex-col-reverse justify-end gap-2 sm:flex-row">
+            <UButton class="tap-target w-full sm:w-auto" variant="soft" color="neutral" @click="open = false">{{
+               $t('actions.cancel')
+            }}</UButton>
+            <UButton class="tap-target w-full sm:w-auto" color="primary" @click="onSubmit">{{ $t('actions.save') }}</UButton>
+         </div>
+      </template>
    </UModal>
 </template>

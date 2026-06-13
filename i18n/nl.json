@@ -2,9 +2,16 @@
    "actions": {
       "cancel": "Annuleer",
       "confirm-delete-type": "Je staat op het punt om een {type} te verwijderen, ben je zeker? Deze actie kan niet ongedaan gemaakt worden.",
+      "create-part": "Onderdeel maken",
+      "create-project": "Project maken",
       "create-type": "{type} maken",
+      "decrease-count": "Aantal {type} verlagen",
       "delete": "Verwijder | Verwijderen",
       "delete-type": "{type} verwijderen",
+      "edit-part": "Onderdeel bewerken",
+      "edit-project": "Project bewerken",
+      "edit-type": "{type} bewerken",
+      "increase-count": "Aantal {type} verhogen",
       "save": "Opslaan"
    },
    "app-name": "Wooly",
@@ -38,6 +45,7 @@
       "setting": "Instelling | Instellingen"
    },
    "welcome": {
+      "login-description": "Volg elke steek, rij en fluffy idee in een heerlijk overzicht.",
       "login-with-google": "Aanmelden met google",
       "welcome-to-app": "Welkom bij {appName}"
    }

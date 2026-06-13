@@ -23,7 +23,7 @@ const { data: parts, execute: refresh, pending } = partRouter.list.useQuery(inpu
 
 //#region Add Part
 const showCreatePartForm = ref(false);
-const sortDelay = ref<NodeJS.Timeout>();
+const sortDelay = ref<ReturnType<typeof setTimeout> | undefined>(undefined);
 
 async function createPart(payload: { part: { name: string; counter: number }; done: () => void }) {
    const response = await partRouter.create.mutate({
@@ -34,6 +34,7 @@ async function createPart(payload: { part: { name: string; counter: number }; do
 
    if (response) refresh();
    showCreatePartForm.value = false;
+   payload.done();
 }
 
 async function deletePart(id: number) {
@@ -79,61 +80,86 @@ function editPart(part: SelectPart) {
 </script>
 
 <template>
-   <div>
-      <NuxtLayout :root="false" :title="data?.name ?? $t('generic.loading')" :navigate-back-to="'/'">
+   <NuxtLayout :root="false" :title="data?.name ?? $t('generic.loading')" navigate-back-to="/">
+      <div class="space-y-4 pb-[calc(6.5rem+env(safe-area-inset-bottom))]">
          <LayoutHeading v-model:sorting="sorting" :title="$t('parts.part', 2)" />
 
-         <div v-auto-animate class="flex flex-row flex-wrap gap-3 justify-center">
-            <UCard
-               v-if="parts?.length"
-               v-for="part in parts ?? []"
-               :key="part.id"
-               class="min-w-full md:min-w-96 cursor-pointer max-h-[90px]"
-            >
-               <div class="flex flex-col gap-2">
-                  <div class="flex justify-between items-center">
-                     <p>{{ part.name }}</p>
-                     <div class="flex gap-1">
-                        <UButton icon="i-heroicons-pencil-16-solid" variant="ghost" color="grey" @click.stop="editPart(part)" />
-                        <UButton icon="i-heroicons-trash-16-solid" variant="ghost" color="red" @click.stop="deletePart(part.id)" />
+         <div v-auto-animate class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3" :class="{ 'opacity-75': pending }">
+            <UCard v-for="part in parts ?? []" :key="part.id" class="wooly-shell wooly-pop">
+               <div class="space-y-4">
+                  <div class="flex items-start justify-between gap-2">
+                     <p class="wooly-title text-base text-pink-900 dark:text-pink-100">{{ part.name }}</p>
+
+                     <div class="flex items-center gap-1">
+                        <UButton
+                           icon="i-heroicons-pencil-16-solid"
+                           variant="ghost"
+                           color="neutral"
+                           size="md"
+                           class="tap-target tap-target-icon"
+                           :aria-label="$t('actions.edit-type', { type: $t('parts.part') })"
+                           @click.stop="editPart(part)"
+                        />
+                        <UButton
+                           icon="i-heroicons-trash-16-solid"
+                           variant="ghost"
+                           color="error"
+                           size="md"
+                           class="tap-target tap-target-icon"
+                           :aria-label="$t('actions.delete-type', { type: $t('parts.part') })"
+                           @click.stop="deletePart(part.id)"
+                        />
                      </div>
                   </div>
-                  <div class="flex justify-between items-center">
-                     <small>{{ $t('parts.row-count') }}</small>
 
-                     <div class="flex gap-2 items-center">
-                        <UButton
-                           icon="i-heroicons-minus-16-solid"
-                           variant="ghost"
-                           color="red"
-                           @click.stop="incrementOrDecrement(part, false)"
-                        />
-                        <p>{{ part.counter }}</p>
-                        <UButton
-                           icon="i-heroicons-plus-16-solid"
-                           variant="ghost"
-                           color="green"
-                           @click.stop="incrementOrDecrement(part, true)"
-                        />
+                  <div class="rounded-xl bg-pink-50/70 p-2 dark:bg-pink-950/35">
+                     <div class="flex items-center justify-between gap-2">
+                        <small class="text-pink-800 dark:text-pink-200">{{ $t('parts.row-count') }}</small>
+
+                        <div class="flex items-center gap-2">
+                           <UButton
+                              icon="i-heroicons-minus-16-solid"
+                              variant="soft"
+                              color="error"
+                              size="md"
+                              class="tap-target tap-target-icon"
+                              :aria-label="$t('actions.decrease-count', { type: $t('parts.part') })"
+                              @click.stop="incrementOrDecrement(part, false)"
+                           />
+
+                           <p class="min-w-10 text-center text-lg font-semibold text-pink-900 dark:text-pink-100">{{ part.counter }}</p>
+
+                           <UButton
+                              icon="i-heroicons-plus-16-solid"
+                              variant="soft"
+                              color="success"
+                              size="md"
+                              class="tap-target tap-target-icon"
+                              :aria-label="$t('actions.increase-count', { type: $t('parts.part') })"
+                              @click.stop="incrementOrDecrement(part, true)"
+                           />
+                        </div>
                      </div>
                   </div>
                </div>
             </UCard>
+         </div>
 
-            <p v-else class="text-gray-400">{{ $t('generic.no-results-for-type', { type: $t('parts.part', 2) }) }}</p>
+         <div v-if="!pending && !parts?.length" class="wooly-shell px-6 py-10 text-center">
+            <p class="text-pink-900 dark:text-pink-100">{{ $t('generic.no-results-for-type', { type: $t('parts.part', 2) }) }}</p>
          </div>
 
          <UButton
-            class="fixed bottom-5 right-5"
+            class="wooly-fab tap-target tap-target-icon"
             size="xl"
-            square
             icon="i-heroicons-plus-16-solid"
-            :ui="{ rounded: 'rounded-full' }"
+            color="primary"
+            :aria-label="$t('actions.create-type', { type: $t('parts.part') })"
             @click="showCreatePartForm = true"
          />
 
          <ModalsPart v-model="showCreatePartForm" @save-part="createPart" />
          <ModalsPart v-model="showEditProjectForm" :initial-part="partToEdit" @save-part="changePart" />
-      </NuxtLayout>
-   </div>
+      </div>
+   </NuxtLayout>
 </template>

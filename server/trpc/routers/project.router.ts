@@ -24,11 +24,12 @@ export const projectRouter = router({
          }),
       )
       .mutation(async ({ input, ctx }) => {
-         const { insertId } = await ctx.db
+         const [createdProject] = await ctx.db
             .insert(projects)
             .values({ name: input.name, userId: ctx.session.user.id, finished: input.finished })
+            .returning()
             .execute();
-         return ctx.db.query.projects.findFirst({ where: eq(projects.id, +insertId) });
+         return createdProject;
       }),
 
    update: protectedProcedure

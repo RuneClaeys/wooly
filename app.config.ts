@@ -1,7 +1,9 @@
 export default defineAppConfig({
    ui: {
-      primary: 'pink',
-      gray: 'cool',
+      colors: {
+         primary: 'pink',
+         neutral: 'slate',
+      },
 
       card: {
          header: {

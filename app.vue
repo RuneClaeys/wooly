@@ -1,23 +1,28 @@
 <script lang="ts" setup>
-import type { SessionStatus } from '@sidebase/nuxt-auth/dist/runtime/types';
-
-const { setLocale } = useI18n();
+const { setLocale, locale } = useI18n();
 const { status } = useAuth();
 const { userRouter } = useTrpcClient();
 
-async function getUserInfo(status: SessionStatus) {
-   if (status !== 'authenticated') return;
+async function syncUserLocale(currentStatus: string) {
+   if (currentStatus !== 'authenticated') return;
 
-   const user = await userRouter.me.query();
-   setLocale(user.locale ?? 'en');
+   try {
+      const user = await userRouter.me.query();
+      setLocale(user.locale ?? 'en');
+   } catch {
+      setLocale('en');
+   }
 }
 
-watch(status, getUserInfo, { immediate: true });
+watch(status, (nextStatus) => syncUserLocale(nextStatus), { immediate: true });
 </script>
 
 <template>
    <VitePwaManifest />
-   <NuxtPage />
-   <UNotifications />
-   <ModalsConfirmation />
+
+   <UApp :locale="locale">
+      <NuxtPage />
+      <UNotifications />
+      <ModalsConfirmation />
+   </UApp>
 </template>

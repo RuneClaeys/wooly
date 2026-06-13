@@ -36,14 +36,15 @@ export const partRouter = router({
       .mutation(async ({ input, ctx }) => {
          await assertProjectOwnership(ctx, input.projectId);
 
-         const { insertId } = await ctx.db
+         const [createdPart] = await ctx.db
             .insert(parts)
             .values({ ...input })
+            .returning()
             .execute();
 
          await refreshProject(ctx, input.projectId);
 
-         return ctx.db.query.parts.findFirst({ where: eq(parts.id, +insertId) });
+         return createdPart;
       }),
 
    delete: protectedProcedure.input(z.number()).mutation(async ({ input: partId, ctx }) => {

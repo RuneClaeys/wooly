@@ -2,9 +2,16 @@
    "actions": {
       "cancel": "Cancel",
       "confirm-delete-type": "You're about to delete a {type}, are you sure? This action cannot be undone.",
+      "create-part": "Create part",
+      "create-project": "Create project",
       "create-type": "create {type}",
+      "decrease-count": "Decrease {type} count",
       "delete": "Delete",
       "delete-type": "delete {type}",
+      "edit-part": "Edit part",
+      "edit-project": "Edit project",
+      "edit-type": "edit {type}",
+      "increase-count": "Increase {type} count",
       "save": "Save"
    },
    "app-name": "Wooly",
@@ -38,6 +45,7 @@
       "setting": "Setting | Settings"
    },
    "welcome": {
+      "login-description": "Track every stitch, row, and fluffy idea from one lovely dashboard.",
       "login-with-google": "Sign in with Google",
       "welcome-to-app": "Welcome to {appName}"
    }

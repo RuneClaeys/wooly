@@ -3,29 +3,27 @@ const { showConfirmation, confirmationPrompt, closeConfirmation } = useConfirmat
 </script>
 
 <template>
-   <UModal :model-value="showConfirmation" @close="confirmationPrompt?.onCancel">
-      <UCard>
-         <template #header>
-            <p>{{ confirmationPrompt?.title }}</p>
-         </template>
-
-         <p>{{ confirmationPrompt?.description }}</p>
-
-         <template #footer>
-            <div class="flex justify-end">
-               <UButton
-                  v-if="confirmationPrompt?.onCancel"
-                  variant="ghost"
-                  color="gray"
-                  @click="confirmationPrompt.onCancel(closeConfirmation)"
-               >
-                  {{ confirmationPrompt?.cancelText }}
-               </UButton>
-               <UButton v-if="confirmationPrompt?.onConfirm" color="primary" @click="confirmationPrompt.onConfirm(closeConfirmation)">
-                  {{ confirmationPrompt?.confirmText }}
-               </UButton>
-            </div>
-         </template>
-      </UCard>
+   <UModal
+      :open="showConfirmation"
+      :title="confirmationPrompt?.title"
+      :description="confirmationPrompt?.description"
+      :ui="{ content: 'max-w-md' }"
+      @update:open="(nextOpen) => !nextOpen && closeConfirmation()"
+   >
+      <template #footer>
+         <div class="flex justify-end gap-2">
+            <UButton
+               v-if="confirmationPrompt?.onCancel"
+               variant="soft"
+               color="neutral"
+               @click="confirmationPrompt.onCancel(closeConfirmation)"
+            >
+               {{ confirmationPrompt?.cancelText }}
+            </UButton>
+            <UButton v-if="confirmationPrompt?.onConfirm" color="error" @click="confirmationPrompt.onConfirm(closeConfirmation)">
+               {{ confirmationPrompt?.confirmText }}
+            </UButton>
+         </div>
+      </template>
    </UModal>
 </template>
