@@ -7,7 +7,10 @@ import { db } from '~/server/services/drizzle.service';
 const MAX_PHOTO_SIZE_BYTES = 10 * 1024 * 1024;
 
 function sanitizeFileName(name: string) {
-   return name.replace(/[^a-zA-Z0-9._-]+/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
+   return name
+      .replace(/[^a-zA-Z0-9._-]+/g, '-')
+      .replace(/-+/g, '-')
+      .replace(/^-|-$/g, '');
 }
 
 export default defineEventHandler(async (event) => {

@@ -19,10 +19,18 @@ defineProps({
 <template>
    <div class="relative min-h-screen pb-[calc(5.5rem+env(safe-area-inset-bottom))]">
       <div class="pointer-events-none absolute inset-0 overflow-hidden">
-         <div class="wooly-orb absolute -left-16 top-24 h-44 w-44 rounded-full bg-pink-200/48 blur-2xl sm:h-48 sm:w-48 sm:blur-3xl dark:bg-pink-400/18" />
-         <div class="wooly-orb-slow absolute right-3 top-8 h-32 w-32 rounded-full bg-rose-200/42 blur-2xl sm:h-36 sm:w-36 sm:blur-3xl dark:bg-indigo-300/14" />
-         <div class="wooly-orb absolute bottom-14 right-8 hidden h-56 w-56 rounded-full bg-fuchsia-200/28 blur-3xl dark:bg-fuchsia-300/10 sm:block" />
-         <div class="wooly-orb-slow absolute left-1/3 top-1/2 hidden h-40 w-40 rounded-full bg-orange-100/35 blur-3xl dark:bg-rose-300/12 sm:block" />
+         <div
+            class="wooly-orb absolute -left-16 top-24 h-44 w-44 rounded-full bg-pink-200/48 blur-2xl sm:h-48 sm:w-48 sm:blur-3xl dark:bg-pink-400/18"
+         />
+         <div
+            class="wooly-orb-slow absolute right-3 top-8 h-32 w-32 rounded-full bg-rose-200/42 blur-2xl sm:h-36 sm:w-36 sm:blur-3xl dark:bg-indigo-300/14"
+         />
+         <div
+            class="wooly-orb absolute bottom-14 right-8 hidden h-56 w-56 rounded-full bg-fuchsia-200/28 blur-3xl dark:bg-fuchsia-300/10 sm:block"
+         />
+         <div
+            class="wooly-orb-slow absolute left-1/3 top-1/2 hidden h-40 w-40 rounded-full bg-orange-100/35 blur-3xl dark:bg-rose-300/12 sm:block"
+         />
       </div>
 
       <header class="sticky top-0 z-20 pt-[max(0.75rem,env(safe-area-inset-top))]">
