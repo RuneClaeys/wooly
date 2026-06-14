@@ -26,12 +26,14 @@ AUTH_SECRET=...
 AUTH_ORIGIN=http://localhost:3000/api/auth
 GOOGLE_AUTH_CLIENT_ID=...
 GOOGLE_AUTH_CLIENT_SECRET=...
+BLOB_READ_WRITE_TOKEN=...
 ```
 
 Notes:
 
 - `AUTH_ORIGIN` must include `/api/auth` for auth callbacks.
 - Seeder and Drizzle both use `POSTGRES_URL`.
+- Project photos are compressed in the browser and rejected if still larger than 10 MB.
 
 ## Install
 

@@ -37,6 +37,17 @@
       "part": "Onderdeel | Onderdelen",
       "row-count": "Aantal rijen"
    },
+   "photos": {
+      "add": "Foto's toevoegen",
+      "hint": "Afbeeldingen worden automatisch gecomprimeerd en moeten 10 MB of kleiner zijn.",
+      "max-size-error": "Foto moet 10 MB of kleiner zijn",
+      "next": "Volgende foto",
+      "open-viewer": "Afbeeldingsviewer openen",
+      "photo": "Foto | Foto's",
+      "position": "Foto {current} van {total}",
+      "previous": "Vorige foto",
+      "upload-error": "Kon foto niet uploaden"
+   },
    "projects": {
       "project": "Project | Projecten"
    },

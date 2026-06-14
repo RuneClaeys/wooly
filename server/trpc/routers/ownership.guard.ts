@@ -1,6 +1,6 @@
 import { TRPCError } from '@trpc/server';
 import { and, eq } from 'drizzle-orm';
-import { parts, projects } from '~/db/schema';
+import { parts, projectPhotos, projects } from '~/db/schema';
 import type { Context } from '../context';
 
 export async function assertProjectOwnership(ctx: Context, projectId: number) {
@@ -24,4 +24,15 @@ export async function assertPartOwnership(ctx: Context, partId: number) {
 
    await assertProjectOwnership(ctx, part.projectId);
    return part;
+}
+
+export async function assertProjectPhotoOwnership(ctx: Context, photoId: number) {
+   const photo = await ctx.db.query.projectPhotos.findFirst({ where: eq(projectPhotos.id, photoId) });
+
+   if (!photo) {
+      throw new TRPCError({ code: 'NOT_FOUND' });
+   }
+
+   await assertProjectOwnership(ctx, photo.projectId);
+   return photo;
 }

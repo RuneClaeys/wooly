@@ -37,6 +37,17 @@
       "part": "Part | Components",
       "row-count": "Number of rows"
    },
+   "photos": {
+      "add": "Add photos",
+      "hint": "Images are compressed automatically and must be 10 MB or smaller.",
+      "max-size-error": "Photo must be 10 MB or smaller",
+      "next": "Next photo",
+      "open-viewer": "Open image viewer",
+      "photo": "Photo | Photos",
+      "position": "Photo {current} of {total}",
+      "previous": "Previous photo",
+      "upload-error": "Could not upload photo"
+   },
    "projects": {
       "project": "Project | Projects"
    },

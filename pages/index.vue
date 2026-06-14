@@ -86,7 +86,7 @@ async function deleteProject(id: number) {
             <UCard
                v-for="project in data ?? []"
                :key="project.id"
-               class="wooly-shell wooly-pop w-full cursor-pointer transition duration-200 hover:-translate-y-0.5"
+               class="wooly-shell w-full cursor-pointer transition duration-150 will-change-transform hover:-translate-y-0.5"
                @click="$router.push({ name: 'projects-id', params: { id: project.id } })"
             >
                <div class="flex items-start justify-between gap-2">

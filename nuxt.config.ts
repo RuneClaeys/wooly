@@ -8,6 +8,21 @@ import { pwa } from './config/pwa.config';
 export default defineNuxtConfig({
    ssr: false,
 
+   vite: {
+      optimizeDeps: {
+         include: [
+            '@vue/devtools-core',
+            '@vue/devtools-kit',
+            'dayjs',
+            'dayjs/locale/en',
+            'dayjs/locale/nl',
+            'dayjs/plugin/relativeTime',
+            'dayjs/plugin/updateLocale',
+            'dayjs/plugin/utc',
+         ],
+      },
+   },
+
    css: ['~/assets/css/main.css'],
 
    devtools: { enabled: true },

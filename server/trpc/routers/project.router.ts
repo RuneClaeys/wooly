@@ -1,9 +1,10 @@
 import { and, asc, desc, eq } from 'drizzle-orm';
+import { del } from '@vercel/blob';
 import { z } from 'zod';
-import { projects } from '~/db/schema';
+import { projectPhotos, projects } from '~/db/schema';
 import { genericSort } from '~/server/helpers/zod.helper';
 import { protectedProcedure, router } from '../trpc';
-import { assertProjectOwnership } from './ownership.guard';
+import { assertProjectOwnership, assertProjectPhotoOwnership } from './ownership.guard';
 
 export const projectRouter = router({
    list: protectedProcedure.input(z.object({ finished: z.boolean().default(false), query: genericSort })).query(({ ctx, input }) => {
@@ -15,6 +16,15 @@ export const projectRouter = router({
    }),
 
    get: protectedProcedure.input(z.number()).query(({ input: projectId, ctx }) => assertProjectOwnership(ctx, projectId)),
+
+   listPhotos: protectedProcedure.input(z.number()).query(async ({ input: projectId, ctx }) => {
+      await assertProjectOwnership(ctx, projectId);
+
+      return ctx.db.query.projectPhotos.findMany({
+         where: eq(projectPhotos.projectId, projectId),
+         orderBy: desc(projectPhotos.createdAt),
+      });
+   }),
 
    create: protectedProcedure
       .input(
@@ -60,5 +70,12 @@ export const projectRouter = router({
          .delete(projects)
          .where(and(eq(projects.id, projectId), eq(projects.userId, ctx.session.user.id)))
          .execute();
+   }),
+
+   deletePhoto: protectedProcedure.input(z.number()).mutation(async ({ input: photoId, ctx }) => {
+      const photo = await assertProjectPhotoOwnership(ctx, photoId);
+
+      await del(photo.url, { token: process.env.BLOB_READ_WRITE_TOKEN });
+      return ctx.db.delete(projectPhotos).where(eq(projectPhotos.id, photoId)).execute();
    }),
 });

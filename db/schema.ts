@@ -33,6 +33,7 @@ export const projectsRelations = relations(projects, ({ one, many }) => ({
       references: [users.id],
    }),
    parts: many(parts),
+   photos: many(projectPhotos),
 }));
 
 export type InsertProject = Omit<typeof projects.$inferInsert, 'createdAt' | 'updatedAt'> & {
@@ -42,6 +43,29 @@ export type InsertProject = Omit<typeof projects.$inferInsert, 'createdAt' | 'up
 export type SelectProject = Omit<typeof projects.$inferSelect, 'createdAt' | 'updatedAt'> & {
    createdAt?: string | null;
    updatedAt?: string | null;
+};
+
+// project photos
+export const projectPhotos = pgTable('project_photos', {
+   id: serial('id').primaryKey(),
+   name: text('name').notNull(),
+   url: text('url').notNull(),
+   pathname: text('pathname').notNull(),
+   contentType: text('content_type').notNull(),
+   size: integer('size').notNull(),
+   createdAt: timestamp('created_at').default(sql`CURRENT_TIMESTAMP`),
+   projectId: integer('project_id').notNull(),
+});
+
+export const projectPhotosRelations = relations(projectPhotos, ({ one }) => ({
+   project: one(projects, {
+      fields: [projectPhotos.projectId],
+      references: [projects.id],
+   }),
+}));
+
+export type SelectProjectPhoto = Omit<typeof projectPhotos.$inferSelect, 'createdAt'> & {
+   createdAt?: string | null;
 };
 
 // parts
