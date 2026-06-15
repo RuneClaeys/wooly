@@ -2,31 +2,38 @@
 @import '@nuxt/ui';
 
 :root {
-   --wooly-bg-1: #fff7fb;
-   --wooly-bg-2: #ffeef8;
-   --wooly-bg-3: #ffd8ed;
-   --wooly-bg-4: #fffdfd;
-   --wooly-card: rgba(255, 255, 255, 0.88);
-   --wooly-card-border: rgba(245, 160, 201, 0.42);
-   --wooly-shell-highlight: rgba(255, 255, 255, 0.6);
-   --wooly-shadow: 0 16px 40px rgba(204, 84, 149, 0.2);
-   --wooly-text-main: #4a1b3e;
-   --wooly-text-soft: #7a3565;
-   --wooly-pattern: rgba(239, 113, 174, 0.07);
+   /* Light mode - modernized colors */
+   --wooly-bg-1: #faf9f7;
+   --wooly-bg-2: #f5f0ee;
+   --wooly-bg-3: #ede5e2;
+   --wooly-bg-4: #fefdfb;
+   --wooly-card: rgba(255, 255, 255, 0.92);
+   --wooly-card-border: rgba(236, 72, 153, 0.15);
+   --wooly-shell-highlight: rgba(255, 255, 255, 0.65);
+   --wooly-shadow: 0 8px 24px rgba(236, 72, 153, 0.12);
+   --wooly-text-main: #2d1b2e;
+   --wooly-text-soft: #6b5b66;
+   --wooly-pattern: rgba(236, 72, 153, 0.04);
+   /* Semantic colors */
+   --wooly-primary: #ec4899;
+   --wooly-success: #10b981;
+   --wooly-error: #ef4444;
+   --wooly-warning: #f59e0b;
 }
 
 .dark {
-   --wooly-bg-1: #0f1019;
-   --wooly-bg-2: #1a1e31;
-   --wooly-bg-3: #2a2440;
-   --wooly-bg-4: #101522;
-   --wooly-card: rgba(29, 33, 52, 0.78);
-   --wooly-card-border: rgba(255, 167, 220, 0.24);
-   --wooly-shell-highlight: rgba(255, 255, 255, 0.06);
-   --wooly-shadow: 0 22px 56px rgba(0, 0, 0, 0.5);
-   --wooly-text-main: #fbd5f1;
-   --wooly-text-soft: #f4b5de;
-   --wooly-pattern: rgba(255, 196, 231, 0.07);
+   /* Dark mode - improved contrast */
+   --wooly-bg-1: #0a0a0f;
+   --wooly-bg-2: #12111b;
+   --wooly-bg-3: #1f1d2e;
+   --wooly-bg-4: #0f0e14;
+   --wooly-card: rgba(20, 19, 32, 0.85);
+   --wooly-card-border: rgba(236, 72, 153, 0.25);
+   --wooly-shell-highlight: rgba(255, 255, 255, 0.08);
+   --wooly-shadow: 0 12px 48px rgba(0, 0, 0, 0.7);
+   --wooly-text-main: #f5f1f9;
+   --wooly-text-soft: #d4cad8;
+   --wooly-pattern: rgba(236, 72, 153, 0.06);
 }
 
 body {
@@ -57,8 +64,8 @@ body::before {
    border: 1px solid var(--wooly-card-border);
    border-radius: 1.4rem;
    background: var(--wooly-card);
-   backdrop-filter: blur(10px) saturate(120%);
-   -webkit-backdrop-filter: blur(10px) saturate(120%);
+   backdrop-filter: blur(4px) saturate(112%);
+   -webkit-backdrop-filter: blur(4px) saturate(112%);
    box-shadow: var(--wooly-shadow);
 }
 
@@ -110,13 +117,13 @@ body::before {
 }
 
 .wooly-orb {
-   animation: woolyFloat 14s ease-in-out infinite;
-   will-change: transform;
+   animation: none;
+   will-change: auto;
    transform: translateZ(0);
 }
 
 .wooly-orb-slow {
-   animation-duration: 18s;
+   animation: none;
 }
 
 @media (min-width: 640px) {
@@ -126,11 +133,11 @@ body::before {
 }
 
 .wooly-fade-up {
-   animation: woolyFadeUp 260ms ease-out both;
+   animation: woolyFadeUp 120ms ease-out both;
 }
 
 .wooly-pop {
-   animation: woolyPop 200ms ease-out both;
+   animation: woolyPop 100ms ease-out both;
 }
 
 @keyframes woolyFadeUp {
@@ -166,12 +173,80 @@ body::before {
    }
 }
 
+@keyframes woolyRipple {
+   0% {
+      transform: scale(0);
+      opacity: 1;
+   }
+
+   100% {
+      transform: scale(4);
+      opacity: 0;
+   }
+}
+
+@keyframes woolyShimmer {
+   0% {
+      background-position: -1000px 0;
+   }
+
+   100% {
+      background-position: 1000px 0;
+   }
+}
+
+@keyframes woolySlideInUp {
+   from {
+      opacity: 0;
+      transform: translateY(12px);
+   }
+
+   to {
+      opacity: 1;
+      transform: translateY(0);
+   }
+}
+
+@keyframes woolyScaleUp {
+   from {
+      opacity: 0;
+      transform: scale(0.96);
+   }
+
+   to {
+      opacity: 1;
+      transform: scale(1);
+   }
+}
+
+@keyframes woolyCounterPulse {
+   0%, 100% {
+      transform: scale(1);
+   }
+
+   50% {
+      transform: scale(1.08);
+   }
+}
+
+.wooly-ripple {
+   position: absolute;
+   border-radius: 50%;
+   background: var(--wooly-primary);
+   transform: scale(0);
+   animation: woolyRipple 0.6s ease-out;
+   pointer-events: none;
+}
+
 @media (prefers-reduced-motion: reduce) {
    .wooly-fade-up,
    .wooly-pop,
    .wooly-orb,
-   .wooly-orb-slow {
-      animation: none;
+   .wooly-orb-slow,
+   .wooly-slide-in-up,
+   .wooly-scale-up,
+   .wooly-counter-pulse {
+      animation: none !important;
    }
 
    .wooly-shell {
@@ -181,7 +256,7 @@ body::before {
    }
 
    .dark .wooly-shell {
-      background: rgba(29, 33, 52, 0.94);
+      background: rgba(20, 19, 32, 0.94);
    }
 }
 
@@ -194,6 +269,60 @@ body::before {
    }
 
    .dark .wooly-shell {
-      background: rgba(29, 33, 52, 0.94);
+      background: rgba(20, 19, 32, 0.94);
    }
+}
+
+/* New utility classes */
+.wooly-slide-in-up {
+   animation: woolySlideInUp 120ms ease-out both;
+}
+
+.wooly-scale-up {
+   animation: woolyScaleUp 90ms ease-out both;
+}
+
+.wooly-counter-pulse {
+   animation: woolyCounterPulse 90ms ease-out;
+}
+
+/* Skeleton loader shimmer */
+.wooly-skeleton {
+   background: linear-gradient(
+      90deg,
+      var(--wooly-bg-2) 0%,
+      var(--wooly-bg-3) 50%,
+      var(--wooly-bg-2) 100%
+   );
+   background-size: 200% 100%;
+   animation: none;
+}
+
+.dark .wooly-skeleton {
+   background: linear-gradient(
+      90deg,
+      var(--wooly-bg-2) 0%,
+      var(--wooly-bg-3) 50%,
+      var(--wooly-bg-2) 100%
+   );
+}
+
+/* Enhanced focus ring for accessibility */
+.wooly-focus-ring {
+   outline: 3px solid var(--wooly-primary);
+   outline-offset: 2px;
+}
+
+/* Form validation states */
+.wooly-input-error {
+   border-color: var(--wooly-error) !important;
+}
+
+.wooly-input-success {
+   border-color: var(--wooly-success) !important;
+}
+
+/* Better color contrast in dark mode */
+.dark .wooly-muted {
+   color: #b8afc2;
 }

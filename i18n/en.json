@@ -1,5 +1,6 @@
 {
    "actions": {
+      "add": "Add",
       "cancel": "Cancel",
       "confirm-delete-type": "You're about to delete a {type}, are you sure? This action cannot be undone.",
       "create-part": "Create part",
@@ -12,7 +13,8 @@
       "edit-project": "Edit project",
       "edit-type": "edit {type}",
       "increase-count": "Increase {type} count",
-      "save": "Save"
+      "save": "Save",
+      "upload": "Upload"
    },
    "app-name": "Wooly",
    "filters": {
@@ -28,16 +30,31 @@
       "active": "Active",
       "completed": "Finished",
       "language": "Language",
-      "loading": "load",
+      "loading": "Loading...",
       "name": "Name",
       "no-results-for-type": "There are no {type} yet",
       "status": "Status"
    },
+   "home": {
+      "skein-insights": "Yarn insights"
+   },
    "parts": {
+      "no-parts": "No parts yet",
+      "no-parts-hint": "Create your first part to start tracking",
       "part": "Part | Components",
+      "parts": "Parts",
       "row-count": "Number of rows"
    },
+   "tabs": {
+      "overview": "Overview",
+      "parts": "Parts",
+      "photos": "Photos",
+      "skeins": "Skeins"
+   },
    "trackers": {
+      "no-skeins": "No skeins yet",
+      "no-skeins-hint": "Add your first yarn skein to track",
+      "more-skeins": "+{count} more skeins",
       "skein": "Skein | Skeins",
       "skein-count": "Skein count",
       "skein-existing": "Existing skein",
@@ -45,26 +62,43 @@
       "skein-name-placeholder": "Type a new skein name",
       "skeins-used": "Skeins used",
       "skeins-used-description": "Total skeins registered across your projects.",
+      "total-skeins": "Total Skeins",
       "tracker": "Yarn tracker | Yarn trackers",
-      "tracker-description": "Register skeins and keep the running total visible."
+      "tracker-description": "Register skeins and keep the running total visible.",
+      "yarn-skeins": "Yarn Skeins"
    },
    "photos": {
       "add": "Add photos",
       "hint": "Images are compressed automatically and must be 10 MB or smaller.",
       "max-size-error": "Photo must be 10 MB or smaller",
       "next": "Next photo",
+      "no-photos": "No photos yet",
+      "no-photos-hint": "Upload your first project photo",
       "open-viewer": "Open image viewer",
       "photo": "Photo | Photos",
+      "photos": "Photos",
       "position": "Photo {current} of {total}",
       "previous": "Previous photo",
       "upload-error": "Could not upload photo"
    },
    "projects": {
-      "project": "Project | Projects"
+      "active": "Active",
+      "completed": "Completed",
+      "empty-hint": "Start your first project and turn your ideas into trackable progress.",
+      "empty-title": "No projects yet",
+      "name": "Name",
+      "project": "Project | Projects",
+      "projects": "Projects",
+      "status": "Status",
+      "visible-count": "{count} visible"
    },
    "settings": {
       "logout": "Sign out",
       "setting": "Setting | Settings"
+   },
+   "status": {
+      "offline": "Offline",
+      "online": "Online"
    },
    "welcome": {
       "login-description": "Track every stitch, row, and fluffy idea from one lovely dashboard.",

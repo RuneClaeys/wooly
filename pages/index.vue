@@ -28,6 +28,7 @@ type SkeinSummaryRow = { skeinId: number; skeinName: string; projectCount: numbe
 const totalSkeinsUsed = computed<number>(() =>
    (skeinSummary.value ?? []).reduce((total: number, skein: SkeinSummaryRow) => total + (skein.totalCounter ?? 0), 0),
 );
+const showSkeinInsights = ref(false);
 
 function openProject(id: number) {
    navigateTo({ name: 'projects-id', params: { id } });
@@ -82,12 +83,38 @@ async function deleteProject(id: number) {
             :projects="data"
             :pending="pending"
             :error-message="error?.message ?? null"
+            @create-project="showCreateProjectForm = true"
             @open-project="openProject"
             @edit-project="editProject"
             @delete-project="deleteProject"
          />
 
-         <ProjectSkeinSummarySection :skein-summary="skeinSummary as SkeinSummaryRow[] | undefined" :total="totalSkeinsUsed" />
+         <div class="wooly-shell p-3 md:p-4 space-y-3">
+            <button
+               class="w-full flex items-center justify-between rounded-lg px-2 py-2 text-left hover:bg-pink-50/70 dark:hover:bg-pink-950/30 transition-colors"
+               type="button"
+               @click="showSkeinInsights = !showSkeinInsights"
+            >
+               <div class="flex items-center gap-2">
+                  <UIcon name="i-heroicons-chart-bar-square-16-solid" class="h-4 w-4 text-primary-500" />
+                  <span class="text-sm wooly-title">{{ $t('home.skein-insights') }}</span>
+                  <UBadge color="primary" variant="soft" size="xs">{{ totalSkeinsUsed }}</UBadge>
+               </div>
+
+               <UIcon
+                  :name="showSkeinInsights ? 'i-heroicons-chevron-up-16-solid' : 'i-heroicons-chevron-down-16-solid'"
+                  class="h-4 w-4 wooly-muted"
+               />
+            </button>
+
+            <ProjectSkeinSummarySection
+               v-if="showSkeinInsights"
+               :skein-summary="skeinSummary as SkeinSummaryRow[] | undefined"
+               :total="totalSkeinsUsed"
+               :show-heading="false"
+               :compact="true"
+            />
+         </div>
 
          <UButton
             class="wooly-fab tap-target tap-target-icon"

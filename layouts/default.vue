@@ -4,6 +4,27 @@ const { status } = useAuth();
 const colorMode = useColorMode();
 const isDark = computed(() => colorMode.value === 'dark');
 
+const isOnline = ref(true);
+const handleOnline = () => {
+   isOnline.value = true;
+};
+
+const handleOffline = () => {
+   isOnline.value = false;
+};
+
+onMounted(() => {
+   isOnline.value = navigator.onLine;
+
+   window.addEventListener('online', handleOnline);
+   window.addEventListener('offline', handleOffline);
+});
+
+onBeforeUnmount(() => {
+   window.removeEventListener('online', handleOnline);
+   window.removeEventListener('offline', handleOffline);
+});
+
 function toggleColorMode() {
    colorMode.value = isDark.value ? 'light' : 'dark';
    colorMode.preference = colorMode.value;
@@ -58,6 +79,23 @@ defineProps({
                </div>
 
                <div class="flex min-w-16 items-center justify-end gap-1">
+                  <!-- Connection Status -->
+                  <div
+                     class="flex items-center gap-1.5 px-2 py-1 rounded-full text-xs"
+                     :class="
+                        isOnline
+                           ? 'bg-success-50 dark:bg-success-950/20 text-success-700 dark:text-success-300'
+                           : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300'
+                     "
+                     :title="isOnline ? 'Online' : 'Offline'"
+                  >
+                     <div
+                        class="w-2 h-2 rounded-full"
+                        :class="isOnline ? 'bg-success-500' : 'bg-slate-400'"
+                     />
+                     <span class="hidden sm:inline">{{ isOnline ? $t('status.online') : $t('status.offline') }}</span>
+                  </div>
+
                   <UButton
                      :icon="isDark ? 'i-heroicons-moon-20-solid' : 'i-heroicons-sun-20-solid'"
                      variant="ghost"
@@ -90,5 +128,8 @@ defineProps({
             </section>
          </UContainer>
       </main>
+
+      <!-- Toast Notifications -->
+      <ToastContainer />
    </div>
 </template>

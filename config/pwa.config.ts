@@ -2,6 +2,10 @@ import type { NuxtConfig } from 'nuxt/config';
 
 export const pwa: NuxtConfig['pwa'] = {
    registerType: 'autoUpdate',
+   selfDestroying: process.env.NODE_ENV === 'development',
+   devOptions: {
+      enabled: false,
+   },
    strategies: 'generateSW',
    workbox: {
       globPatterns: ['**/*.{js,css,html,ico,png,svg}'],

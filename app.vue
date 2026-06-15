@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-const { setLocale, locale } = useI18n();
+const { setLocale } = useI18n();
 const { status } = useAuth();
 const { userRouter } = useTrpcClient();
 
@@ -20,9 +20,8 @@ watch(status, (nextStatus) => syncUserLocale(nextStatus), { immediate: true });
 <template>
    <VitePwaManifest />
 
-   <UApp :locale="locale">
+   <UApp>
       <NuxtPage />
-      <UNotifications />
       <ModalsConfirmation />
    </UApp>
 </template>

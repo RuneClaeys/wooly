@@ -1,4 +1,6 @@
-export function useRouteNumericParam(paramName: string) {
+import type { ComputedRef } from 'vue';
+
+export function useRouteNumericParam(paramName: string): ComputedRef<number> {
    const route = useRoute();
 
    return computed(() => {

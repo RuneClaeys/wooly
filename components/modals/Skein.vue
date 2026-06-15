@@ -7,6 +7,7 @@ type SkeinForm = {
 };
 
 const { t } = useI18n();
+const { error: showErrorToast } = useToast();
 
 const open = defineModel('modelValue', { default: false });
 const props = defineProps<{ initialUsage?: { skeinId: number; skeinName: string; counter: number }; catalogItems: SkeinOption[] }>();
@@ -17,6 +18,8 @@ const skein = ref<SkeinForm>({
    skeinName: props.initialUsage?.skeinName ?? '',
    counter: props.initialUsage?.counter ?? 0,
 });
+const errors = ref<Record<string, string>>({});
+const isSubmitting = ref(false);
 
 const modalTitle = computed(() => (props.initialUsage ? t('actions.edit-type', { type: t('trackers.skein') }) : t('actions.create-type', { type: t('trackers.skein') })));
 
@@ -28,59 +31,155 @@ watch(
          skeinName: initialUsage?.skeinName ?? '',
          counter: initialUsage?.counter ?? 0,
       };
+      errors.value = {};
    },
 );
 
-const validate = (state: SkeinForm) => {
-   const errors: Array<{ name: string; message: string }> = [];
-   if (!state.skeinId && !state.skeinName.trim()) {
-      errors.push({ name: 'skein', message: t('form.field-required') });
+const validateSkeinSelection = (): string | null => {
+   if (!skein.value.skeinId && !skein.value.skeinName.trim()) {
+      return t('form.field-required');
    }
-
-   return errors;
+   if (skein.value.skeinName.length > 100) {
+      return 'Skein name must be 100 characters or less';
+   }
+   return null;
 };
 
-function onSubmit() {
-   if (validate(skein.value).length > 0) return;
+const validateCounter = (counter: number): string | null => {
+   if (counter < 0) return 'Counter cannot be negative';
+   return null;
+};
 
-   emits('save-skein', {
-      skein: {
-         skeinId: skein.value.skeinId,
-         skeinName: skein.value.skeinName.trim(),
-         counter: skein.value.counter,
-      },
-      done: () => {
-         if (!props.initialUsage) {
-            skein.value = { skeinId: null, skeinName: '', counter: 0 };
-         }
-         open.value = false;
-      },
-   });
+const validate = (): boolean => {
+   errors.value = {};
+   const skeinError = validateSkeinSelection();
+   const counterError = validateCounter(skein.value.counter);
+
+   if (skeinError) errors.value.skein = skeinError;
+   if (counterError) errors.value.counter = counterError;
+
+   return Object.keys(errors.value).length === 0;
+};
+
+async function onSubmit() {
+   if (!validate()) {
+      showErrorToast('Please fix the errors in the form');
+      return;
+   }
+
+   isSubmitting.value = true;
+   try {
+      emits('save-skein', {
+         skein: {
+            skeinId: skein.value.skeinId,
+            skeinName: skein.value.skeinName.trim(),
+            counter: skein.value.counter,
+         },
+         done: () => {
+            isSubmitting.value = false;
+            if (!props.initialUsage) {
+               skein.value = { skeinId: null, skeinName: '', counter: 0 };
+            }
+            open.value = false;
+         },
+      });
+   } catch {
+      isSubmitting.value = false;
+      showErrorToast('Failed to save skein');
+   }
+}
+
+function handleSkeinBlur() {
+   const error = validateSkeinSelection();
+   if (error) {
+      errors.value.skein = error;
+   } else {
+      delete errors.value.skein;
+   }
+}
+
+function handleSkeinSelect(value: number | string | null | undefined) {
+   skein.value.skeinId = value ? Number(value) : null;
+
+   // Selecting an existing skein means we should not also submit a new skein name.
+   if (skein.value.skeinId) {
+      skein.value.skeinName = '';
+   }
+
+   delete errors.value.skein;
+}
+
+function handleSkeinNameUpdate(value: string | number) {
+   skein.value.skeinName = String(value);
+
+   // Any non-empty name should switch intent to creating a new catalog skein.
+   if (skein.value.skeinName.trim().length > 0) {
+      skein.value.skeinId = null;
+   }
+
+   delete errors.value.skein;
+}
+
+function handleCounterBlur() {
+   const error = validateCounter(skein.value.counter);
+   if (error) {
+      errors.value.counter = error;
+   } else {
+      delete errors.value.counter;
+   }
 }
 </script>
 
 <template>
-   <UModal v-model:open="open" :title="modalTitle" :ui="{ content: 'mx-2 w-[calc(100%-1rem)] sm:mx-0 sm:max-w-lg' }">
+   <UModal v-model:open="open" :title="modalTitle" :ui="{ content: 'mx-2 w-[calc(100%-1rem)] sm:mx-0 sm:max-w-lg' }" @update:open="() => (errors.value = {})">
       <template #body>
-         <UForm class="flex flex-col gap-4" :state="skein" :validate="validate">
-            <UFormField :label="$t('trackers.skein-existing')" name="skeinId">
-               <USelect v-model="skein.skeinId" :items="catalogItems" class="w-full" />
-            </UFormField>
+         <div class="space-y-4">
+            <div class="space-y-1.5">
+               <label class="block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('trackers.skein-existing') }}</label>
+               <USelect
+                  v-model="skein.skeinId"
+                  :items="catalogItems"
+                  class="w-full"
+                  @blur="handleSkeinBlur"
+                  @update:model-value="handleSkeinSelect"
+               />
+            </div>
 
-            <UFormField :label="$t('trackers.skein-name')" name="skeinName">
-               <UInput v-model="skein.skeinName" class="w-full" :placeholder="$t('trackers.skein-name-placeholder')" />
-            </UFormField>
+            <FormField
+               :model-value="skein.skeinName"
+               :label="$t('trackers.skein-name')"
+               :error="errors.skein"
+               :placeholder="$t('trackers.skein-name-placeholder')"
+               :max-length="100"
+               @update:model-value="handleSkeinNameUpdate"
+               @blur="handleSkeinBlur"
+            />
 
-            <UFormField :label="$t('trackers.skein-count')" name="counter">
-               <UInput v-model="skein.counter" type="number" class="w-full" />
-            </UFormField>
-         </UForm>
+            <FormField
+               :model-value="skein.counter"
+               type="number"
+               :label="$t('trackers.skein-count')"
+               :error="errors.counter"
+               :placeholder="'0'"
+               :min="0"
+               @update:model-value="(val) => (skein.counter = Number(val))"
+               @blur="handleCounterBlur"
+            />
+         </div>
       </template>
 
       <template #footer>
          <div class="flex justify-end gap-2">
-            <UButton class="tap-target" variant="soft" color="neutral" @click="open = false">{{ $t('actions.cancel') }}</UButton>
-            <UButton class="tap-target" color="primary" @click="onSubmit">{{ $t('actions.save') }}</UButton>
+            <UButton class="tap-target" variant="soft" color="neutral" :disabled="isSubmitting" @click="open = false">{{ $t('actions.cancel') }}</UButton>
+            <UButton
+               class="tap-target"
+               color="primary"
+               :loading="isSubmitting"
+               :disabled="isSubmitting || Object.keys(errors).length > 0"
+               @click="onSubmit"
+            >
+               {{ $t('actions.save') }}
+            </UButton>
          </div>
       </template>
    </UModal>

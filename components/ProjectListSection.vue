@@ -14,6 +14,7 @@ defineProps<{
 }>();
 
 const emit = defineEmits<{
+   (e: 'create-project'): void;
    (e: 'open-project', id: number): void;
    (e: 'edit-project', project: SelectProject): void;
    (e: 'delete-project', id: number): void;
@@ -31,6 +32,15 @@ const statusOptions = computed(() => [
          <USelect v-model="status" :items="statusOptions" size="md" class="w-full md:w-44" />
       </template>
    </LayoutHeading>
+
+   <div class="flex items-center justify-between px-1">
+      <p class="text-sm wooly-muted">
+         {{ $t('projects.visible-count', { count: projects?.length ?? 0 }) }}
+      </p>
+      <UBadge color="neutral" variant="soft" size="sm">
+         {{ status === 'finished' ? $t('generic.completed') : $t('generic.active') }}
+      </UBadge>
+   </div>
 
    <div v-if="errorMessage" class="wooly-shell px-4 py-3 text-sm text-red-700 dark:text-red-300">
       {{ errorMessage }}
@@ -75,7 +85,20 @@ const statusOptions = computed(() => [
       </UCard>
    </div>
 
-   <div v-if="!pending && !projects?.length" class="wooly-shell px-6 py-10 text-center">
-      <p class="wooly-muted">{{ $t('generic.no-results-for-type', { type: $t('projects.project', 2) }) }}</p>
+   <div v-if="!pending && !projects?.length" class="wooly-shell px-6 py-10 text-center space-y-4">
+      <div class="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-primary-100/70 text-primary-600 dark:bg-primary-950/40 dark:text-primary-300">
+         <UIcon name="i-heroicons-folder-plus-16-solid" class="h-7 w-7" />
+      </div>
+      <div class="space-y-1">
+         <p class="wooly-title text-base">{{ $t('projects.empty-title') }}</p>
+         <p class="wooly-muted text-sm">{{ $t('projects.empty-hint') }}</p>
+      </div>
+      <UButton
+         color="primary"
+         icon="i-heroicons-plus-16-solid"
+         class="tap-target"
+         :label="$t('actions.create-project')"
+         @click="emit('create-project')"
+      />
    </div>
 </template>

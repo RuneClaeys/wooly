@@ -1,5 +1,6 @@
 {
    "actions": {
+      "add": "Toevoegen",
       "cancel": "Annuleer",
       "confirm-delete-type": "Je staat op het punt om een {type} te verwijderen, ben je zeker? Deze actie kan niet ongedaan gemaakt worden.",
       "create-part": "Onderdeel maken",
@@ -12,7 +13,8 @@
       "edit-project": "Project bewerken",
       "edit-type": "{type} bewerken",
       "increase-count": "Aantal {type} verhogen",
-      "save": "Opslaan"
+      "save": "Opslaan",
+      "upload": "Uploaden"
    },
    "app-name": "Wooly",
    "filters": {
@@ -28,16 +30,31 @@
       "active": "Actief",
       "completed": "Afgewerkt",
       "language": "Taal",
-      "loading": "Laden",
+      "loading": "Laden...",
       "name": "Naam",
       "no-results-for-type": "Er zijn nog geen {type}",
       "status": "Status"
    },
+   "home": {
+      "skein-insights": "Gareninzichten"
+   },
    "parts": {
-      "part": "Onderdeel | Onderdelen",
+      "no-parts": "Nog geen onderdelen",
+      "no-parts-hint": "Maak je eerste onderdeel om te beginnen met bijhouden",
+      "part": "Onderdeel | Onderdelen",
+      "parts": "Onderdelen",
       "row-count": "Aantal rijen"
    },
+   "tabs": {
+      "overview": "Overzicht",
+      "parts": "Onderdelen",
+      "photos": "Foto's",
+      "skeins": "Skeins"
+   },
    "trackers": {
+      "no-skeins": "Nog geen skeins",
+      "no-skeins-hint": "Voeg je eerste garen skein toe om bij te houden",
+      "more-skeins": "+{count} extra skeins",
       "skein": "Skein | Skeins",
       "skein-count": "Skein telling",
       "skein-existing": "Bestaande skein",
@@ -45,22 +62,39 @@
       "skein-name-placeholder": "Typ een nieuwe skeinnaam",
       "skeins-used": "Gebruikte skeins",
       "skeins-used-description": "Totaal aantal skeins geregistreerd over je projecten.",
+      "total-skeins": "Totaal Skeins",
       "tracker": "Garen tracker | Garen trackers",
-      "tracker-description": "Registreer skeins en hou het totaal zichtbaar."
+      "tracker-description": "Registreer skeins en hou het totaal zichtbaar.",
+      "yarn-skeins": "Garen Skeins"
    },
    "photos": {
       "add": "Foto's toevoegen",
       "hint": "Afbeeldingen worden automatisch gecomprimeerd en moeten 10 MB of kleiner zijn.",
       "max-size-error": "Foto moet 10 MB of kleiner zijn",
       "next": "Volgende foto",
+      "no-photos": "Nog geen foto's",
+      "no-photos-hint": "Upload je eerste projectfoto",
       "open-viewer": "Afbeeldingsviewer openen",
       "photo": "Foto | Foto's",
+      "photos": "Foto's",
       "position": "Foto {current} van {total}",
       "previous": "Vorige foto",
       "upload-error": "Kon foto niet uploaden"
    },
    "projects": {
-      "project": "Project | Projecten"
+      "active": "Actief",
+      "completed": "Afgewerkt",
+      "empty-hint": "Start je eerste project en maak van je ideeën meetbare voortgang.",
+      "empty-title": "Nog geen projecten",
+      "name": "Naam",
+      "project": "Project | Projecten",
+      "projects": "Projecten",
+      "status": "Status",
+      "visible-count": "{count} zichtbaar"
+   },
+   "status": {
+      "offline": "Offline",
+      "online": "Online"
    },
    "settings": {
       "logout": "Afmelden",

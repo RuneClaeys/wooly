@@ -6,13 +6,9 @@ import { useRouteNumericParam } from '~/composables/useRouteNumericParam';
 //#region Globals
 const { projectRouter, partRouter, skeinRouter } = useTrpcClient();
 const { promptDeleteConfirmation } = useConfirmation();
+const { success: showSuccessToast, error: showErrorToast } = useToast();
 const { t } = useI18n();
-const colorMode = useColorMode();
 const projectId = useRouteNumericParam('id');
-
-const isDark = computed(() => colorMode.value === 'dark');
-const fabColor = computed(() => (isDark.value ? 'neutral' : 'primary'));
-const fabVariant = computed(() => (isDark.value ? 'soft' : 'solid'));
 //#endregion
 
 //#region Get Project
@@ -42,8 +38,14 @@ const skeinInput = computed(() => ({
    sorting: query.value,
 }));
 
-const { data: skeinUsages, execute: refreshSkeins, pending: pendingSkeins } = skeinRouter.list.useQuery(skeinInput, { watch: [skeinInput], deep: true });
-const skeinTotal = computed<number>(() => (skeinUsages.value ?? []).reduce((total: number, skein: SkeinUsageRow) => total + (skein.counter ?? 0), 0));
+const {
+   data: skeinUsages,
+   execute: refreshSkeins,
+   pending: pendingSkeins,
+} = skeinRouter.list.useQuery(skeinInput, { watch: [skeinInput], deep: true });
+const skeinTotal = computed<number>(() =>
+   (skeinUsages.value ?? []).reduce((total: number, skein: SkeinUsageRow) => total + (skein.counter ?? 0), 0),
+);
 //#endregion
 
 //#region Project Photos
@@ -100,15 +102,17 @@ async function uploadPhotos(event: Event) {
          const formData = new FormData();
          formData.append('file', compressedFile, compressedFile.name || file.name);
 
-             await $fetch(`/api/projects/${projectId.value}/photos`, {
+         await $fetch(`/api/projects/${projectId.value}/photos`, {
             method: 'POST',
             body: formData,
          });
       }
 
       await refreshPhotos();
+      showSuccessToast(t('photos.add'));
    } catch {
       photoError.value = t('photos.upload-error');
+      showErrorToast(t('photos.upload-error'));
    } finally {
       target.value = '';
       uploadingPhoto.value = false;
@@ -117,19 +121,25 @@ async function uploadPhotos(event: Event) {
 
 async function deletePhoto(photo: SelectProjectPhoto) {
    promptDeleteConfirmation(t('photos.photo'), async (done) => {
-      await projectRouter.deletePhoto.mutate(photo.id);
-      done();
+      try {
+         await projectRouter.deletePhoto.mutate(photo.id);
+         done();
 
-      if (showPhotoViewer.value && activePhoto.value?.id === photo.id) {
-         showPhotoViewer.value = false;
-      }
+         if (showPhotoViewer.value && activePhoto.value?.id === photo.id) {
+            showPhotoViewer.value = false;
+         }
 
-      await refreshPhotos();
+         await refreshPhotos();
 
-      if (photos.value?.length) {
-         activePhotoIndex.value = Math.min(activePhotoIndex.value, photos.value.length - 1);
-      } else {
-         activePhotoIndex.value = 0;
+         if (photos.value?.length) {
+            activePhotoIndex.value = Math.min(activePhotoIndex.value, photos.value.length - 1);
+         } else {
+            activePhotoIndex.value = 0;
+         }
+
+         showSuccessToast(t('actions.delete'));
+      } catch {
+         showErrorToast(t('actions.confirm-delete-type', { type: t('photos.photo') }));
       }
    });
 }
@@ -184,46 +194,52 @@ onBeforeUnmount(() => {
 
 //#region Add Part
 const showCreatePartForm = ref(false);
-const sortDelay = ref<ReturnType<typeof setTimeout> | undefined>(undefined);
 
 async function createPart(payload: { part: { name: string; counter: number }; done: () => void }) {
-   const response = await partRouter.create.mutate({
-      projectId: projectId.value,
-      name: payload.part.name,
-      counter: payload.part.counter,
-   });
+   try {
+      const response = await partRouter.create.mutate({
+         projectId: projectId.value,
+         name: payload.part.name,
+         counter: payload.part.counter,
+      });
 
-   if (response) refresh();
-   showCreatePartForm.value = false;
-   payload.done();
+      if (response) refresh();
+      showCreatePartForm.value = false;
+      payload.done();
+      showSuccessToast(t('actions.save'));
+   } catch {
+      showErrorToast(t('form.field-required'));
+   }
 }
 
 async function deletePart(id: number) {
    promptDeleteConfirmation(t('parts.part'), async (done) => {
-      await partRouter.delete.mutate(id);
-      done();
-      parts.value = (parts.value ?? []).filter((part: SelectPart) => part.id !== id);
+      try {
+         await partRouter.delete.mutate(id);
+         done();
+         parts.value = (parts.value ?? []).filter((part: SelectPart) => part.id !== id);
+         showSuccessToast(t('actions.delete'));
+      } catch {
+         showErrorToast(t('actions.confirm-delete-type', { type: t('parts.part') }));
+      }
    });
 }
 
 async function incrementOrDecrement(part: SelectPart, increment: boolean) {
+   const previousCounter = part.counter;
    try {
       part.counter += increment ? 1 : -1;
       await partRouter.update.mutate({ ...part });
-      if (sortDelay.value) clearTimeout(sortDelay.value);
-
-      sortDelay.value = setTimeout(() => {
-         refresh();
-      }, 1000);
+      await refresh();
    } catch {
-      part.counter -= increment ? 1 : -1;
+      part.counter = previousCounter;
+      showErrorToast(t('actions.save'));
    }
 }
 //#endregion
 
 //#region Add Skein
 const showCreateSkeinForm = ref(false);
-const skeinSortDelay = ref<ReturnType<typeof setTimeout> | undefined>(undefined);
 
 async function ensureCatalogSkein(skein: { skeinId: number | null; skeinName: string; counter: number }) {
    if (skein.skeinId) return skein.skeinId;
@@ -234,38 +250,46 @@ async function ensureCatalogSkein(skein: { skeinId: number | null; skeinName: st
 }
 
 async function createSkein(payload: { skein: { skeinId: number | null; skeinName: string; counter: number }; done: () => void }) {
-   const skeinId = await ensureCatalogSkein(payload.skein);
+   try {
+      const skeinId = await ensureCatalogSkein(payload.skein);
 
-   const response = await skeinRouter.create.mutate({
-      projectId: projectId.value,
-      skeinId,
-      counter: payload.skein.counter,
-   });
+      const response = await skeinRouter.create.mutate({
+         projectId: projectId.value,
+         skeinId,
+         counter: payload.skein.counter,
+      });
 
-   if (response) refreshSkeins();
-   showCreateSkeinForm.value = false;
-   payload.done();
+      if (response) refreshSkeins();
+      showCreateSkeinForm.value = false;
+      payload.done();
+      showSuccessToast(t('actions.save'));
+   } catch {
+      showErrorToast(t('form.field-required'));
+   }
 }
 
 async function deleteSkein(id: number) {
    promptDeleteConfirmation(t('trackers.skein'), async (done) => {
-      await skeinRouter.delete.mutate(id);
-      done();
-      skeinUsages.value = (skeinUsages.value ?? []).filter((skein: SkeinUsageRow) => skein.id !== id);
+      try {
+         await skeinRouter.delete.mutate(id);
+         done();
+         skeinUsages.value = (skeinUsages.value ?? []).filter((skein: SkeinUsageRow) => skein.id !== id);
+         showSuccessToast(t('actions.delete'));
+      } catch {
+         showErrorToast(t('actions.confirm-delete-type', { type: t('trackers.skein') }));
+      }
    });
 }
 
 async function incrementOrDecrementSkein(skein: SkeinUsageRow, increment: boolean) {
+   const previousCounter = skein.counter;
    try {
       skein.counter += increment ? 1 : -1;
       await skeinRouter.update.mutate({ id: skein.id, skeinId: skein.skeinId, counter: skein.counter });
-      if (skeinSortDelay.value) clearTimeout(skeinSortDelay.value);
-
-      skeinSortDelay.value = setTimeout(() => {
-         refreshSkeins();
-      }, 1000);
+      await refreshSkeins();
    } catch {
-      skein.counter -= increment ? 1 : -1;
+      skein.counter = previousCounter;
+      showErrorToast(t('actions.save'));
    }
 }
 //#endregion
@@ -275,12 +299,17 @@ const showEditSkeinForm = ref(false);
 const skeinToEdit = ref<SkeinUsageRow | undefined>(undefined);
 
 async function changeSkein(payload: { skein: { skeinId: number | null; skeinName: string; counter: number }; done: () => void }) {
-   const skeinId = await ensureCatalogSkein(payload.skein);
+   try {
+      const skeinId = await ensureCatalogSkein(payload.skein);
 
-   const response = await skeinRouter.update.mutate({ id: skeinToEdit.value!.id, skeinId, counter: payload.skein.counter });
-   if (response) refreshSkeins();
-   showEditSkeinForm.value = false;
-   payload.done();
+      const response = await skeinRouter.update.mutate({ id: skeinToEdit.value!.id, skeinId, counter: payload.skein.counter });
+      if (response) refreshSkeins();
+      showEditSkeinForm.value = false;
+      payload.done();
+      showSuccessToast(t('actions.save'));
+   } catch {
+      showErrorToast(t('actions.save'));
+   }
 }
 
 function editSkein(skein: SkeinUsageRow) {
@@ -299,10 +328,15 @@ const showEditProjectForm = ref(false);
 const partToEdit = ref<SelectPart | undefined>(undefined);
 
 async function changePart(payload: { part: { name: string; counter: number }; done: () => void }) {
-   const response = await partRouter.update.mutate({ ...payload.part, id: partToEdit.value!.id });
-   if (response) refresh();
-   showEditProjectForm.value = false;
-   payload.done();
+   try {
+      const response = await partRouter.update.mutate({ ...payload.part, id: partToEdit.value!.id });
+      if (response) refresh();
+      showEditProjectForm.value = false;
+      payload.done();
+      showSuccessToast(t('actions.save'));
+   } catch {
+      showErrorToast(t('actions.save'));
+   }
 }
 
 function editPart(part: SelectPart) {
@@ -320,45 +354,45 @@ function handlePartAdjust(payload: { part: SelectPart; increment: boolean }) {
 <template>
    <NuxtLayout :root="false" :title="data?.name ?? $t('generic.loading')" navigate-back-to="/">
       <div class="space-y-4 pb-[calc(9rem+env(safe-area-inset-bottom))]">
-         <ProjectTrackersSection
-            :skein-usages="skeinUsages"
-            :skein-total="skeinTotal"
-            :pending="pendingSkeins"
-            @create="showCreateSkeinForm = true"
-            @edit="editSkein"
-            @delete="deleteSkein"
-            @adjust="handleSkeinAdjust"
-         />
+         <!-- Breadcrumb Navigation -->
+         <nav class="flex items-center gap-2 px-4 sm:px-0" aria-label="breadcrumb">
+            <NuxtLink to="/" class="text-sm text-primary-600 dark:text-primary-400 hover:underline">
+               {{ $t('projects.projects') }}
+            </NuxtLink>
+            <UIcon name="i-heroicons-chevron-right-16-solid" class="w-4 h-4 text-slate-400 dark:text-slate-600" />
+            <span class="text-sm wooly-text-main font-medium">
+               {{ data?.name ?? $t('generic.loading') }}
+            </span>
+         </nav>
 
-         <ProjectPhotosSection
-            :photos="photos"
-            :pending="pendingPhotos"
+         <!-- Tab-Based Content -->
+         <ProjectDetailTabs
+            :project-id="projectId"
+            :project-name="data?.name ?? ''"
+            :project-status="data?.finished ?? false"
+            :parts="parts ?? null"
+            :photos="photos ?? null"
+            :skein-usages="skeinUsages ?? null"
+            :skein-catalog="skeinCatalog ?? null"
+            :pending-parts="pending"
+            :pending-photos="pendingPhotos"
+            :pending-skeins="pendingSkeins"
             :uploading-photo="uploadingPhoto"
             :photo-error="photoError"
-            @upload="openUploadDialog"
-            @open="openPhotoViewerById"
-            @delete="deletePhoto"
+            @edit-part="editPart"
+            @delete-part="deletePart"
+            @adjust-part="handlePartAdjust"
+            @edit-skein="editSkein"
+            @delete-skein="deleteSkein"
+            @adjust-skein="handleSkeinAdjust"
+            @create-part="showCreatePartForm = true"
+            @create-skein="showCreateSkeinForm = true"
+            @upload-photo="openUploadDialog"
+            @open-photo="openPhotoViewerById"
+            @delete-photo="deletePhoto"
          />
 
-         <ProjectPartsSection
-            v-model:sorting="sorting"
-            :parts="parts"
-            :pending="pending"
-            @edit="editPart"
-            @delete="deletePart"
-            @adjust="handlePartAdjust"
-         />
-
-         <UButton
-            class="wooly-fab tap-target tap-target-icon"
-            size="xl"
-            icon="i-heroicons-plus-16-solid"
-            :color="fabColor"
-            :variant="fabVariant"
-            :aria-label="$t('actions.create-type', { type: $t('parts.part') })"
-            @click="showCreatePartForm = true"
-         />
-
+         <!-- Photo Viewer Modal -->
          <UModal
             v-model:open="showPhotoViewer"
             :title="activePhoto?.name ?? $t('photos.photo')"
@@ -377,7 +411,10 @@ function handlePartAdjust(payload: { part: SelectPart; increment: boolean }) {
                   <div class="relative overflow-hidden rounded-xl bg-neutral-950/95">
                      <img :src="photoSrc(activePhoto.id)" :alt="activePhoto.name" class="max-h-[70vh] w-full object-contain" />
 
-                     <div v-if="hasMultiplePhotos" class="pointer-events-none absolute inset-y-0 left-0 right-0 flex items-center justify-between px-2">
+                     <div
+                        v-if="hasMultiplePhotos"
+                        class="pointer-events-none absolute inset-y-0 left-0 right-0 flex items-center justify-between px-2"
+                     >
                         <UButton
                            icon="i-heroicons-chevron-left-16-solid"
                            color="neutral"
@@ -410,10 +447,14 @@ function handlePartAdjust(payload: { part: SelectPart; increment: boolean }) {
             </template>
          </UModal>
 
+         <!-- Modals -->
          <ModalsPart v-model="showCreatePartForm" @save-part="createPart" />
          <ModalsPart v-model="showEditProjectForm" :initial-part="partToEdit" @save-part="changePart" />
          <ModalsSkein v-model="showCreateSkeinForm" :catalog-items="catalogItems" @save-skein="createSkein" />
          <ModalsSkein v-model="showEditSkeinForm" :catalog-items="catalogItems" :initial-usage="skeinToEdit" @save-skein="changeSkein" />
+
+         <!-- Hidden File Input -->
+         <input ref="uploadInput" type="file" accept="image/*" multiple class="hidden" @change="uploadPhotos" />
       </div>
    </NuxtLayout>
 </template>
