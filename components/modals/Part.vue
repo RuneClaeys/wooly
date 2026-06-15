@@ -86,7 +86,12 @@ function handleCounterBlur() {
 </script>
 
 <template>
-   <UModal v-model:open="open" :title="modalTitle" :ui="{ content: 'mx-2 w-[calc(100%-1rem)] sm:mx-0 sm:max-w-lg' }" @update:open="() => (errors.value = {})">
+   <UModal
+      v-model:open="open"
+      :title="modalTitle"
+      :ui="{ content: 'mx-2 w-[calc(100%-1rem)] sm:mx-0 sm:max-w-lg' }"
+      @update:open="() => (errors.value = {})"
+   >
       <template #body>
          <div class="space-y-4">
             <FormField
@@ -115,7 +120,9 @@ function handleCounterBlur() {
 
       <template #footer>
          <div class="flex justify-end gap-2">
-            <UButton class="tap-target" variant="soft" color="neutral" :disabled="isSubmitting" @click="open = false">{{ $t('actions.cancel') }}</UButton>
+            <UButton class="tap-target" variant="soft" color="neutral" :disabled="isSubmitting" @click="open = false">{{
+               $t('actions.cancel')
+            }}</UButton>
             <UButton
                class="tap-target"
                color="primary"

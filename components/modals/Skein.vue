@@ -21,7 +21,9 @@ const skein = ref<SkeinForm>({
 const errors = ref<Record<string, string>>({});
 const isSubmitting = ref(false);
 
-const modalTitle = computed(() => (props.initialUsage ? t('actions.edit-type', { type: t('trackers.skein') }) : t('actions.create-type', { type: t('trackers.skein') })));
+const modalTitle = computed(() =>
+   props.initialUsage ? t('actions.edit-type', { type: t('trackers.skein') }) : t('actions.create-type', { type: t('trackers.skein') }),
+);
 
 watch(
    () => props.initialUsage,
@@ -131,7 +133,12 @@ function handleCounterBlur() {
 </script>
 
 <template>
-   <UModal v-model:open="open" :title="modalTitle" :ui="{ content: 'mx-2 w-[calc(100%-1rem)] sm:mx-0 sm:max-w-lg' }" @update:open="() => (errors.value = {})">
+   <UModal
+      v-model:open="open"
+      :title="modalTitle"
+      :ui="{ content: 'mx-2 w-[calc(100%-1rem)] sm:mx-0 sm:max-w-lg' }"
+      @update:open="() => (errors.value = {})"
+   >
       <template #body>
          <div class="space-y-4">
             <div class="space-y-1.5">
@@ -170,7 +177,9 @@ function handleCounterBlur() {
 
       <template #footer>
          <div class="flex justify-end gap-2">
-            <UButton class="tap-target" variant="soft" color="neutral" :disabled="isSubmitting" @click="open = false">{{ $t('actions.cancel') }}</UButton>
+            <UButton class="tap-target" variant="soft" color="neutral" :disabled="isSubmitting" @click="open = false">{{
+               $t('actions.cancel')
+            }}</UButton>
             <UButton
                class="tap-target"
                color="primary"

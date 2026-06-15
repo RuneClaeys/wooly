@@ -86,7 +86,9 @@ const statusOptions = computed(() => [
    </div>
 
    <div v-if="!pending && !projects?.length" class="wooly-shell px-6 py-10 text-center space-y-4">
-      <div class="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-primary-100/70 text-primary-600 dark:bg-primary-950/40 dark:text-primary-300">
+      <div
+         class="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-primary-100/70 text-primary-600 dark:bg-primary-950/40 dark:text-primary-300"
+      >
          <UIcon name="i-heroicons-folder-plus-16-solid" class="h-7 w-7" />
       </div>
       <div class="space-y-1">

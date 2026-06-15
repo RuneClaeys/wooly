@@ -55,9 +55,7 @@ const displayValue = computed(() => {
             class="wooly-input"
             :class="[
                'min-h-[44px] px-3 py-2 rounded-lg font-normal',
-               hasError
-                  ? 'ring-1 ring-error-500 dark:ring-error-400'
-                  : 'ring-1 ring-slate-200 dark:ring-slate-700 focus:ring-primary-500',
+               hasError ? 'ring-1 ring-error-500 dark:ring-error-400' : 'ring-1 ring-slate-200 dark:ring-slate-700 focus:ring-primary-500',
             ]"
             @update:model-value="$emit('update:modelValue', $event)"
             @blur="$emit('blur')"

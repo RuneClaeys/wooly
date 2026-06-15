@@ -89,10 +89,7 @@ defineProps({
                      "
                      :title="isOnline ? 'Online' : 'Offline'"
                   >
-                     <div
-                        class="w-2 h-2 rounded-full"
-                        :class="isOnline ? 'bg-success-500' : 'bg-slate-400'"
-                     />
+                     <div class="w-2 h-2 rounded-full" :class="isOnline ? 'bg-success-500' : 'bg-slate-400'" />
                      <span class="hidden sm:inline">{{ isOnline ? $t('status.online') : $t('status.offline') }}</span>
                   </div>
 

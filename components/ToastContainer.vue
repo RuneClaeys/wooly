@@ -31,15 +31,8 @@ const getToastColor = (type: string) => {
          :style="{ maxWidth: 'min(calc(100vw - 2rem), 24rem)' }"
       >
          <TransitionGroup name="toast" tag="div" class="flex flex-col gap-2">
-            <div
-               v-for="toast in toasts"
-               :key="toast.id"
-               class="wooly-slide-in-up pointer-events-auto"
-            >
-               <UCard
-                  class="wooly-shell flex gap-3 items-start p-4"
-                  :ui="{ base: 'relative' }"
-               >
+            <div v-for="toast in toasts" :key="toast.id" class="wooly-slide-in-up pointer-events-auto">
+               <UCard class="wooly-shell flex gap-3 items-start p-4" :ui="{ base: 'relative' }">
                   <UIcon
                      :name="getToastIcon(toast.type)"
                      :class="[

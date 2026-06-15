@@ -220,7 +220,8 @@ body::before {
 }
 
 @keyframes woolyCounterPulse {
-   0%, 100% {
+   0%,
+   100% {
       transform: scale(1);
    }
 
@@ -288,23 +289,13 @@ body::before {
 
 /* Skeleton loader shimmer */
 .wooly-skeleton {
-   background: linear-gradient(
-      90deg,
-      var(--wooly-bg-2) 0%,
-      var(--wooly-bg-3) 50%,
-      var(--wooly-bg-2) 100%
-   );
+   background: linear-gradient(90deg, var(--wooly-bg-2) 0%, var(--wooly-bg-3) 50%, var(--wooly-bg-2) 100%);
    background-size: 200% 100%;
    animation: none;
 }
 
 .dark .wooly-skeleton {
-   background: linear-gradient(
-      90deg,
-      var(--wooly-bg-2) 0%,
-      var(--wooly-bg-3) 50%,
-      var(--wooly-bg-2) 100%
-   );
+   background: linear-gradient(90deg, var(--wooly-bg-2) 0%, var(--wooly-bg-3) 50%, var(--wooly-bg-2) 100%);
 }
 
 /* Enhanced focus ring for accessibility */

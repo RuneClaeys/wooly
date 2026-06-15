@@ -28,10 +28,16 @@ defineProps<{
       </div>
 
       <div v-if="skeinSummary?.length" class="space-y-2">
-         <div v-for="skein in compact ? skeinSummary.slice(0, 4) : skeinSummary" :key="skein.skeinId" class="flex items-center justify-between rounded-xl bg-pink-50/70 px-4 py-3 dark:bg-pink-950/35">
+         <div
+            v-for="skein in compact ? skeinSummary.slice(0, 4) : skeinSummary"
+            :key="skein.skeinId"
+            class="flex items-center justify-between rounded-xl bg-pink-50/70 px-4 py-3 dark:bg-pink-950/35"
+         >
             <div class="min-w-0">
                <p class="truncate font-medium text-pink-900 dark:text-pink-100">{{ skein.skeinName }}</p>
-               <p class="text-xs text-pink-800 dark:text-pink-200">{{ skein.projectCount }} {{ $t('projects.project', skein.projectCount) }}</p>
+               <p class="text-xs text-pink-800 dark:text-pink-200">
+                  {{ skein.projectCount }} {{ $t('projects.project', skein.projectCount) }}
+               </p>
             </div>
 
             <p class="ml-4 text-lg font-semibold text-pink-900 dark:text-pink-100">{{ skein.totalCounter }}</p>

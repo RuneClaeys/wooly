@@ -75,10 +75,7 @@ onMounted(() => {
             @click="activeTab = tab"
          >
             {{ $t(`tabs.${tab}`) }}
-            <div
-               v-if="activeTab === tab"
-               class="absolute bottom-0 left-0 right-0 h-0.5 bg-primary-600 dark:bg-primary-400"
-            />
+            <div v-if="activeTab === tab" class="absolute bottom-0 left-0 right-0 h-0.5 bg-primary-600 dark:bg-primary-400" />
          </button>
       </div>
 

@@ -20,13 +20,9 @@ interface Emits {
 const props = defineProps<Props>();
 defineEmits<Emits>();
 
-const skeinTotal = computed(() =>
-   (props.skeinUsages ?? []).reduce((total, skein) => total + (skein.counter ?? 0), 0),
-);
+const skeinTotal = computed(() => (props.skeinUsages ?? []).reduce((total, skein) => total + (skein.counter ?? 0), 0));
 
-const hasAnyData = computed(
-   () => (props.skeinUsages?.length ?? 0) > 0,
-);
+const hasAnyData = computed(() => (props.skeinUsages?.length ?? 0) > 0);
 </script>
 
 <template>
@@ -73,30 +69,21 @@ const hasAnyData = computed(
          </div>
 
          <!-- Empty State -->
-         <div
-            v-else-if="!hasAnyData"
-            class="wooly-shell rounded-xl p-6 text-center space-y-3"
-         >
-            <UIcon
-               name="i-heroicons-cube-16-solid"
-               class="w-12 h-12 mx-auto wooly-muted"
-            />
+         <div v-else-if="!hasAnyData" class="wooly-shell rounded-xl p-6 text-center space-y-3">
+            <UIcon name="i-heroicons-cube-16-solid" class="w-12 h-12 mx-auto wooly-muted" />
             <div>
                <p class="wooly-title text-sm">{{ $t('trackers.no-skeins') }}</p>
                <p class="wooly-muted text-xs mt-1">{{ $t('trackers.no-skeins-hint') }}</p>
             </div>
-            <UButton
-               size="sm"
-               icon="i-heroicons-plus-16-solid"
-               :label="$t('actions.add')"
-               @click="$emit('create')"
-            />
+            <UButton size="sm" icon="i-heroicons-plus-16-solid" :label="$t('actions.add')" @click="$emit('create')" />
          </div>
 
          <!-- Skeins List -->
          <div v-else class="space-y-2">
             <!-- Summary Card -->
-            <UCard class="wooly-shell bg-gradient-to-r from-primary-50/50 to-primary-100/30 dark:from-primary-950/30 dark:to-primary-900/20">
+            <UCard
+               class="wooly-shell bg-gradient-to-r from-primary-50/50 to-primary-100/30 dark:from-primary-950/30 dark:to-primary-900/20"
+            >
                <div class="flex items-center justify-between">
                   <div>
                      <p class="wooly-muted text-xs">{{ $t('trackers.total-skeins') }}</p>

@@ -32,17 +32,13 @@ export const useToast = () => {
       toasts.value = toasts.value.filter((t) => t.id !== id);
    };
 
-   const success = (message: string, duration?: number) =>
-      addToast({ type: 'success', message, duration });
+   const success = (message: string, duration?: number) => addToast({ type: 'success', message, duration });
 
-   const error = (message: string, duration?: number) =>
-      addToast({ type: 'error', message, duration });
+   const error = (message: string, duration?: number) => addToast({ type: 'error', message, duration });
 
-   const info = (message: string, duration?: number) =>
-      addToast({ type: 'info', message, duration });
+   const info = (message: string, duration?: number) => addToast({ type: 'info', message, duration });
 
-   const warning = (message: string, duration?: number) =>
-      addToast({ type: 'warning', message, duration });
+   const warning = (message: string, duration?: number) => addToast({ type: 'warning', message, duration });
 
    return {
       toasts,
