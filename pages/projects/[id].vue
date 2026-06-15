@@ -1,13 +1,14 @@
 <script lang="ts" setup>
 import imageCompression from 'browser-image-compression';
-import type { SelectPart, SelectProjectPhoto } from '~/db/schema';
+import type { SelectPart, SelectProjectPhoto, SelectYarnSkein } from '~/db/schema';
+import { useRouteNumericParam } from '~/composables/useRouteNumericParam';
 
 //#region Globals
-const route = useRoute('projects-id');
 const { projectRouter, partRouter, skeinRouter } = useTrpcClient();
 const { promptDeleteConfirmation } = useConfirmation();
 const { t } = useI18n();
 const colorMode = useColorMode();
+const projectId = useRouteNumericParam('id');
 
 const isDark = computed(() => colorMode.value === 'dark');
 const fabColor = computed(() => (isDark.value ? 'neutral' : 'primary'));
@@ -15,12 +16,12 @@ const fabVariant = computed(() => (isDark.value ? 'soft' : 'solid'));
 //#endregion
 
 //#region Get Project
-const { data } = projectRouter.get.useQuery(+route.params.id);
+const { data } = projectRouter.get.useQuery(projectId);
 
 const { sorting, query } = useSorting('parts');
 
 const input = computed(() => ({
-   projectId: +route.params.id,
+   projectId: projectId.value,
    sorting: query.value,
 }));
 
@@ -33,20 +34,19 @@ type SkeinUsageRow = { id: number; skeinId: number; skeinName: string; counter: 
 
 const { data: skeinCatalog } = skeinRouter.catalogList.useQuery();
 const catalogItems = computed<SkeinCatalogItem[]>(() =>
-   (skeinCatalog.value ?? []).map((skein) => ({ label: skein.name, value: skein.id })),
+   (skeinCatalog.value ?? []).map((skein: SelectYarnSkein) => ({ label: skein.name, value: skein.id })),
 );
 
 const skeinInput = computed(() => ({
-   projectId: +route.params.id,
+   projectId: projectId.value,
    sorting: query.value,
 }));
 
 const { data: skeinUsages, execute: refreshSkeins, pending: pendingSkeins } = skeinRouter.list.useQuery(skeinInput, { watch: [skeinInput], deep: true });
-const skeinTotal = computed(() => (skeinUsages.value ?? []).reduce((total, skein) => total + (skein.counter ?? 0), 0));
+const skeinTotal = computed<number>(() => (skeinUsages.value ?? []).reduce((total: number, skein: SkeinUsageRow) => total + (skein.counter ?? 0), 0));
 //#endregion
 
 //#region Project Photos
-const projectId = computed(() => +route.params.id);
 const {
    data: photos,
    execute: refreshPhotos,
@@ -60,9 +60,9 @@ const photoError = ref<string | null>(null);
 const showPhotoViewer = ref(false);
 const activePhotoIndex = ref(0);
 
-const photoSrc = (photoId: number) => `/api/projects/${route.params.id}/photos/${photoId}`;
+const photoSrc = (photoId: number) => `/api/projects/${projectId.value}/photos/${photoId}`;
 
-const activePhoto = computed(() => photos.value?.[activePhotoIndex.value] ?? null);
+const activePhoto = computed<SelectProjectPhoto | null>(() => photos.value?.[activePhotoIndex.value] ?? null);
 
 const hasMultiplePhotos = computed(() => (photos.value?.length ?? 0) > 1);
 
@@ -100,7 +100,7 @@ async function uploadPhotos(event: Event) {
          const formData = new FormData();
          formData.append('file', compressedFile, compressedFile.name || file.name);
 
-         await $fetch(`/api/projects/${route.params.id}/photos`, {
+             await $fetch(`/api/projects/${projectId.value}/photos`, {
             method: 'POST',
             body: formData,
          });
@@ -135,7 +135,7 @@ async function deletePhoto(photo: SelectProjectPhoto) {
 }
 
 function openPhotoViewerById(photoId: number) {
-   const foundIndex = photos.value?.findIndex((photo) => photo.id === photoId) ?? -1;
+   const foundIndex = photos.value?.findIndex((photo: SelectProjectPhoto) => photo.id === photoId) ?? -1;
 
    if (foundIndex < 0) return;
 
@@ -188,7 +188,7 @@ const sortDelay = ref<ReturnType<typeof setTimeout> | undefined>(undefined);
 
 async function createPart(payload: { part: { name: string; counter: number }; done: () => void }) {
    const response = await partRouter.create.mutate({
-      projectId: +route.params.id,
+      projectId: projectId.value,
       name: payload.part.name,
       counter: payload.part.counter,
    });
@@ -202,11 +202,11 @@ async function deletePart(id: number) {
    promptDeleteConfirmation(t('parts.part'), async (done) => {
       await partRouter.delete.mutate(id);
       done();
-      parts.value = (parts.value ?? []).filter((part) => part.id !== id);
+      parts.value = (parts.value ?? []).filter((part: SelectPart) => part.id !== id);
    });
 }
 
-async function incrementOrDecrement(part: Required<SelectPart>, increment: boolean) {
+async function incrementOrDecrement(part: SelectPart, increment: boolean) {
    try {
       part.counter += increment ? 1 : -1;
       await partRouter.update.mutate({ ...part });
@@ -229,6 +229,7 @@ async function ensureCatalogSkein(skein: { skeinId: number | null; skeinName: st
    if (skein.skeinId) return skein.skeinId;
 
    const created = await skeinRouter.catalogCreate.mutate({ name: skein.skeinName });
+   if (!created) throw new Error('Unable to create skein');
    return created.id;
 }
 
@@ -236,7 +237,7 @@ async function createSkein(payload: { skein: { skeinId: number | null; skeinName
    const skeinId = await ensureCatalogSkein(payload.skein);
 
    const response = await skeinRouter.create.mutate({
-      projectId: +route.params.id,
+      projectId: projectId.value,
       skeinId,
       counter: payload.skein.counter,
    });
@@ -250,7 +251,7 @@ async function deleteSkein(id: number) {
    promptDeleteConfirmation(t('trackers.skein'), async (done) => {
       await skeinRouter.delete.mutate(id);
       done();
-      skeinUsages.value = (skeinUsages.value ?? []).filter((skein) => skein.id !== id);
+      skeinUsages.value = (skeinUsages.value ?? []).filter((skein: SkeinUsageRow) => skein.id !== id);
    });
 }
 
@@ -287,6 +288,10 @@ function editSkein(skein: SkeinUsageRow) {
    showEditSkeinForm.value = true;
 }
 
+function handleSkeinAdjust(payload: { skein: SkeinUsageRow; increment: boolean }) {
+   return incrementOrDecrementSkein(payload.skein, payload.increment);
+}
+
 //#endregion
 
 //#region Edit Part
@@ -305,280 +310,44 @@ function editPart(part: SelectPart) {
    showEditProjectForm.value = true;
 }
 
+function handlePartAdjust(payload: { part: SelectPart; increment: boolean }) {
+   return incrementOrDecrement(payload.part, payload.increment);
+}
+
 //#endregion
 </script>
 
 <template>
    <NuxtLayout :root="false" :title="data?.name ?? $t('generic.loading')" navigate-back-to="/">
       <div class="space-y-4 pb-[calc(9rem+env(safe-area-inset-bottom))]">
-         <LayoutHeading :title="$t('photos.photo', 2)" />
+         <ProjectTrackersSection
+            :skein-usages="skeinUsages"
+            :skein-total="skeinTotal"
+            :pending="pendingSkeins"
+            @create="showCreateSkeinForm = true"
+            @edit="editSkein"
+            @delete="deleteSkein"
+            @adjust="handleSkeinAdjust"
+         />
 
-         <LayoutHeading :title="$t('trackers.tracker', 2)">
-            <template #otherFilters>
-               <UButton
-                  icon="i-heroicons-plus-16-solid"
-                  color="primary"
-                  variant="soft"
-                  size="md"
-                  class="tap-target"
-                  :aria-label="$t('actions.create-type', { type: $t('trackers.skein') })"
-                  @click="showCreateSkeinForm = true"
-               >
-                  {{ $t('actions.create-type', { type: $t('trackers.skein') }) }}
-               </UButton>
-            </template>
-         </LayoutHeading>
+         <ProjectPhotosSection
+            :photos="photos"
+            :pending="pendingPhotos"
+            :uploading-photo="uploadingPhoto"
+            :photo-error="photoError"
+            @upload="openUploadDialog"
+            @open="openPhotoViewerById"
+            @delete="deletePhoto"
+         />
 
-         <div class="wooly-shell space-y-3 p-3 sm:p-4">
-            <div class="flex flex-wrap items-center justify-between gap-2">
-               <div>
-                  <p class="wooly-title text-base text-pink-900 dark:text-pink-100">{{ $t('trackers.tracker') }}</p>
-                  <p class="text-sm wooly-muted">{{ $t('trackers.tracker-description') }}</p>
-               </div>
-
-               <UBadge color="primary" variant="soft" size="sm">{{ skeinTotal }}</UBadge>
-            </div>
-
-            <div v-if="pendingSkeins" class="text-sm wooly-muted">{{ $t('generic.loading') }}</div>
-
-            <div v-else-if="skeinUsages?.length" v-auto-animate class="grid grid-cols-1 gap-3">
-               <UCard v-for="skein in skeinUsages ?? []" :key="skein.id" class="wooly-shell w-full">
-                  <div class="space-y-4">
-                     <div class="flex items-start justify-between gap-2">
-                        <p class="wooly-title text-base text-pink-900 dark:text-pink-100">{{ skein.skeinName }}</p>
-
-                        <div class="flex items-center gap-1">
-                           <UButton
-                              icon="i-heroicons-pencil-16-solid"
-                              variant="ghost"
-                              color="neutral"
-                              size="md"
-                              class="tap-target tap-target-icon"
-                              :aria-label="$t('actions.edit-type', { type: $t('trackers.skein') })"
-                              @click.stop="editSkein(skein)"
-                           />
-                           <UButton
-                              icon="i-heroicons-trash-16-solid"
-                              variant="ghost"
-                              color="error"
-                              size="md"
-                              class="tap-target tap-target-icon"
-                              :aria-label="$t('actions.delete-type', { type: $t('trackers.skein') })"
-                              @click.stop="deleteSkein(skein.id)"
-                           />
-                        </div>
-                     </div>
-
-                     <div class="rounded-xl bg-pink-50/70 p-2 dark:bg-pink-950/35">
-                        <div class="flex items-center justify-between gap-2">
-                           <small class="text-pink-800 dark:text-pink-200">{{ $t('trackers.skein-count') }}</small>
-
-                           <div class="flex items-center gap-2">
-                              <UButton
-                                 icon="i-heroicons-minus-16-solid"
-                                 variant="soft"
-                                 color="error"
-                                 size="md"
-                                 class="tap-target tap-target-icon"
-                                 :aria-label="$t('actions.decrease-count', { type: $t('trackers.skein') })"
-                                 @click.stop="incrementOrDecrementSkein(skein, false)"
-                              />
-
-                              <p class="min-w-10 text-center text-lg font-semibold text-pink-900 dark:text-pink-100">{{ skein.counter }}</p>
-
-                              <UButton
-                                 icon="i-heroicons-plus-16-solid"
-                                 variant="soft"
-                                 color="success"
-                                 size="md"
-                                 class="tap-target tap-target-icon"
-                                 :aria-label="$t('actions.increase-count', { type: $t('trackers.skein') })"
-                                 @click.stop="incrementOrDecrementSkein(skein, true)"
-                              />
-                           </div>
-                        </div>
-                     </div>
-                  </div>
-               </UCard>
-            </div>
-
-            <div v-else class="text-sm wooly-muted">{{ $t('generic.no-results-for-type', { type: $t('trackers.tracker', 2) }) }}</div>
-         </div>
-
-         <div class="wooly-shell space-y-3 p-3 sm:p-4">
-            <div class="flex flex-wrap items-center justify-between gap-2">
-               <UButton
-                  icon="i-heroicons-photo-16-solid"
-                  color="neutral"
-                  variant="soft"
-                  size="md"
-                  :loading="uploadingPhoto"
-                  :disabled="uploadingPhoto"
-                  :label="$t('photos.add')"
-                  @click="openUploadDialog"
-               />
-            </div>
-
-            <input ref="uploadInput" type="file" accept="image/*" multiple class="hidden" @change="uploadPhotos" />
-
-            <p v-if="photoError" class="text-sm text-red-600 dark:text-red-300">{{ photoError }}</p>
-
-            <div v-if="pendingPhotos" class="text-sm wooly-muted">{{ $t('generic.loading') }}</div>
-
-            <div v-else-if="photos?.length" class="-mx-1 flex gap-3 overflow-x-auto px-1 pb-1">
-               <div
-                  v-for="photo in photos"
-                  :key="photo.id"
-                  class="group wooly-shell relative w-40 shrink-0 overflow-hidden rounded-xl sm:w-48"
-               >
-                  <button
-                     type="button"
-                     class="block w-full text-left"
-                     :aria-label="$t('photos.open-viewer')"
-                     @click="openPhotoViewerById(photo.id)"
-                  >
-                     <img :src="photoSrc(photo.id)" :alt="photo.name" class="h-36 w-full object-cover" />
-                  </button>
-
-                  <div class="pointer-events-none absolute inset-x-0 bottom-0 bg-linear-to-t from-black/45 to-transparent p-2">
-                     <p class="truncate text-xs text-white">{{ photo.name }}</p>
-                  </div>
-
-                  <UButton
-                     icon="i-heroicons-trash-16-solid"
-                     color="error"
-                     variant="solid"
-                     size="xs"
-                     class="absolute right-2 top-2 opacity-90 transition-opacity duration-150 group-hover:opacity-100"
-                     :aria-label="$t('actions.delete-type', { type: $t('photos.photo') })"
-                     @click.stop="deletePhoto(photo)"
-                  />
-               </div>
-            </div>
-
-            <div v-else class="text-sm wooly-muted">{{ $t('generic.no-results-for-type', { type: $t('photos.photo', 2) }) }}</div>
-
-            <UModal
-               v-model:open="showPhotoViewer"
-               :title="activePhoto?.name ?? $t('photos.photo')"
-               :description="
-                  photos?.length
-                     ? $t('photos.position', {
-                          current: activePhotoIndex + 1,
-                          total: photos.length,
-                       })
-                     : undefined
-               "
-               :ui="{ content: 'mx-2 w-[calc(100%-1rem)] sm:mx-0 sm:max-w-4xl' }"
-            >
-               <template #body>
-                  <div v-if="activePhoto" class="space-y-3">
-                     <div class="relative overflow-hidden rounded-xl bg-neutral-950/95">
-                        <img :src="photoSrc(activePhoto.id)" :alt="activePhoto.name" class="max-h-[70vh] w-full object-contain" />
-
-                        <div
-                           v-if="hasMultiplePhotos"
-                           class="pointer-events-none absolute inset-y-0 left-0 right-0 flex items-center justify-between px-2"
-                        >
-                           <UButton
-                              icon="i-heroicons-chevron-left-16-solid"
-                              color="neutral"
-                              variant="solid"
-                              class="pointer-events-auto"
-                              :aria-label="$t('photos.previous')"
-                              @click="showPreviousPhoto"
-                           />
-
-                           <UButton
-                              icon="i-heroicons-chevron-right-16-solid"
-                              color="neutral"
-                              variant="solid"
-                              class="pointer-events-auto"
-                              :aria-label="$t('photos.next')"
-                              @click="showNextPhoto"
-                           />
-                        </div>
-                     </div>
-
-                     <p class="text-center text-sm wooly-muted">
-                        {{
-                           $t('photos.position', {
-                              current: activePhotoIndex + 1,
-                              total: photos?.length ?? 1,
-                           })
-                        }}
-                     </p>
-                  </div>
-               </template>
-            </UModal>
-         </div>
-
-         <LayoutHeading v-model:sorting="sorting" :title="$t('parts.part', 2)" />
-
-         <div v-auto-animate class="grid grid-cols-1 gap-3" :class="{ 'opacity-75': pending }">
-            <UCard v-for="part in parts ?? []" :key="part.id" class="wooly-shell w-full">
-               <div class="space-y-4">
-                  <div class="flex items-start justify-between gap-2">
-                     <p class="wooly-title text-base text-pink-900 dark:text-pink-100">{{ part.name }}</p>
-
-                     <div class="flex items-center gap-1">
-                        <UButton
-                           icon="i-heroicons-pencil-16-solid"
-                           variant="ghost"
-                           color="neutral"
-                           size="md"
-                           class="tap-target tap-target-icon"
-                           :aria-label="$t('actions.edit-type', { type: $t('parts.part') })"
-                           @click.stop="editPart(part)"
-                        />
-                        <UButton
-                           icon="i-heroicons-trash-16-solid"
-                           variant="ghost"
-                           color="error"
-                           size="md"
-                           class="tap-target tap-target-icon"
-                           :aria-label="$t('actions.delete-type', { type: $t('parts.part') })"
-                           @click.stop="deletePart(part.id)"
-                        />
-                     </div>
-                  </div>
-
-                  <div class="rounded-xl bg-pink-50/70 p-2 dark:bg-pink-950/35">
-                     <div class="flex items-center justify-between gap-2">
-                        <small class="text-pink-800 dark:text-pink-200">{{ $t('parts.row-count') }}</small>
-
-                        <div class="flex items-center gap-2">
-                           <UButton
-                              icon="i-heroicons-minus-16-solid"
-                              variant="soft"
-                              color="error"
-                              size="md"
-                              class="tap-target tap-target-icon"
-                              :aria-label="$t('actions.decrease-count', { type: $t('parts.part') })"
-                              @click.stop="incrementOrDecrement(part, false)"
-                           />
-
-                           <p class="min-w-10 text-center text-lg font-semibold text-pink-900 dark:text-pink-100">{{ part.counter }}</p>
-
-                           <UButton
-                              icon="i-heroicons-plus-16-solid"
-                              variant="soft"
-                              color="success"
-                              size="md"
-                              class="tap-target tap-target-icon"
-                              :aria-label="$t('actions.increase-count', { type: $t('parts.part') })"
-                              @click.stop="incrementOrDecrement(part, true)"
-                           />
-                        </div>
-                     </div>
-                  </div>
-               </div>
-            </UCard>
-         </div>
-
-         <div v-if="!pending && !parts?.length" class="wooly-shell px-6 py-10 text-center">
-            <p class="text-pink-900 dark:text-pink-100">{{ $t('generic.no-results-for-type', { type: $t('parts.part', 2) }) }}</p>
-         </div>
+         <ProjectPartsSection
+            v-model:sorting="sorting"
+            :parts="parts"
+            :pending="pending"
+            @edit="editPart"
+            @delete="deletePart"
+            @adjust="handlePartAdjust"
+         />
 
          <UButton
             class="wooly-fab tap-target tap-target-icon"
@@ -589,6 +358,57 @@ function editPart(part: SelectPart) {
             :aria-label="$t('actions.create-type', { type: $t('parts.part') })"
             @click="showCreatePartForm = true"
          />
+
+         <UModal
+            v-model:open="showPhotoViewer"
+            :title="activePhoto?.name ?? $t('photos.photo')"
+            :description="
+               photos?.length
+                  ? $t('photos.position', {
+                       current: activePhotoIndex + 1,
+                       total: photos.length,
+                    })
+                  : undefined
+            "
+            :ui="{ content: 'mx-2 w-[calc(100%-1rem)] sm:mx-0 sm:max-w-4xl' }"
+         >
+            <template #body>
+               <div v-if="activePhoto" class="space-y-3">
+                  <div class="relative overflow-hidden rounded-xl bg-neutral-950/95">
+                     <img :src="photoSrc(activePhoto.id)" :alt="activePhoto.name" class="max-h-[70vh] w-full object-contain" />
+
+                     <div v-if="hasMultiplePhotos" class="pointer-events-none absolute inset-y-0 left-0 right-0 flex items-center justify-between px-2">
+                        <UButton
+                           icon="i-heroicons-chevron-left-16-solid"
+                           color="neutral"
+                           variant="solid"
+                           class="pointer-events-auto"
+                           :aria-label="$t('photos.previous')"
+                           @click="showPreviousPhoto"
+                        />
+
+                        <UButton
+                           icon="i-heroicons-chevron-right-16-solid"
+                           color="neutral"
+                           variant="solid"
+                           class="pointer-events-auto"
+                           :aria-label="$t('photos.next')"
+                           @click="showNextPhoto"
+                        />
+                     </div>
+                  </div>
+
+                  <p class="text-center text-sm wooly-muted">
+                     {{
+                        $t('photos.position', {
+                           current: activePhotoIndex + 1,
+                           total: photos?.length ?? 1,
+                        })
+                     }}
+                  </p>
+               </div>
+            </template>
+         </UModal>
 
          <ModalsPart v-model="showCreatePartForm" @save-part="createPart" />
          <ModalsPart v-model="showEditProjectForm" :initial-part="partToEdit" @save-part="changePart" />

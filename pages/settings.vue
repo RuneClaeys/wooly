@@ -4,14 +4,20 @@ const { userRouter } = useTrpcClient();
 
 const { locale, setLocale } = useI18n();
 
+type Locale = 'en' | 'nl';
+const supportedLocales: Locale[] = ['en', 'nl'];
+
 const locales = computed(() => [
    { value: 'en', label: 'English' },
    { value: 'nl', label: 'Nederlands' },
 ]);
 
-function updateLocale(locale: 'en' | 'nl') {
-   setLocale(locale);
-   userRouter.updateLocale.mutate(locale);
+function updateLocale(nextLocale: string) {
+   if (!supportedLocales.includes(nextLocale as Locale)) return;
+
+   const localeValue = nextLocale as Locale;
+   setLocale(localeValue);
+   userRouter.updateLocale.mutate(localeValue);
 }
 </script>
 
