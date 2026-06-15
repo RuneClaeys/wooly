@@ -37,6 +37,17 @@
       "part": "Part | Components",
       "row-count": "Number of rows"
    },
+   "trackers": {
+      "skein": "Skein | Skeins",
+      "skein-count": "Skein count",
+      "skein-existing": "Existing skein",
+      "skein-name": "New skein name",
+      "skein-name-placeholder": "Type a new skein name",
+      "skeins-used": "Skeins used",
+      "skeins-used-description": "Total skeins registered across your projects.",
+      "tracker": "Yarn tracker | Yarn trackers",
+      "tracker-description": "Register skeins and keep the running total visible."
+   },
    "photos": {
       "add": "Add photos",
       "hint": "Images are compressed automatically and must be 10 MB or smaller.",

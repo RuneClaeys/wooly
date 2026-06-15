@@ -4,7 +4,7 @@ import type { SelectPart, SelectProjectPhoto } from '~/db/schema';
 
 //#region Globals
 const route = useRoute('projects-id');
-const { projectRouter, partRouter } = useTrpcClient();
+const { projectRouter, partRouter, skeinRouter } = useTrpcClient();
 const { promptDeleteConfirmation } = useConfirmation();
 const { t } = useI18n();
 const colorMode = useColorMode();
@@ -25,6 +25,24 @@ const input = computed(() => ({
 }));
 
 const { data: parts, execute: refresh, pending } = partRouter.list.useQuery(input, { watch: [input], deep: true });
+//#endregion
+
+//#region Skein Tracker
+type SkeinCatalogItem = { label: string; value: number };
+type SkeinUsageRow = { id: number; skeinId: number; skeinName: string; counter: number };
+
+const { data: skeinCatalog } = skeinRouter.catalogList.useQuery();
+const catalogItems = computed<SkeinCatalogItem[]>(() =>
+   (skeinCatalog.value ?? []).map((skein) => ({ label: skein.name, value: skein.id })),
+);
+
+const skeinInput = computed(() => ({
+   projectId: +route.params.id,
+   sorting: query.value,
+}));
+
+const { data: skeinUsages, execute: refreshSkeins, pending: pendingSkeins } = skeinRouter.list.useQuery(skeinInput, { watch: [skeinInput], deep: true });
+const skeinTotal = computed(() => (skeinUsages.value ?? []).reduce((total, skein) => total + (skein.counter ?? 0), 0));
 //#endregion
 
 //#region Project Photos
@@ -203,6 +221,74 @@ async function incrementOrDecrement(part: Required<SelectPart>, increment: boole
 }
 //#endregion
 
+//#region Add Skein
+const showCreateSkeinForm = ref(false);
+const skeinSortDelay = ref<ReturnType<typeof setTimeout> | undefined>(undefined);
+
+async function ensureCatalogSkein(skein: { skeinId: number | null; skeinName: string; counter: number }) {
+   if (skein.skeinId) return skein.skeinId;
+
+   const created = await skeinRouter.catalogCreate.mutate({ name: skein.skeinName });
+   return created.id;
+}
+
+async function createSkein(payload: { skein: { skeinId: number | null; skeinName: string; counter: number }; done: () => void }) {
+   const skeinId = await ensureCatalogSkein(payload.skein);
+
+   const response = await skeinRouter.create.mutate({
+      projectId: +route.params.id,
+      skeinId,
+      counter: payload.skein.counter,
+   });
+
+   if (response) refreshSkeins();
+   showCreateSkeinForm.value = false;
+   payload.done();
+}
+
+async function deleteSkein(id: number) {
+   promptDeleteConfirmation(t('trackers.skein'), async (done) => {
+      await skeinRouter.delete.mutate(id);
+      done();
+      skeinUsages.value = (skeinUsages.value ?? []).filter((skein) => skein.id !== id);
+   });
+}
+
+async function incrementOrDecrementSkein(skein: SkeinUsageRow, increment: boolean) {
+   try {
+      skein.counter += increment ? 1 : -1;
+      await skeinRouter.update.mutate({ id: skein.id, skeinId: skein.skeinId, counter: skein.counter });
+      if (skeinSortDelay.value) clearTimeout(skeinSortDelay.value);
+
+      skeinSortDelay.value = setTimeout(() => {
+         refreshSkeins();
+      }, 1000);
+   } catch {
+      skein.counter -= increment ? 1 : -1;
+   }
+}
+//#endregion
+
+//#region Edit Skein
+const showEditSkeinForm = ref(false);
+const skeinToEdit = ref<SkeinUsageRow | undefined>(undefined);
+
+async function changeSkein(payload: { skein: { skeinId: number | null; skeinName: string; counter: number }; done: () => void }) {
+   const skeinId = await ensureCatalogSkein(payload.skein);
+
+   const response = await skeinRouter.update.mutate({ id: skeinToEdit.value!.id, skeinId, counter: payload.skein.counter });
+   if (response) refreshSkeins();
+   showEditSkeinForm.value = false;
+   payload.done();
+}
+
+function editSkein(skein: SkeinUsageRow) {
+   skeinToEdit.value = { ...skein };
+   showEditSkeinForm.value = true;
+}
+
+//#endregion
+
 //#region Edit Part
 const showEditProjectForm = ref(false);
 const partToEdit = ref<SelectPart | undefined>(undefined);
@@ -226,6 +312,98 @@ function editPart(part: SelectPart) {
    <NuxtLayout :root="false" :title="data?.name ?? $t('generic.loading')" navigate-back-to="/">
       <div class="space-y-4 pb-[calc(9rem+env(safe-area-inset-bottom))]">
          <LayoutHeading :title="$t('photos.photo', 2)" />
+
+         <LayoutHeading :title="$t('trackers.tracker', 2)">
+            <template #otherFilters>
+               <UButton
+                  icon="i-heroicons-plus-16-solid"
+                  color="primary"
+                  variant="soft"
+                  size="md"
+                  class="tap-target"
+                  :aria-label="$t('actions.create-type', { type: $t('trackers.skein') })"
+                  @click="showCreateSkeinForm = true"
+               >
+                  {{ $t('actions.create-type', { type: $t('trackers.skein') }) }}
+               </UButton>
+            </template>
+         </LayoutHeading>
+
+         <div class="wooly-shell space-y-3 p-3 sm:p-4">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+               <div>
+                  <p class="wooly-title text-base text-pink-900 dark:text-pink-100">{{ $t('trackers.tracker') }}</p>
+                  <p class="text-sm wooly-muted">{{ $t('trackers.tracker-description') }}</p>
+               </div>
+
+               <UBadge color="primary" variant="soft" size="sm">{{ skeinTotal }}</UBadge>
+            </div>
+
+            <div v-if="pendingSkeins" class="text-sm wooly-muted">{{ $t('generic.loading') }}</div>
+
+            <div v-else-if="skeinUsages?.length" v-auto-animate class="grid grid-cols-1 gap-3">
+               <UCard v-for="skein in skeinUsages ?? []" :key="skein.id" class="wooly-shell w-full">
+                  <div class="space-y-4">
+                     <div class="flex items-start justify-between gap-2">
+                        <p class="wooly-title text-base text-pink-900 dark:text-pink-100">{{ skein.skeinName }}</p>
+
+                        <div class="flex items-center gap-1">
+                           <UButton
+                              icon="i-heroicons-pencil-16-solid"
+                              variant="ghost"
+                              color="neutral"
+                              size="md"
+                              class="tap-target tap-target-icon"
+                              :aria-label="$t('actions.edit-type', { type: $t('trackers.skein') })"
+                              @click.stop="editSkein(skein)"
+                           />
+                           <UButton
+                              icon="i-heroicons-trash-16-solid"
+                              variant="ghost"
+                              color="error"
+                              size="md"
+                              class="tap-target tap-target-icon"
+                              :aria-label="$t('actions.delete-type', { type: $t('trackers.skein') })"
+                              @click.stop="deleteSkein(skein.id)"
+                           />
+                        </div>
+                     </div>
+
+                     <div class="rounded-xl bg-pink-50/70 p-2 dark:bg-pink-950/35">
+                        <div class="flex items-center justify-between gap-2">
+                           <small class="text-pink-800 dark:text-pink-200">{{ $t('trackers.skein-count') }}</small>
+
+                           <div class="flex items-center gap-2">
+                              <UButton
+                                 icon="i-heroicons-minus-16-solid"
+                                 variant="soft"
+                                 color="error"
+                                 size="md"
+                                 class="tap-target tap-target-icon"
+                                 :aria-label="$t('actions.decrease-count', { type: $t('trackers.skein') })"
+                                 @click.stop="incrementOrDecrementSkein(skein, false)"
+                              />
+
+                              <p class="min-w-10 text-center text-lg font-semibold text-pink-900 dark:text-pink-100">{{ skein.counter }}</p>
+
+                              <UButton
+                                 icon="i-heroicons-plus-16-solid"
+                                 variant="soft"
+                                 color="success"
+                                 size="md"
+                                 class="tap-target tap-target-icon"
+                                 :aria-label="$t('actions.increase-count', { type: $t('trackers.skein') })"
+                                 @click.stop="incrementOrDecrementSkein(skein, true)"
+                              />
+                           </div>
+                        </div>
+                     </div>
+                  </div>
+               </UCard>
+            </div>
+
+            <div v-else class="text-sm wooly-muted">{{ $t('generic.no-results-for-type', { type: $t('trackers.tracker', 2) }) }}</div>
+         </div>
 
          <div class="wooly-shell space-y-3 p-3 sm:p-4">
             <div class="flex flex-wrap items-center justify-between gap-2">
@@ -414,6 +592,8 @@ function editPart(part: SelectPart) {
 
          <ModalsPart v-model="showCreatePartForm" @save-part="createPart" />
          <ModalsPart v-model="showEditProjectForm" :initial-part="partToEdit" @save-part="changePart" />
+         <ModalsSkein v-model="showCreateSkeinForm" :catalog-items="catalogItems" @save-skein="createSkein" />
+         <ModalsSkein v-model="showEditSkeinForm" :catalog-items="catalogItems" :initial-usage="skeinToEdit" @save-skein="changeSkein" />
       </div>
    </NuxtLayout>
 </template>

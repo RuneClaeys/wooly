@@ -1,6 +1,6 @@
 import { TRPCError } from '@trpc/server';
 import { and, eq } from 'drizzle-orm';
-import { parts, projectPhotos, projects } from '~/db/schema';
+import { parts, projectPhotos, projectSkeins, projects, yarnSkeins } from '~/db/schema';
 import type { Context } from '../context';
 
 export async function assertProjectOwnership(ctx: Context, projectId: number) {
@@ -24,6 +24,29 @@ export async function assertPartOwnership(ctx: Context, partId: number) {
 
    await assertProjectOwnership(ctx, part.projectId);
    return part;
+}
+
+export async function assertYarnSkeinOwnership(ctx: Context, skeinId: number) {
+   const skein = await ctx.db.query.yarnSkeins.findFirst({
+      where: and(eq(yarnSkeins.id, skeinId), eq(yarnSkeins.userId, ctx.session.user.id)),
+   });
+
+   if (!skein) {
+      throw new TRPCError({ code: 'NOT_FOUND' });
+   }
+
+   return skein;
+}
+
+export async function assertProjectSkeinOwnership(ctx: Context, usageId: number) {
+   const usage = await ctx.db.query.projectSkeins.findFirst({ where: eq(projectSkeins.id, usageId) });
+
+   if (!usage) {
+      throw new TRPCError({ code: 'NOT_FOUND' });
+   }
+
+   await assertProjectOwnership(ctx, usage.projectId);
+   return usage;
 }
 
 export async function assertProjectPhotoOwnership(ctx: Context, photoId: number) {

@@ -13,6 +13,7 @@ export const users = pgTable('users', {
 
 export const usersRelations = relations(users, ({ many }) => ({
    projects: many(projects),
+   yarnSkeins: many(yarnSkeins),
 }));
 
 export type SelectUser = typeof users.$inferSelect;
@@ -33,6 +34,7 @@ export const projectsRelations = relations(projects, ({ one, many }) => ({
       references: [users.id],
    }),
    parts: many(parts),
+   skeinUsages: many(projectSkeins),
    photos: many(projectPhotos),
 }));
 
@@ -90,6 +92,62 @@ export type SelectPart = Omit<typeof parts.$inferSelect, 'createdAt' | 'updatedA
    updatedAt?: string | null;
 };
 export type InsertPart = Omit<typeof parts.$inferInsert, 'createdAt' | 'updatedAt'> & {
+   createdAt?: string | null;
+   updatedAt?: string | null;
+};
+
+// yarn skeins
+export const yarnSkeins = pgTable('yarn_skeins', {
+   id: serial('id').primaryKey(),
+   name: text('name').notNull(),
+   userId: varchar('user_id', { length: 255 }).notNull(),
+   createdAt: timestamp('created_at').default(sql`CURRENT_TIMESTAMP`),
+   updatedAt: timestamp('updated_at').default(sql`CURRENT_TIMESTAMP`),
+});
+
+export const yarnSkeinsRelations = relations(yarnSkeins, ({ one, many }) => ({
+   user: one(users, {
+      fields: [yarnSkeins.userId],
+      references: [users.id],
+   }),
+   usages: many(projectSkeins),
+}));
+
+export type SelectYarnSkein = Omit<typeof yarnSkeins.$inferSelect, 'createdAt' | 'updatedAt'> & {
+   createdAt?: string | null;
+   updatedAt?: string | null;
+};
+export type InsertYarnSkein = Omit<typeof yarnSkeins.$inferInsert, 'createdAt' | 'updatedAt'> & {
+   createdAt?: string | null;
+   updatedAt?: string | null;
+};
+
+// project yarn skeins
+export const projectSkeins = pgTable('project_skeins', {
+   id: serial('id').primaryKey(),
+   projectId: integer('project_id').notNull(),
+   skeinId: integer('skein_id').notNull(),
+   counter: integer('count').notNull().default(0),
+   createdAt: timestamp('created_at').default(sql`CURRENT_TIMESTAMP`),
+   updatedAt: timestamp('updated_at').default(sql`CURRENT_TIMESTAMP`),
+});
+
+export const projectSkeinsRelations = relations(projectSkeins, ({ one }) => ({
+   project: one(projects, {
+      fields: [projectSkeins.projectId],
+      references: [projects.id],
+   }),
+   yarnSkein: one(yarnSkeins, {
+      fields: [projectSkeins.skeinId],
+      references: [yarnSkeins.id],
+   }),
+}));
+
+export type SelectProjectSkein = Omit<typeof projectSkeins.$inferSelect, 'createdAt' | 'updatedAt'> & {
+   createdAt?: string | null;
+   updatedAt?: string | null;
+};
+export type InsertProjectSkein = Omit<typeof projectSkeins.$inferInsert, 'createdAt' | 'updatedAt'> & {
    createdAt?: string | null;
    updatedAt?: string | null;
 };

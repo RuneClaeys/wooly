@@ -37,6 +37,17 @@
       "part": "Onderdeel | Onderdelen",
       "row-count": "Aantal rijen"
    },
+   "trackers": {
+      "skein": "Skein | Skeins",
+      "skein-count": "Skein telling",
+      "skein-existing": "Bestaande skein",
+      "skein-name": "Nieuwe skeinnaam",
+      "skein-name-placeholder": "Typ een nieuwe skeinnaam",
+      "skeins-used": "Gebruikte skeins",
+      "skeins-used-description": "Totaal aantal skeins geregistreerd over je projecten.",
+      "tracker": "Garen tracker | Garen trackers",
+      "tracker-description": "Registreer skeins en hou het totaal zichtbaar."
+   },
    "photos": {
       "add": "Foto's toevoegen",
       "hint": "Afbeeldingen worden automatisch gecomprimeerd en moeten 10 MB of kleiner zijn.",

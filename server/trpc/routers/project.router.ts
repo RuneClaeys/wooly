@@ -9,10 +9,18 @@ import { assertProjectOwnership, assertProjectPhotoOwnership } from './ownership
 export const projectRouter = router({
    list: protectedProcedure.input(z.object({ finished: z.boolean().default(false), query: genericSort })).query(({ ctx, input }) => {
       const { finished, query } = input;
-      return ctx.db.query.projects.findMany({
-         where: and(eq(projects.userId, ctx.session.user.id), eq(projects.finished, finished)),
-         orderBy: query?.order === 'asc' ? asc(projects[query.orderBy]) : desc(projects[query.orderBy]),
-      });
+      return ctx.db
+         .select({
+            id: projects.id,
+            name: projects.name,
+            finished: projects.finished,
+            createdAt: projects.createdAt,
+            updatedAt: projects.updatedAt,
+            userId: projects.userId,
+         })
+         .from(projects)
+         .where(and(eq(projects.userId, ctx.session.user.id), eq(projects.finished, finished)))
+         .orderBy(query?.order === 'asc' ? asc(projects[query.orderBy]) : desc(projects[query.orderBy]));
    }),
 
    get: protectedProcedure.input(z.number()).query(({ input: projectId, ctx }) => assertProjectOwnership(ctx, projectId)),
