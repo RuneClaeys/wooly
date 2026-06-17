@@ -48,7 +48,7 @@ function isOverdue(endDate: string | null) {
          <SkeletonCard />
       </div>
 
-      <div v-else-if="!(boards?.length)" class="wooly-shell px-6 py-10 text-center space-y-4">
+      <div v-else-if="!boards?.length" class="wooly-shell px-6 py-10 text-center space-y-4">
          <UIcon name="i-heroicons-squares-2x2-16-solid" class="mx-auto h-12 w-12 wooly-muted" />
          <div class="space-y-1">
             <p class="wooly-title text-base">{{ $t('bingo.no-boards') }}</p>
@@ -64,20 +64,13 @@ function isOverdue(endDate: string | null) {
       </div>
 
       <div v-else class="grid grid-cols-1 gap-3">
-         <UCard
-            v-for="board in boards"
-            :key="board.id"
-            class="wooly-shell cursor-pointer"
-            @click="emit('open', board.id)"
-         >
+         <UCard v-for="board in boards" :key="board.id" class="wooly-shell cursor-pointer" @click="emit('open', board.id)">
             <div class="flex items-start justify-between gap-3">
                <div class="space-y-2">
                   <p class="wooly-title text-base">{{ board.name }}</p>
                   <div class="flex flex-wrap items-center gap-2">
                      <UBadge color="primary" variant="soft" size="sm">{{ board.size }}x{{ board.size }}</UBadge>
-                     <UBadge color="neutral" variant="soft" size="sm">
-                        {{ board.completedCells }}/{{ board.totalCells }}
-                     </UBadge>
+                     <UBadge color="neutral" variant="soft" size="sm"> {{ board.completedCells }}/{{ board.totalCells }} </UBadge>
                      <UBadge v-if="isOverdue(board.endDate)" color="warning" variant="soft" size="sm">
                         {{ $t('bingo.overdue') }}
                      </UBadge>

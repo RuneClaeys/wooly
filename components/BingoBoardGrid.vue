@@ -150,11 +150,7 @@ function kindLabel(kind: BingoCellItem['kind']) {
                   <small class="text-xs">{{ $t('bingo.manual-complete') }}</small>
                </div>
 
-               <UBadge
-                  :color="isCompleted(cellByPosition.get(position)!) ? 'success' : 'neutral'"
-                  variant="soft"
-                  size="xs"
-               >
+               <UBadge :color="isCompleted(cellByPosition.get(position)!) ? 'success' : 'neutral'" variant="soft" size="xs">
                   {{ isCompleted(cellByPosition.get(position)!) ? $t('generic.completed') : $t('generic.active') }}
                </UBadge>
             </div>

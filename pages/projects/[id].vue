@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import imageCompression from 'browser-image-compression';
-import type { SelectPart, SelectProjectPhoto, SelectYarnSkein } from '~/db/schema';
 import { useRouteNumericParam } from '~/composables/useRouteNumericParam';
+import type { SelectPart, SelectProjectPhoto, SelectYarnSkein } from '~/db/schema';
 
 //#region Globals
 const { projectRouter, partRouter, skeinRouter } = useTrpcClient();

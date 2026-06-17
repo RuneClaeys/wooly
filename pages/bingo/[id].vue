@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import type { SelectProject } from '~/db/schema';
 import { useRouteNumericParam } from '~/composables/useRouteNumericParam';
+import type { SelectProject } from '~/db/schema';
 
 const boardId = useRouteNumericParam('id');
 const { bingoRouter, projectRouter } = useTrpcClient();
@@ -186,19 +186,9 @@ async function recompute() {
             @set-progress="setManualProgress"
          />
 
-         <ModalsBingoCell
-            v-model="showCreateCell"
-            :projects="projectOptions"
-            :locked-position="lockedPosition"
-            @save-cell="createCell"
-         />
+         <ModalsBingoCell v-model="showCreateCell" :projects="projectOptions" :locked-position="lockedPosition" @save-cell="createCell" />
 
-         <ModalsBingoCell
-            v-model="showEditCell"
-            :projects="projectOptions"
-            :initial-cell="cellToEdit"
-            @save-cell="updateCell"
-         />
+         <ModalsBingoCell v-model="showEditCell" :projects="projectOptions" :initial-cell="cellToEdit" @save-cell="updateCell" />
       </div>
    </NuxtLayout>
 </template>

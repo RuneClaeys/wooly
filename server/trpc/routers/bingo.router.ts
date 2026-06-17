@@ -93,14 +93,17 @@ async function getRawTrackedValue(ctx: Context, kind: z.infer<typeof bingoKindSc
    return 0;
 }
 
-async function upsertProgress(ctx: Context, input: {
-   cellId: number;
-   baselineValue?: number;
-   currentValue?: number;
-   autoCompleted?: boolean;
-   manualCompleted?: boolean;
-   completedAt?: Date | null;
-}) {
+async function upsertProgress(
+   ctx: Context,
+   input: {
+      cellId: number;
+      baselineValue?: number;
+      currentValue?: number;
+      autoCompleted?: boolean;
+      manualCompleted?: boolean;
+      completedAt?: Date | null;
+   },
+) {
    const existing = await ctx.db.query.bingoCellProgress.findFirst({ where: eq(bingoCellProgress.cellId, input.cellId) });
 
    if (existing) {
@@ -221,8 +224,7 @@ export const bingoRouter = router({
             const rows = await ctx.db
                .select({
                   total: sql<number>`count(${bingoCells.id})::int`,
-                  completed:
-                     sql<number>`count(case when (${bingoCellProgress.manualCompleted} = true or ${bingoCellProgress.autoCompleted} = true) then 1 end)::int`,
+                  completed: sql<number>`count(case when (${bingoCellProgress.manualCompleted} = true or ${bingoCellProgress.autoCompleted} = true) then 1 end)::int`,
                })
                .from(bingoCells)
                .leftJoin(bingoCellProgress, eq(bingoCellProgress.cellId, bingoCells.id))
@@ -322,9 +324,7 @@ export const bingoRouter = router({
 
       await ctx.db
          .delete(bingoCellProgress)
-         .where(
-            sql`${bingoCellProgress.cellId} in (select ${bingoCells.id} from ${bingoCells} where ${bingoCells.boardId} = ${board.id})`,
-         )
+         .where(sql`${bingoCellProgress.cellId} in (select ${bingoCells.id} from ${bingoCells} where ${bingoCells.boardId} = ${board.id})`)
          .execute();
       await ctx.db.delete(bingoCells).where(eq(bingoCells.boardId, board.id)).execute();
 

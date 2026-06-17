@@ -55,26 +55,24 @@ export const skeinRouter = router({
          .orderBy(asc(yarnSkeins.name));
    }),
 
-   list: protectedProcedure
-      .input(z.object({ projectId: z.number(), sorting: genericSort }))
-      .query(async ({ ctx, input }) => {
-         await assertProjectOwnership(ctx, input.projectId);
+   list: protectedProcedure.input(z.object({ projectId: z.number(), sorting: genericSort })).query(async ({ ctx, input }) => {
+      await assertProjectOwnership(ctx, input.projectId);
 
-         return ctx.db
-            .select({
-               id: projectSkeins.id,
-               projectId: projectSkeins.projectId,
-               skeinId: projectSkeins.skeinId,
-               counter: projectSkeins.counter,
-               createdAt: projectSkeins.createdAt,
-               updatedAt: projectSkeins.updatedAt,
-               skeinName: yarnSkeins.name,
-            })
-            .from(projectSkeins)
-            .innerJoin(yarnSkeins, eq(yarnSkeins.id, projectSkeins.skeinId))
-            .where(eq(projectSkeins.projectId, input.projectId))
-            .orderBy(input.sorting.order === 'asc' ? asc(yarnSkeins.name) : desc(yarnSkeins.name));
-      }),
+      return ctx.db
+         .select({
+            id: projectSkeins.id,
+            projectId: projectSkeins.projectId,
+            skeinId: projectSkeins.skeinId,
+            counter: projectSkeins.counter,
+            createdAt: projectSkeins.createdAt,
+            updatedAt: projectSkeins.updatedAt,
+            skeinName: yarnSkeins.name,
+         })
+         .from(projectSkeins)
+         .innerJoin(yarnSkeins, eq(yarnSkeins.id, projectSkeins.skeinId))
+         .where(eq(projectSkeins.projectId, input.projectId))
+         .orderBy(input.sorting.order === 'asc' ? asc(yarnSkeins.name) : desc(yarnSkeins.name));
+   }),
 
    create: protectedProcedure
       .input(

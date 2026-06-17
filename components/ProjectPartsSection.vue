@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import type { SelectPart } from '~/db/schema';
 import type { Sorting } from '~/composables/useSorting';
+import type { SelectPart } from '~/db/schema';
 
 defineProps<{
    parts?: SelectPart[];
@@ -38,11 +38,7 @@ const emit = defineEmits<{
                      :color="part.completed ? 'warning' : 'success'"
                      size="md"
                      class="tap-target tap-target-icon"
-                     :aria-label="
-                        part.completed
-                           ? $t('parts.mark-incomplete')
-                           : $t('parts.mark-complete')
-                     "
+                     :aria-label="part.completed ? $t('parts.mark-incomplete') : $t('parts.mark-complete')"
                      @click.stop="emit('toggle-completed', { partId: part.id, completed: !part.completed })"
                   />
                   <UButton

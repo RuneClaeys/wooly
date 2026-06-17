@@ -103,24 +103,22 @@ export const partRouter = router({
          return result;
       }),
 
-   setCompleted: protectedProcedure
-      .input(z.object({ id: z.number(), completed: z.boolean() }))
-      .mutation(async ({ input, ctx }) => {
-         const part = await assertPartOwnership(ctx, input.id);
+   setCompleted: protectedProcedure.input(z.object({ id: z.number(), completed: z.boolean() })).mutation(async ({ input, ctx }) => {
+      const part = await assertPartOwnership(ctx, input.id);
 
-         const result = await ctx.db
-            .update(parts)
-            .set({
-               completed: input.completed,
-               completedAt: input.completed ? new Date() : null,
-               updatedAt: new Date(),
-            })
-            .where(eq(parts.id, input.id))
-            .returning()
-            .execute();
+      const result = await ctx.db
+         .update(parts)
+         .set({
+            completed: input.completed,
+            completedAt: input.completed ? new Date() : null,
+            updatedAt: new Date(),
+         })
+         .where(eq(parts.id, input.id))
+         .returning()
+         .execute();
 
-         await refreshProject(ctx, part.projectId);
-         await recomputeBingoBoardsForUser(ctx);
-         return result[0] ?? null;
-      }),
+      await refreshProject(ctx, part.projectId);
+      await recomputeBingoBoardsForUser(ctx);
+      return result[0] ?? null;
+   }),
 });
