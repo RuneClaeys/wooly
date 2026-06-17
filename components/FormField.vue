@@ -20,13 +20,26 @@ interface Emits {
    (e: 'blur'): void;
 }
 
-defineProps<Props>();
+const props = defineProps<Props>();
 defineEmits<Emits>();
 
-const hasError = computed(() => Boolean(error));
+const hasError = computed(() => Boolean(props.error));
+
+const shouldShowSuccess = computed(() => {
+   if (hasError.value) return false;
+
+   const value = props.modelValue;
+   if (value === null || value === undefined) return false;
+
+   if (props.type === 'number') {
+      return Number(value) > 0;
+   }
+
+   return String(value).trim().length > 0;
+});
 
 const displayValue = computed(() => {
-   const value = modelValue;
+   const value = props.modelValue;
    return value !== null && value !== undefined ? String(value) : '';
 });
 </script>
@@ -39,6 +52,14 @@ const displayValue = computed(() => {
       </label>
 
       <div class="relative">
+         <div
+            :class="[
+               'wooly-field-shell',
+               hasError
+                  ? 'wooly-field-shell-error'
+                  : 'border-slate-200/90 hover:border-slate-300 dark:border-slate-700 dark:hover:border-slate-600',
+            ]"
+         >
          <UInput
             :model-value="displayValue"
             :type="type"
@@ -53,13 +74,11 @@ const displayValue = computed(() => {
                form: 'transition-colors',
             }"
             class="wooly-input"
-            :class="[
-               'min-h-[44px] px-3 py-2 rounded-lg font-normal',
-               hasError ? 'ring-1 ring-error-500 dark:ring-error-400' : 'ring-1 ring-slate-200 dark:ring-slate-700 focus:ring-primary-500',
-            ]"
+            :class="['w-full min-h-11 rounded-lg font-normal']"
             @update:model-value="$emit('update:modelValue', $event)"
             @blur="$emit('blur')"
          />
+         </div>
 
          <!-- Error icon -->
          <UIcon
@@ -70,7 +89,7 @@ const displayValue = computed(() => {
 
          <!-- Success icon -->
          <UIcon
-            v-else-if="modelValue !== null && modelValue !== '' && modelValue !== undefined"
+            v-else-if="shouldShowSuccess"
             name="i-heroicons-check-circle-16-solid"
             class="absolute right-3 top-1/2 -translate-y-1/2 text-success-500 dark:text-success-400 pointer-events-none"
          />
@@ -93,13 +112,48 @@ const displayValue = computed(() => {
 
 <style scoped>
 .wooly-input {
-   background: var(--wooly-bg-1);
+   background: transparent;
    color: var(--wooly-text-main);
 }
 
 .dark .wooly-input {
-   background: var(--wooly-bg-2);
+   background: transparent;
    color: var(--wooly-text-main);
+}
+
+.wooly-input :deep(input) {
+   background: transparent !important;
+   border: 0 !important;
+   box-shadow: none !important;
+   padding: 0.7rem 0.95rem !important;
+   color: var(--wooly-text-main);
+}
+
+.wooly-input :deep(input:focus) {
+   outline: none !important;
+   box-shadow: none !important;
+}
+
+.wooly-field-shell {
+   border-width: 1px;
+   border-style: solid;
+   border-radius: 0.8rem;
+   background: color-mix(in oklab, var(--wooly-bg-1) 82%, white);
+   transition: border-color 0.18s ease, box-shadow 0.18s ease, background-color 0.18s ease;
+}
+
+.dark .wooly-field-shell {
+   background: color-mix(in oklab, var(--wooly-bg-2) 88%, black);
+}
+
+.wooly-field-shell:focus-within {
+   border-color: color-mix(in oklab, var(--wooly-primary) 60%, white);
+   box-shadow: 0 0 0 3px color-mix(in oklab, var(--wooly-primary) 18%, transparent);
+}
+
+.wooly-field-shell-error {
+   border-color: color-mix(in oklab, var(--wooly-error) 75%, white);
+   box-shadow: 0 0 0 2px color-mix(in oklab, var(--wooly-error) 14%, transparent);
 }
 
 .wooly-input::placeholder {

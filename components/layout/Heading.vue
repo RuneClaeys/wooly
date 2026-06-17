@@ -33,7 +33,7 @@ const orderOptions = computed(() => [
                :model-value="sorting.orderBy"
                :items="orderByOptions"
                size="md"
-               class="w-full md:w-44"
+               class="w-full md:w-44 wooly-select-clean"
                @update:model-value="$emit('update:sorting', { ...sorting, orderBy: $event })"
             />
 
@@ -41,7 +41,7 @@ const orderOptions = computed(() => [
                :model-value="sorting.order"
                :items="orderOptions"
                size="md"
-               class="w-full md:w-44"
+               class="w-full md:w-44 wooly-select-clean"
                @update:model-value="$emit('update:sorting', { ...sorting, order: $event })"
             />
 

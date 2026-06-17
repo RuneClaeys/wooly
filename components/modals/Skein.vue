@@ -25,6 +25,8 @@ const modalTitle = computed(() =>
    props.initialUsage ? t('actions.edit-type', { type: t('trackers.skein') }) : t('actions.create-type', { type: t('trackers.skein') }),
 );
 
+const hasCatalogItems = computed(() => props.catalogItems.length > 0);
+
 watch(
    () => props.initialUsage,
    (initialUsage) => {
@@ -130,23 +132,32 @@ function handleCounterBlur() {
       delete errors.value.counter;
    }
 }
+
+function handleModalOpenChange() {
+   errors.value = {};
+}
 </script>
 
 <template>
    <UModal
       v-model:open="open"
       :title="modalTitle"
-      :ui="{ content: 'mx-2 w-[calc(100%-1rem)] sm:mx-0 sm:max-w-lg' }"
-      @update:open="() => (errors.value = {})"
+      :ui="{ content: 'mx-2 w-[calc(100%-1rem)] sm:mx-0 sm:max-w-xl rounded-2xl overflow-hidden wooly-pop' }"
+      @update:open="handleModalOpenChange"
    >
       <template #body>
-         <div class="space-y-4">
-            <div class="space-y-1.5">
-               <label class="block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('trackers.skein-existing') }}</label>
+         <div class="skein-form space-y-5">
+            <div class="skein-form-intro">
+               <p class="skein-form-title">{{ $t('trackers.skein') }}</p>
+               <p class="skein-form-subtitle">{{ $t('generic.name') }} + {{ $t('trackers.skein-count') }}</p>
+            </div>
+
+            <div v-if="hasCatalogItems" class="space-y-2">
+               <label class="skein-field-label">{{ $t('trackers.skein-existing') }}</label>
                <USelect
-                  v-model="skein.skeinId"
+                  :model-value="skein.skeinId"
                   :items="catalogItems"
-                  class="w-full"
+                  class="w-full wooly-select-clean"
                   @blur="handleSkeinBlur"
                   @update:model-value="handleSkeinSelect"
                />
@@ -176,12 +187,12 @@ function handleCounterBlur() {
       </template>
 
       <template #footer>
-         <div class="flex justify-end gap-2">
-            <UButton class="tap-target" variant="soft" color="neutral" :disabled="isSubmitting" @click="open = false">{{
+         <div class="flex items-center justify-end gap-3">
+            <UButton class="tap-target rounded-xl px-5" variant="soft" color="neutral" :disabled="isSubmitting" @click="open = false">{{
                $t('actions.cancel')
             }}</UButton>
             <UButton
-               class="tap-target"
+               class="tap-target rounded-xl px-5"
                color="primary"
                :loading="isSubmitting"
                :disabled="isSubmitting || Object.keys(errors).length > 0"
@@ -193,3 +204,50 @@ function handleCounterBlur() {
       </template>
    </UModal>
 </template>
+
+<style scoped>
+.skein-form {
+   padding-top: 0.25rem;
+}
+
+.skein-form-intro {
+   display: flex;
+   flex-direction: column;
+   gap: 0.15rem;
+   padding: 0.8rem 0.9rem;
+   border: 1px solid color-mix(in oklab, var(--wooly-primary) 18%, transparent);
+   border-radius: 0.9rem;
+   background:
+      linear-gradient(115deg, color-mix(in oklab, var(--wooly-primary) 9%, white) 0%, color-mix(in oklab, var(--wooly-bg-1) 85%, white) 100%);
+}
+
+.dark .skein-form-intro {
+   background:
+      linear-gradient(115deg, color-mix(in oklab, var(--wooly-primary) 18%, transparent) 0%, color-mix(in oklab, var(--wooly-bg-2) 94%, black) 100%);
+}
+
+.skein-form-title {
+   font-size: 0.95rem;
+   font-weight: 700;
+   letter-spacing: 0.01em;
+   color: var(--wooly-text-main);
+}
+
+.skein-form-subtitle {
+   font-size: 0.78rem;
+   color: var(--wooly-text-soft);
+}
+
+.skein-field-label {
+   display: block;
+   font-size: 0.82rem;
+   font-weight: 700;
+   letter-spacing: 0.02em;
+   text-transform: uppercase;
+   color: color-mix(in oklab, var(--wooly-text-main) 82%, black);
+}
+
+.dark .skein-field-label {
+   color: color-mix(in oklab, var(--wooly-text-main) 90%, white);
+}
+</style>

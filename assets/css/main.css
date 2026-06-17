@@ -239,6 +239,31 @@ body::before {
    pointer-events: none;
 }
 
+.wooly-select-clean {
+   border: 1px solid color-mix(in oklab, #cbd5e1 86%, transparent);
+   border-radius: 0.8rem;
+   background: color-mix(in oklab, var(--wooly-bg-1) 82%, white);
+   transition: border-color 0.18s ease, box-shadow 0.18s ease, background-color 0.18s ease;
+}
+
+.dark .wooly-select-clean {
+   border-color: color-mix(in oklab, #334155 82%, transparent);
+   background: color-mix(in oklab, var(--wooly-bg-2) 88%, black);
+}
+
+.wooly-select-clean:focus-within {
+   border-color: color-mix(in oklab, var(--wooly-primary) 60%, white);
+   box-shadow: 0 0 0 3px color-mix(in oklab, var(--wooly-primary) 18%, transparent);
+}
+
+.wooly-select-clean :is(button, [role='combobox']) {
+   min-height: 44px;
+   border: 0 !important;
+   background: transparent !important;
+   box-shadow: none !important;
+   border-radius: 0.8rem;
+}
+
 @media (prefers-reduced-motion: reduce) {
    .wooly-fade-up,
    .wooly-pop,

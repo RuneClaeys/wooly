@@ -29,7 +29,7 @@ const statusOptions = computed(() => [
 <template>
    <LayoutHeading v-model:sorting="sorting" :title="$t('projects.project', 2)">
       <template #otherFilters>
-         <USelect v-model="status" :items="statusOptions" size="md" class="w-full md:w-44" />
+         <USelect v-model="status" :items="statusOptions" size="md" class="w-full md:w-44 wooly-select-clean" />
       </template>
    </LayoutHeading>
 
