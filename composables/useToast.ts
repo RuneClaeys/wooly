@@ -1,3 +1,5 @@
+import { ref } from 'vue';
+
 interface Toast {
    id: string;
    type: 'success' | 'error' | 'info' | 'warning';
