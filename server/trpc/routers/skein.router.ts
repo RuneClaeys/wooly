@@ -4,6 +4,7 @@ import { projectSkeins, projects, yarnSkeins } from '~/db/schema';
 import { genericSort } from '~/server/helpers/zod.helper';
 import type { Context } from '../context';
 import { protectedProcedure, router } from '../trpc';
+import { recomputeBingoBoardsForUser } from './bingo.router';
 import { assertProjectOwnership, assertProjectSkeinOwnership, assertYarnSkeinOwnership } from './ownership.guard';
 
 async function refreshProject(ctx: Context, projectId: number) {
@@ -94,6 +95,7 @@ export const skeinRouter = router({
             .execute();
 
          await refreshProject(ctx, input.projectId);
+         await recomputeBingoBoardsForUser(ctx);
 
          return createdUsage;
       }),
@@ -103,6 +105,7 @@ export const skeinRouter = router({
       const result = await ctx.db.delete(projectSkeins).where(eq(projectSkeins.id, usageId)).execute();
 
       await refreshProject(ctx, usage.projectId);
+      await recomputeBingoBoardsForUser(ctx);
       return result;
    }),
 
@@ -119,6 +122,7 @@ export const skeinRouter = router({
             .execute();
 
          await refreshProject(ctx, usage.projectId);
+         await recomputeBingoBoardsForUser(ctx);
          return result;
       }),
 });

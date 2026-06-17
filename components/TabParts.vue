@@ -12,6 +12,7 @@ interface Emits {
    (e: 'edit', part: SelectPart): void;
    (e: 'delete', id: number): void;
    (e: 'adjust', payload: { part: SelectPart; increment: boolean }): void;
+   (e: 'toggle-completed', payload: { partId: number; completed: boolean }): void;
 }
 
 const props = defineProps<Props>();
@@ -44,6 +45,7 @@ const hasAnyData = computed(() => (props.parts?.length ?? 0) > 0);
          @edit="$emit('edit', $event)"
          @delete="$emit('delete', $event)"
          @adjust="$emit('adjust', $event)"
+         @toggle-completed="$emit('toggle-completed', $event)"
       />
 
       <!-- Empty State -->

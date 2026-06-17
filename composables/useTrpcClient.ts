@@ -1,3 +1,3 @@
 export const useTrpcClient = () => {
-  return useNuxtApp().$client;
+   return useNuxtApp().$client;
 };

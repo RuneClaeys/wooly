@@ -8,7 +8,11 @@ const open = defineModel<boolean>('modelValue', { default: false });
 const props = defineProps<{ initialPart?: SelectPart }>();
 const emits = defineEmits<{ (e: 'save-part', payload: { part: typeof part.value; done: () => void }): void }>();
 
-const part = ref({ name: props.initialPart?.name ?? '', counter: props.initialPart?.counter ?? 0 });
+const part = ref({
+   name: props.initialPart?.name ?? '',
+   counter: props.initialPart?.counter ?? 0,
+   completed: props.initialPart?.completed ?? false,
+});
 const errors = ref<Record<string, string>>({});
 const isSubmitting = ref(false);
 
@@ -17,7 +21,11 @@ const modalTitle = computed(() => (props.initialPart ? t('actions.edit-part') : 
 watch(
    () => props.initialPart,
    (initialPart) => {
-      part.value = { name: initialPart?.name ?? '', counter: initialPart?.counter ?? 0 };
+      part.value = {
+         name: initialPart?.name ?? '',
+         counter: initialPart?.counter ?? 0,
+         completed: initialPart?.completed ?? false,
+      };
       errors.value = {};
    },
 );
@@ -56,7 +64,7 @@ async function onSubmit() {
          part: part.value,
          done: () => {
             isSubmitting.value = false;
-            if (!props.initialPart) part.value = { name: '', counter: 0 };
+            if (!props.initialPart) part.value = { name: '', counter: 0, completed: false };
             open.value = false;
          },
       });
@@ -115,6 +123,10 @@ function handleCounterBlur() {
                @update:model-value="(val) => (part.counter = Number(val))"
                @blur="handleCounterBlur"
             />
+
+            <UFormField :label="$t('parts.marked-complete')" size="lg">
+               <USwitch v-model="part.completed" />
+            </UFormField>
          </div>
       </template>
 

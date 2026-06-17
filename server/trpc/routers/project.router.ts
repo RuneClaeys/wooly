@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { projectPhotos, projects } from '~/db/schema';
 import { genericSort } from '~/server/helpers/zod.helper';
 import { protectedProcedure, router } from '../trpc';
+import { recomputeBingoBoardsForUser } from './bingo.router';
 import { assertProjectOwnership, assertProjectPhotoOwnership } from './ownership.guard';
 
 export const projectRouter = router({
@@ -67,6 +68,8 @@ export const projectRouter = router({
             .where(and(eq(projects.id, input.id), eq(projects.userId, ctx.session.user.id)))
             .execute();
 
+         await recomputeBingoBoardsForUser(ctx);
+
          return ctx.db.query.projects.findFirst({
             where: and(eq(projects.id, input.id), eq(projects.userId, ctx.session.user.id)),
          });
@@ -74,10 +77,13 @@ export const projectRouter = router({
 
    delete: protectedProcedure.input(z.number()).mutation(async ({ input: projectId, ctx }) => {
       await assertProjectOwnership(ctx, projectId);
-      return ctx.db
+      const result = await ctx.db
          .delete(projects)
          .where(and(eq(projects.id, projectId), eq(projects.userId, ctx.session.user.id)))
          .execute();
+
+      await recomputeBingoBoardsForUser(ctx);
+      return result;
    }),
 
    deletePhoto: protectedProcedure.input(z.number()).mutation(async ({ input: photoId, ctx }) => {

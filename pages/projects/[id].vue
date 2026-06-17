@@ -195,12 +195,13 @@ onBeforeUnmount(() => {
 //#region Add Part
 const showCreatePartForm = ref(false);
 
-async function createPart(payload: { part: { name: string; counter: number }; done: () => void }) {
+async function createPart(payload: { part: { name: string; counter: number; completed: boolean }; done: () => void }) {
    try {
       const response = await partRouter.create.mutate({
          projectId: projectId.value,
          name: payload.part.name,
          counter: payload.part.counter,
+         completed: payload.part.completed,
       });
 
       if (response) refresh();
@@ -327,9 +328,13 @@ function handleSkeinAdjust(payload: { skein: SkeinUsageRow; increment: boolean }
 const showEditProjectForm = ref(false);
 const partToEdit = ref<SelectPart | undefined>(undefined);
 
-async function changePart(payload: { part: { name: string; counter: number }; done: () => void }) {
+async function changePart(payload: { part: { name: string; counter: number; completed: boolean }; done: () => void }) {
    try {
-      const response = await partRouter.update.mutate({ ...payload.part, id: partToEdit.value!.id });
+      const response = await partRouter.update.mutate({
+         ...payload.part,
+         id: partToEdit.value!.id,
+         completedAt: payload.part.completed ? new Date() : null,
+      });
       if (response) refresh();
       showEditProjectForm.value = false;
       payload.done();
@@ -346,6 +351,16 @@ function editPart(part: SelectPart) {
 
 function handlePartAdjust(payload: { part: SelectPart; increment: boolean }) {
    return incrementOrDecrement(payload.part, payload.increment);
+}
+
+async function togglePartCompleted(payload: { partId: number; completed: boolean }) {
+   try {
+      await partRouter.setCompleted.mutate(payload);
+      await refresh();
+      showSuccessToast(t('actions.save'));
+   } catch {
+      showErrorToast(t('actions.save'));
+   }
 }
 
 //#endregion
@@ -382,6 +397,7 @@ function handlePartAdjust(payload: { part: SelectPart; increment: boolean }) {
             @edit-part="editPart"
             @delete-part="deletePart"
             @adjust-part="handlePartAdjust"
+            @toggle-part-completed="togglePartCompleted"
             @edit-skein="editSkein"
             @delete-skein="deleteSkein"
             @adjust-skein="handleSkeinAdjust"

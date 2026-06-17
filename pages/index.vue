@@ -90,6 +90,22 @@ async function deleteProject(id: number) {
          />
 
          <div class="wooly-shell p-3 md:p-4 space-y-3">
+            <div class="flex items-center justify-between rounded-lg px-2 py-2 bg-primary-50/70 dark:bg-primary-950/25">
+               <div class="flex items-center gap-2">
+                  <UIcon name="i-heroicons-squares-plus-16-solid" class="h-4 w-4 text-primary-500" />
+                  <span class="text-sm wooly-title">{{ $t('bingo.board', 2) }}</span>
+               </div>
+
+               <UButton
+                  size="xs"
+                  icon="i-heroicons-arrow-right-16-solid"
+                  variant="soft"
+                  color="primary"
+                  :label="$t('actions.open-type', { type: $t('bingo.board', 2) })"
+                  @click="navigateTo('/bingo')"
+               />
+            </div>
+
             <button
                class="w-full flex items-center justify-between rounded-lg px-2 py-2 text-left hover:bg-pink-50/70 dark:hover:bg-pink-950/30 transition-colors"
                type="button"

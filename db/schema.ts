@@ -14,6 +14,7 @@ export const users = pgTable('users', {
 export const usersRelations = relations(users, ({ many }) => ({
    projects: many(projects),
    yarnSkeins: many(yarnSkeins),
+   bingoBoards: many(bingoBoards),
 }));
 
 export type SelectUser = typeof users.$inferSelect;
@@ -36,6 +37,7 @@ export const projectsRelations = relations(projects, ({ one, many }) => ({
    parts: many(parts),
    skeinUsages: many(projectSkeins),
    photos: many(projectPhotos),
+   linkedBingoCells: many(bingoCells),
 }));
 
 export type InsertProject = Omit<typeof projects.$inferInsert, 'createdAt' | 'updatedAt'> & {
@@ -75,6 +77,8 @@ export const parts = pgTable('parts', {
    id: serial('id').primaryKey(),
    name: text('name'),
    counter: integer('count').notNull().default(0),
+   completed: boolean('completed').notNull().default(false),
+   completedAt: timestamp('completed_at'),
    createdAt: timestamp('created_at').default(sql`CURRENT_TIMESTAMP`),
    updatedAt: timestamp('updated_at').default(sql`CURRENT_TIMESTAMP`),
    projectId: integer('project_id').notNull(),
@@ -94,6 +98,104 @@ export type SelectPart = Omit<typeof parts.$inferSelect, 'createdAt' | 'updatedA
 export type InsertPart = Omit<typeof parts.$inferInsert, 'createdAt' | 'updatedAt'> & {
    createdAt?: string | null;
    updatedAt?: string | null;
+};
+
+// bingo boards
+export const bingoBoards = pgTable('bingo_boards', {
+   id: serial('id').primaryKey(),
+   name: text('name').notNull(),
+   size: integer('size').notNull().default(3),
+   endDate: timestamp('end_date').notNull(),
+   createdAt: timestamp('created_at').default(sql`CURRENT_TIMESTAMP`),
+   updatedAt: timestamp('updated_at').default(sql`CURRENT_TIMESTAMP`),
+   userId: varchar('user_id', { length: 255 }).notNull(),
+});
+
+export const bingoBoardsRelations = relations(bingoBoards, ({ one, many }) => ({
+   user: one(users, {
+      fields: [bingoBoards.userId],
+      references: [users.id],
+   }),
+   cells: many(bingoCells),
+}));
+
+export type SelectBingoBoard = Omit<typeof bingoBoards.$inferSelect, 'createdAt' | 'updatedAt' | 'endDate'> & {
+   createdAt?: string | null;
+   updatedAt?: string | null;
+   endDate: string | null;
+};
+
+export type InsertBingoBoard = Omit<typeof bingoBoards.$inferInsert, 'createdAt' | 'updatedAt' | 'endDate'> & {
+   createdAt?: string | null;
+   updatedAt?: string | null;
+   endDate: string | Date;
+};
+
+// bingo cells
+export const bingoCells = pgTable('bingo_cells', {
+   id: serial('id').primaryKey(),
+   boardId: integer('board_id').notNull(),
+   position: integer('position').notNull(),
+   kind: varchar('kind', { length: 40 }).notNull(),
+   label: text('label'),
+   linkedProjectId: integer('linked_project_id'),
+   targetValue: integer('target_value'),
+   createdAt: timestamp('created_at').default(sql`CURRENT_TIMESTAMP`),
+   updatedAt: timestamp('updated_at').default(sql`CURRENT_TIMESTAMP`),
+});
+
+export const bingoCellsRelations = relations(bingoCells, ({ one }) => ({
+   board: one(bingoBoards, {
+      fields: [bingoCells.boardId],
+      references: [bingoBoards.id],
+   }),
+   linkedProject: one(projects, {
+      fields: [bingoCells.linkedProjectId],
+      references: [projects.id],
+   }),
+   progress: one(bingoCellProgress, {
+      fields: [bingoCells.id],
+      references: [bingoCellProgress.cellId],
+   }),
+}));
+
+export type SelectBingoCell = Omit<typeof bingoCells.$inferSelect, 'createdAt' | 'updatedAt'> & {
+   createdAt?: string | null;
+   updatedAt?: string | null;
+};
+
+export type InsertBingoCell = Omit<typeof bingoCells.$inferInsert, 'createdAt' | 'updatedAt'> & {
+   createdAt?: string | null;
+   updatedAt?: string | null;
+};
+
+// bingo cell progress
+export const bingoCellProgress = pgTable('bingo_cell_progress', {
+   id: serial('id').primaryKey(),
+   cellId: integer('cell_id').notNull(),
+   baselineValue: integer('baseline_value').notNull().default(0),
+   currentValue: integer('current_value').notNull().default(0),
+   autoCompleted: boolean('auto_completed').notNull().default(false),
+   manualCompleted: boolean('manual_completed').notNull().default(false),
+   completedAt: timestamp('completed_at'),
+   updatedAt: timestamp('updated_at').default(sql`CURRENT_TIMESTAMP`),
+});
+
+export const bingoCellProgressRelations = relations(bingoCellProgress, ({ one }) => ({
+   cell: one(bingoCells, {
+      fields: [bingoCellProgress.cellId],
+      references: [bingoCells.id],
+   }),
+}));
+
+export type SelectBingoCellProgress = Omit<typeof bingoCellProgress.$inferSelect, 'updatedAt' | 'completedAt'> & {
+   updatedAt?: string | null;
+   completedAt?: string | null;
+};
+
+export type InsertBingoCellProgress = Omit<typeof bingoCellProgress.$inferInsert, 'updatedAt' | 'completedAt'> & {
+   updatedAt?: string | null;
+   completedAt?: string | null;
 };
 
 // yarn skeins

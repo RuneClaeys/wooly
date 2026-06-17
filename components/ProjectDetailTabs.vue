@@ -20,6 +20,7 @@ interface Emits {
    (e: 'edit-part', part: SelectPart): void;
    (e: 'delete-part', id: number): void;
    (e: 'adjust-part', payload: { part: SelectPart; increment: boolean }): void;
+   (e: 'toggle-part-completed', payload: { partId: number; completed: boolean }): void;
    (e: 'edit-skein', skein: any): void;
    (e: 'delete-skein', id: number): void;
    (e: 'adjust-skein', payload: { skein: any; increment: boolean }): void;
@@ -91,6 +92,7 @@ onMounted(() => {
                @edit="$emit('edit-part', $event)"
                @delete="$emit('delete-part', $event)"
                @adjust="$emit('adjust-part', $event)"
+               @toggle-completed="$emit('toggle-part-completed', $event)"
             />
          </div>
 

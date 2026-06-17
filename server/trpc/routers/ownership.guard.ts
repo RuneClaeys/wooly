@@ -1,6 +1,6 @@
 import { TRPCError } from '@trpc/server';
 import { and, eq } from 'drizzle-orm';
-import { parts, projectPhotos, projectSkeins, projects, yarnSkeins } from '~/db/schema';
+import { bingoBoards, bingoCells, parts, projectPhotos, projectSkeins, projects, yarnSkeins } from '~/db/schema';
 import type { Context } from '../context';
 
 export async function assertProjectOwnership(ctx: Context, projectId: number) {
@@ -58,4 +58,27 @@ export async function assertProjectPhotoOwnership(ctx: Context, photoId: number)
 
    await assertProjectOwnership(ctx, photo.projectId);
    return photo;
+}
+
+export async function assertBingoBoardOwnership(ctx: Context, boardId: number) {
+   const board = await ctx.db.query.bingoBoards.findFirst({
+      where: and(eq(bingoBoards.id, boardId), eq(bingoBoards.userId, ctx.session.user.id)),
+   });
+
+   if (!board) {
+      throw new TRPCError({ code: 'NOT_FOUND' });
+   }
+
+   return board;
+}
+
+export async function assertBingoCellOwnership(ctx: Context, cellId: number) {
+   const cell = await ctx.db.query.bingoCells.findFirst({ where: eq(bingoCells.id, cellId) });
+
+   if (!cell) {
+      throw new TRPCError({ code: 'NOT_FOUND' });
+   }
+
+   await assertBingoBoardOwnership(ctx, cell.boardId);
+   return cell;
 }

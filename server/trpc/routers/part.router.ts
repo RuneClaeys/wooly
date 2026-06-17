@@ -4,6 +4,7 @@ import { parts, projects } from '~/db/schema';
 import { genericSort } from '~/server/helpers/zod.helper';
 import type { Context } from '../context';
 import { protectedProcedure, router } from '../trpc';
+import { recomputeBingoBoardsForUser } from './bingo.router';
 import { assertPartOwnership, assertProjectOwnership } from './ownership.guard';
 
 async function refreshProject(ctx: Context, projectId: number) {
@@ -32,17 +33,31 @@ export const partRouter = router({
       }),
 
    create: protectedProcedure
-      .input(z.object({ projectId: z.number(), name: z.string(), counter: z.number().optional().default(0) }))
+      .input(
+         z.object({
+            projectId: z.number(),
+            name: z.string(),
+            counter: z.number().optional().default(0),
+            completed: z.boolean().optional().default(false),
+         }),
+      )
       .mutation(async ({ input, ctx }) => {
          await assertProjectOwnership(ctx, input.projectId);
 
          const [createdPart] = await ctx.db
             .insert(parts)
-            .values({ ...input })
+            .values({
+               projectId: input.projectId,
+               name: input.name,
+               counter: input.counter,
+               completed: input.completed,
+               completedAt: input.completed ? new Date() : null,
+            })
             .returning()
             .execute();
 
          await refreshProject(ctx, input.projectId);
+         await recomputeBingoBoardsForUser(ctx);
 
          return createdPart;
       }),
@@ -52,21 +67,60 @@ export const partRouter = router({
       const result = await ctx.db.delete(parts).where(eq(parts.id, partId)).execute();
 
       await refreshProject(ctx, part.projectId);
+      await recomputeBingoBoardsForUser(ctx);
       return result;
    }),
 
    update: protectedProcedure
-      .input(z.object({ id: z.number(), name: z.string().optional().nullable(), counter: z.number() }))
+      .input(
+         z.object({
+            id: z.number(),
+            name: z.string().optional().nullable(),
+            counter: z.number(),
+            completed: z.boolean().optional(),
+            completedAt: z.coerce.date().optional().nullable(),
+         }),
+      )
+      .mutation(async ({ input, ctx }) => {
+         const part = await assertPartOwnership(ctx, input.id);
+         const completed = input.completed ?? part.completed;
+         const completedAt = completed ? (input.completedAt ?? part.completedAt ?? new Date()) : null;
+
+         const result = await ctx.db
+            .update(parts)
+            .set({
+               name: input.name,
+               counter: input.counter,
+               completed,
+               completedAt,
+               updatedAt: new Date(),
+            })
+            .where(eq(parts.id, input.id))
+            .execute();
+
+         await refreshProject(ctx, part.projectId);
+         await recomputeBingoBoardsForUser(ctx);
+         return result;
+      }),
+
+   setCompleted: protectedProcedure
+      .input(z.object({ id: z.number(), completed: z.boolean() }))
       .mutation(async ({ input, ctx }) => {
          const part = await assertPartOwnership(ctx, input.id);
 
          const result = await ctx.db
             .update(parts)
-            .set({ name: input.name, counter: input.counter, updatedAt: new Date() })
+            .set({
+               completed: input.completed,
+               completedAt: input.completed ? new Date() : null,
+               updatedAt: new Date(),
+            })
             .where(eq(parts.id, input.id))
+            .returning()
             .execute();
 
          await refreshProject(ctx, part.projectId);
-         return result;
+         await recomputeBingoBoardsForUser(ctx);
+         return result[0] ?? null;
       }),
 });

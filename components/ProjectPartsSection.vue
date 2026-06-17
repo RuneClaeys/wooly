@@ -13,6 +13,7 @@ const emit = defineEmits<{
    (e: 'edit', part: SelectPart): void;
    (e: 'delete', id: number): void;
    (e: 'adjust', payload: { part: SelectPart; increment: boolean }): void;
+   (e: 'toggle-completed', payload: { partId: number; completed: boolean }): void;
 }>();
 </script>
 
@@ -23,9 +24,27 @@ const emit = defineEmits<{
       <UCard v-for="part in parts ?? []" :key="part.id" class="wooly-shell w-full">
          <div class="space-y-4">
             <div class="flex items-start justify-between gap-2">
-               <p class="wooly-title text-base text-pink-900 dark:text-pink-100">{{ part.name }}</p>
+               <div class="space-y-1">
+                  <p class="wooly-title text-base text-pink-900 dark:text-pink-100">{{ part.name }}</p>
+                  <UBadge :color="part.completed ? 'success' : 'neutral'" variant="soft" size="xs">
+                     {{ part.completed ? $t('generic.completed') : $t('generic.active') }}
+                  </UBadge>
+               </div>
 
                <div class="flex items-center gap-1">
+                  <UButton
+                     :icon="part.completed ? 'i-heroicons-arrow-path-16-solid' : 'i-heroicons-check-16-solid'"
+                     variant="ghost"
+                     :color="part.completed ? 'warning' : 'success'"
+                     size="md"
+                     class="tap-target tap-target-icon"
+                     :aria-label="
+                        part.completed
+                           ? $t('parts.mark-incomplete')
+                           : $t('parts.mark-complete')
+                     "
+                     @click.stop="emit('toggle-completed', { partId: part.id, completed: !part.completed })"
+                  />
                   <UButton
                      icon="i-heroicons-pencil-16-solid"
                      variant="ghost"
