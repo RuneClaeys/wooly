@@ -1,4 +1,5 @@
 <script lang="ts" setup>
+import { useToast } from '~/composables/useToast';
 import type { SelectPart } from '~/db/schema';
 
 const { t } = useI18n();

@@ -1,4 +1,6 @@
 <script lang="ts" setup>
+import { useToast } from '~/composables/useToast';
+
 type SkeinOption = { label: string; value: number };
 type SkeinForm = {
    skeinId: number | null;
@@ -217,13 +219,19 @@ function handleModalOpenChange() {
    padding: 0.8rem 0.9rem;
    border: 1px solid color-mix(in oklab, var(--wooly-primary) 18%, transparent);
    border-radius: 0.9rem;
-   background:
-      linear-gradient(115deg, color-mix(in oklab, var(--wooly-primary) 9%, white) 0%, color-mix(in oklab, var(--wooly-bg-1) 85%, white) 100%);
+   background: linear-gradient(
+      115deg,
+      color-mix(in oklab, var(--wooly-primary) 9%, white) 0%,
+      color-mix(in oklab, var(--wooly-bg-1) 85%, white) 100%
+   );
 }
 
 .dark .skein-form-intro {
-   background:
-      linear-gradient(115deg, color-mix(in oklab, var(--wooly-primary) 18%, transparent) 0%, color-mix(in oklab, var(--wooly-bg-2) 94%, black) 100%);
+   background: linear-gradient(
+      115deg,
+      color-mix(in oklab, var(--wooly-primary) 18%, transparent) 0%,
+      color-mix(in oklab, var(--wooly-bg-2) 94%, black) 100%
+   );
 }
 
 .skein-form-title {

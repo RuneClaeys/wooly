@@ -3,6 +3,9 @@ const { status } = useAuth();
 
 const colorMode = useColorMode();
 const isDark = computed(() => colorMode.value === 'dark');
+const route = useRoute();
+
+const showBottomTabs = computed(() => status.value === 'authenticated' && route.path !== '/login');
 
 const isOnline = ref(true);
 const handleOnline = () => {
@@ -125,6 +128,8 @@ defineProps({
             </section>
          </UContainer>
       </main>
+
+      <LayoutBottomTabs v-if="showBottomTabs" />
 
       <!-- Toast Notifications -->
       <ToastContainer />

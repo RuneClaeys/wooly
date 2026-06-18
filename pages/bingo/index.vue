@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { useToast } from '~/composables/useToast';
+
 const { bingoRouter } = useTrpcClient();
 const { promptDeleteConfirmation } = useConfirmation();
 const { success: showSuccessToast, error: showErrorToast } = useToast();
@@ -65,19 +67,17 @@ function openBoard(boardId: number) {
 </script>
 
 <template>
-   <NuxtLayout :title="$t('bingo.board', 2)">
-      <div class="space-y-4 pb-[calc(9rem+env(safe-area-inset-bottom))]">
-         <BingoBoardsSection
-            :boards="boards"
-            :pending="pending"
-            @create="showCreateBoard = true"
-            @open="openBoard"
-            @edit="editBoard"
-            @delete="deleteBoard"
-         />
+   <div class="space-y-4 pb-[calc(9rem+env(safe-area-inset-bottom))]">
+      <BingoBoardsSection
+         :boards="boards"
+         :pending="pending"
+         @create="showCreateBoard = true"
+         @open="openBoard"
+         @edit="editBoard"
+         @delete="deleteBoard"
+      />
 
-         <ModalsBingoBoard v-model="showCreateBoard" @save-board="createBoard" />
-         <ModalsBingoBoard v-model="showEditBoard" :initial-board="boardToEdit" @save-board="updateBoard" />
-      </div>
-   </NuxtLayout>
+      <ModalsBingoBoard v-model="showCreateBoard" @save-board="createBoard" />
+      <ModalsBingoBoard v-model="showEditBoard" :initial-board="boardToEdit" @save-board="updateBoard" />
+   </div>
 </template>

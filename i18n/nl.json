@@ -70,6 +70,11 @@
    "home": {
       "skein-insights": "Gareninzichten"
    },
+   "navigation": {
+      "bingo": "Bingo",
+      "projects": "Projecten",
+      "yarn": "Garen"
+   },
    "parts": {
       "mark-complete": "Onderdeel als afgewerkt markeren",
       "mark-incomplete": "Onderdeel terug actief zetten",

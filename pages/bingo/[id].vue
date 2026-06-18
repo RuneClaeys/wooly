@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useRouteNumericParam } from '~/composables/useRouteNumericParam';
+import { useToast } from '~/composables/useToast';
 import type { SelectProject } from '~/db/schema';
 
 const boardId = useRouteNumericParam('id');

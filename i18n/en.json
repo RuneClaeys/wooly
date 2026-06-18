@@ -70,6 +70,11 @@
    "home": {
       "skein-insights": "Yarn insights"
    },
+   "navigation": {
+      "bingo": "Bingo",
+      "projects": "Projects",
+      "yarn": "Yarn"
+   },
    "parts": {
       "mark-complete": "Mark part as complete",
       "mark-incomplete": "Mark part as incomplete",

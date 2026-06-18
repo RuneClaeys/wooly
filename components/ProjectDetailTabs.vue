@@ -31,29 +31,42 @@ interface Emits {
    (e: 'delete-photo', photo: SelectProjectPhoto): void;
 }
 
-const props = defineProps<Props>();
+defineProps<Props>();
 defineEmits<Emits>();
+
+const route = useRoute();
+const router = useRouter();
 
 const tabs = ['overview', 'photos', 'skeins'] as const;
 type TabKey = (typeof tabs)[number];
-const activeTab = ref<TabKey>('overview');
+const activeTab = computed<TabKey>(() => {
+   const rawTab = route.query.tab;
+   const tab = Array.isArray(rawTab) ? rawTab[0] : rawTab;
 
-// Persist active tab to localStorage by key (stable even if order changes)
-watchEffect(() => {
-   if (process.client) {
-      localStorage.setItem(`project-detail-tab-${props.projectId}`, activeTab.value);
-   }
+   if (tab === 'parts') return 'overview';
+   if (tab && tabs.includes(tab as TabKey)) return tab as TabKey;
+   return 'overview';
 });
 
+function goToTab(tab: TabKey) {
+   router.push({
+      path: route.path,
+      query: {
+         ...route.query,
+         tab,
+      },
+   });
+}
+
 onMounted(() => {
-   if (process.client) {
-      const savedTab = localStorage.getItem(`project-detail-tab-${props.projectId}`);
-      // Backward compatibility: old "parts" tab is now included in "overview"
-      if (savedTab === 'parts') {
-         activeTab.value = 'overview';
-      } else if (savedTab && tabs.includes(savedTab as TabKey)) {
-         activeTab.value = savedTab as TabKey;
-      }
+   if (!route.query.tab) {
+      router.replace({
+         path: route.path,
+         query: {
+            ...route.query,
+            tab: 'overview',
+         },
+      });
    }
 });
 </script>
@@ -73,7 +86,7 @@ onMounted(() => {
                   ? 'text-primary-600 dark:text-primary-400'
                   : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-300',
             ]"
-            @click="activeTab = tab"
+            @click="goToTab(tab)"
          >
             {{ $t(`tabs.${tab}`) }}
             <div v-if="activeTab === tab" class="absolute bottom-0 left-0 right-0 h-0.5 bg-primary-600 dark:bg-primary-400" />

@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 import imageCompression from 'browser-image-compression';
 import { useRouteNumericParam } from '~/composables/useRouteNumericParam';
+import { useToast } from '~/composables/useToast';
 import type { SelectPart, SelectProjectPhoto, SelectYarnSkein } from '~/db/schema';
 
 //#region Globals
