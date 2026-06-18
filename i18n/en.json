@@ -18,6 +18,7 @@
       "upload": "Upload"
    },
    "bingo": {
+      "add-cell": "Add cell",
       "board": "Bingo board | Bingo boards",
       "board-name-placeholder": "Summer challenge",
       "cell": "Bingo cell | Bingo cells",
@@ -26,6 +27,7 @@
       "empty-slot": "Add challenge",
       "end-date": "End date",
       "ends-on": "Ends on {date}",
+      "grid": "grid",
       "kind": "Type",
       "kind-free": "Free text",
       "kind-parts": "Finish X parts",
@@ -65,6 +67,8 @@
       "loading": "Loading...",
       "name": "Name",
       "no-results-for-type": "There are no {type} yet",
+      "position": "Position",
+      "progress": "Progress",
       "status": "Status"
    },
    "home": {

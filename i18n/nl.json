@@ -18,6 +18,7 @@
       "upload": "Uploaden"
    },
    "bingo": {
+      "add-cell": "Vakje toevoegen",
       "board": "Bingo bord | Bingo borden",
       "board-name-placeholder": "Zomer uitdaging",
       "cell": "Bingo vakje | Bingo vakjes",
@@ -26,6 +27,7 @@
       "empty-slot": "Uitdaging toevoegen",
       "end-date": "Einddatum",
       "ends-on": "Eindigt op {date}",
+      "grid": "raster",
       "kind": "Type",
       "kind-free": "Vrije tekst",
       "kind-parts": "Werk X onderdelen af",
@@ -65,6 +67,8 @@
       "loading": "Laden...",
       "name": "Naam",
       "no-results-for-type": "Er zijn nog geen {type}",
+      "position": "Positie",
+      "progress": "Voortgang",
       "status": "Status"
    },
    "home": {

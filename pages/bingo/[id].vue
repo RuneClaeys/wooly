@@ -152,20 +152,35 @@ async function recompute() {
 
 <template>
    <NuxtLayout :root="false" :title="boardData?.board?.name ?? $t('bingo.board')" navigate-back-to="/bingo">
-      <div class="space-y-4 pb-[calc(9rem+env(safe-area-inset-bottom))]">
-         <div class="wooly-shell p-4 flex flex-wrap items-center justify-between gap-2">
-            <div>
-               <p class="wooly-title text-lg">{{ boardData?.board?.name ?? $t('bingo.board') }}</p>
-               <p class="text-sm wooly-muted">
-                  {{ $t('bingo.ends-on', { date: boardData?.board?.endDate ? $dayjs(boardData.board.endDate).format('ll') : '-' }) }}
-               </p>
+      <div class="space-y-4 pb-[calc(12rem+env(safe-area-inset-bottom))]">
+         <!-- Board Header Card -->
+         <div class="wooly-shell p-5 space-y-3">
+            <div class="flex items-start justify-between gap-3">
+               <div class="space-y-2 flex-grow">
+                  <p class="wooly-title text-2xl font-bold">{{ boardData?.board?.name ?? $t('bingo.board') }}</p>
+                  <p class="text-sm wooly-muted font-medium">
+                     📅 {{ $t('bingo.ends-on', { date: boardData?.board?.endDate ? $dayjs(boardData.board.endDate).format('ll') : '-' }) }}
+                  </p>
+               </div>
+            </div>
+
+            <div class="flex items-center gap-2 flex-wrap pt-2">
+               <UBadge color="primary" variant="soft" size="md" class="font-semibold">
+                  {{ boardData?.board?.size }}x{{ boardData?.board?.size }} {{ $t('bingo.grid') }}
+               </UBadge>
+               <UBadge color="neutral" variant="soft" size="md" class="font-semibold">
+                  {{ boardData?.cells?.filter((c) => c.manualCompleted || c.autoCompleted).length ?? 0 }}/{{
+                     boardData?.cells?.length ?? 0
+                  }}
+                  {{ $t('generic.completed') }}
+               </UBadge>
             </div>
 
             <UButton
                icon="i-heroicons-arrow-path-16-solid"
-               variant="soft"
                color="neutral"
-               class="tap-target"
+               variant="soft"
+               class="tap-target w-full justify-center"
                :label="$t('bingo.recompute')"
                @click="recompute"
             />
@@ -190,6 +205,20 @@ async function recompute() {
          <ModalsBingoCell v-model="showCreateCell" :projects="projectOptions" :locked-position="lockedPosition" @save-cell="createCell" />
 
          <ModalsBingoCell v-model="showEditCell" :projects="projectOptions" :initial-cell="cellToEdit" @save-cell="updateCell" />
+
+         <!-- Floating Action Button -->
+         <Teleport to="body">
+            <div class="fixed bottom-[calc(6rem+env(safe-area-inset-bottom))] right-4 z-40">
+               <UButton
+                  icon="i-heroicons-plus-16-solid"
+                  size="lg"
+                  color="primary"
+                  class="h-14 w-14 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 tap-target !p-0 flex items-center justify-center hover:scale-110"
+                  :aria-label="$t('actions.create-type', { type: $t('bingo.cell') })"
+                  @click="showCreateCell = true"
+               />
+            </div>
+         </Teleport>
       </div>
    </NuxtLayout>
 </template>
