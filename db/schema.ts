@@ -1,5 +1,5 @@
 import { relations, sql } from 'drizzle-orm';
-import { boolean, integer, pgTable, serial, text, timestamp, varchar } from 'drizzle-orm/pg-core';
+import { boolean, integer, pgTable, real, serial, text, timestamp, varchar } from 'drizzle-orm/pg-core';
 
 // Users
 export const users = pgTable('users', {
@@ -13,7 +13,7 @@ export const users = pgTable('users', {
 
 export const usersRelations = relations(users, ({ many }) => ({
    projects: many(projects),
-   yarnSkeins: many(yarnSkeins),
+   yarnTypes: many(yarnTypes),
    bingoBoards: many(bingoBoards),
 }));
 
@@ -35,7 +35,7 @@ export const projectsRelations = relations(projects, ({ one, many }) => ({
       references: [users.id],
    }),
    parts: many(parts),
-   skeinUsages: many(projectSkeins),
+   yarnUsages: many(projectYarns),
    photos: many(projectPhotos),
    linkedBingoCells: many(bingoCells),
 }));
@@ -198,58 +198,93 @@ export type InsertBingoCellProgress = Omit<typeof bingoCellProgress.$inferInsert
    completedAt?: string | null;
 };
 
-// yarn skeins
-export const yarnSkeins = pgTable('yarn_skeins', {
+// yarn types
+export const yarnTypes = pgTable('yarn_types', {
    id: serial('id').primaryKey(),
    name: text('name').notNull(),
+   skeinWeightGrams: integer('skein_weight_grams'),
+   thicknessMm: real('thickness_mm'),
    userId: varchar('user_id', { length: 255 }).notNull(),
    createdAt: timestamp('created_at').default(sql`CURRENT_TIMESTAMP`),
    updatedAt: timestamp('updated_at').default(sql`CURRENT_TIMESTAMP`),
 });
 
-export const yarnSkeinsRelations = relations(yarnSkeins, ({ one, many }) => ({
+export const yarnTypesRelations = relations(yarnTypes, ({ one, many }) => ({
    user: one(users, {
-      fields: [yarnSkeins.userId],
+      fields: [yarnTypes.userId],
       references: [users.id],
    }),
-   usages: many(projectSkeins),
+   colors: many(yarnColors),
 }));
 
-export type SelectYarnSkein = Omit<typeof yarnSkeins.$inferSelect, 'createdAt' | 'updatedAt'> & {
+export type SelectYarnType = Omit<typeof yarnTypes.$inferSelect, 'createdAt' | 'updatedAt'> & {
    createdAt?: string | null;
    updatedAt?: string | null;
 };
-export type InsertYarnSkein = Omit<typeof yarnSkeins.$inferInsert, 'createdAt' | 'updatedAt'> & {
+export type InsertYarnType = Omit<typeof yarnTypes.$inferInsert, 'createdAt' | 'updatedAt'> & {
    createdAt?: string | null;
    updatedAt?: string | null;
 };
 
-// project yarn skeins
-export const projectSkeins = pgTable('project_skeins', {
+// yarn colors
+export const yarnColors = pgTable('yarn_colors', {
    id: serial('id').primaryKey(),
-   projectId: integer('project_id').notNull(),
-   skeinId: integer('skein_id').notNull(),
-   counter: integer('count').notNull().default(0),
+   yarnTypeId: integer('yarn_type_id').notNull(),
+   name: text('name').notNull(),
+   stashCount: integer('stash_count').notNull().default(0),
    createdAt: timestamp('created_at').default(sql`CURRENT_TIMESTAMP`),
    updatedAt: timestamp('updated_at').default(sql`CURRENT_TIMESTAMP`),
 });
 
-export const projectSkeinsRelations = relations(projectSkeins, ({ one }) => ({
+export const yarnColorsRelations = relations(yarnColors, ({ one, many }) => ({
+   yarnType: one(yarnTypes, {
+      fields: [yarnColors.yarnTypeId],
+      references: [yarnTypes.id],
+   }),
+   usages: many(projectYarns),
+}));
+
+export type SelectYarnColor = Omit<typeof yarnColors.$inferSelect, 'createdAt' | 'updatedAt'> & {
+   createdAt?: string | null;
+   updatedAt?: string | null;
+};
+export type InsertYarnColor = Omit<typeof yarnColors.$inferInsert, 'createdAt' | 'updatedAt'> & {
+   createdAt?: string | null;
+   updatedAt?: string | null;
+};
+
+// project yarn usages
+export const projectYarns = pgTable('project_yarns', {
+   id: serial('id').primaryKey(),
+   projectId: integer('project_id').notNull(),
+   yarnColorId: integer('yarn_color_id').notNull(),
+   usedCount: integer('used_count').notNull().default(0),
+   createdAt: timestamp('created_at').default(sql`CURRENT_TIMESTAMP`),
+   updatedAt: timestamp('updated_at').default(sql`CURRENT_TIMESTAMP`),
+});
+
+export const projectYarnsRelations = relations(projectYarns, ({ one }) => ({
    project: one(projects, {
-      fields: [projectSkeins.projectId],
+      fields: [projectYarns.projectId],
       references: [projects.id],
    }),
-   yarnSkein: one(yarnSkeins, {
-      fields: [projectSkeins.skeinId],
-      references: [yarnSkeins.id],
+   yarnColor: one(yarnColors, {
+      fields: [projectYarns.yarnColorId],
+      references: [yarnColors.id],
    }),
 }));
 
-export type SelectProjectSkein = Omit<typeof projectSkeins.$inferSelect, 'createdAt' | 'updatedAt'> & {
+export type SelectProjectYarn = Omit<typeof projectYarns.$inferSelect, 'createdAt' | 'updatedAt'> & {
    createdAt?: string | null;
    updatedAt?: string | null;
 };
-export type InsertProjectSkein = Omit<typeof projectSkeins.$inferInsert, 'createdAt' | 'updatedAt'> & {
+export type InsertProjectYarn = Omit<typeof projectYarns.$inferInsert, 'createdAt' | 'updatedAt'> & {
    createdAt?: string | null;
    updatedAt?: string | null;
 };
+
+// Temporary aliases during skein -> yarn rollout.
+export type SelectYarnSkein = SelectYarnType;
+export type InsertYarnSkein = InsertYarnType;
+export type SelectProjectSkein = SelectProjectYarn;
+export type InsertProjectSkein = InsertProjectYarn;

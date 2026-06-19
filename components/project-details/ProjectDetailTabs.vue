@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { SelectPart, SelectProjectPhoto, SelectYarnSkein } from '~/db/schema';
+import type { SelectPart, SelectProjectPhoto } from '~/db/schema';
 
 interface Props {
    projectId: number;
@@ -7,11 +7,10 @@ interface Props {
    projectStatus: boolean;
    parts: SelectPart[] | null;
    photos: SelectProjectPhoto[] | null;
-   skeinUsages: any[] | null;
-   skeinCatalog: SelectYarnSkein[] | null;
+   yarnUsages: any[] | null;
    pendingParts: boolean;
    pendingPhotos: boolean;
-   pendingSkeins: boolean;
+   pendingYarn: boolean;
    uploadingPhoto: boolean;
    photoError: string | null;
 }
@@ -21,11 +20,11 @@ interface Emits {
    (e: 'delete-part', id: number): void;
    (e: 'adjust-part', payload: { part: SelectPart; increment: boolean }): void;
    (e: 'toggle-part-completed', payload: { partId: number; completed: boolean }): void;
-   (e: 'edit-skein', skein: any): void;
-   (e: 'delete-skein', id: number): void;
-   (e: 'adjust-skein', payload: { skein: any; increment: boolean }): void;
+   (e: 'edit-yarn', yarn: any): void;
+   (e: 'delete-yarn', id: number): void;
+   (e: 'adjust-yarn', payload: { yarn: any; increment: boolean }): void;
    (e: 'create-part'): void;
-   (e: 'create-skein'): void;
+   (e: 'create-yarn'): void;
    (e: 'upload-photo'): void;
    (e: 'open-photo', id: number): void;
    (e: 'delete-photo', photo: SelectProjectPhoto): void;
@@ -37,13 +36,14 @@ defineEmits<Emits>();
 const route = useRoute();
 const router = useRouter();
 
-const tabs = ['overview', 'photos', 'skeins'] as const;
+const tabs = ['overview', 'photos', 'yarn'] as const;
 type TabKey = (typeof tabs)[number];
 const activeTab = computed<TabKey>(() => {
    const rawTab = route.query.tab;
    const tab = Array.isArray(rawTab) ? rawTab[0] : rawTab;
 
    if (tab === 'parts') return 'overview';
+   if (tab === 'skeins') return 'yarn';
    if (tab && tabs.includes(tab as TabKey)) return tab as TabKey;
    return 'overview';
 });
@@ -123,19 +123,16 @@ onMounted(() => {
             />
          </div>
 
-         <!-- Skeins Tab -->
-         <div v-show="activeTab === 'skeins'" class="space-y-4 wooly-scale-up">
+         <!-- Yarn Tab -->
+         <div v-show="activeTab === 'yarn'" class="space-y-4 wooly-scale-up">
             <TabOverview
                :project-id="projectId"
-               :project-name="projectName"
-               :project-status="projectStatus"
-               :skein-usages="skeinUsages"
-               :skein-catalog="skeinCatalog"
-               :pending="pendingSkeins"
-               @create="$emit('create-skein')"
-               @edit="$emit('edit-skein', $event)"
-               @delete="$emit('delete-skein', $event)"
-               @adjust="$emit('adjust-skein', $event)"
+               :yarn-usages="yarnUsages"
+               :pending="pendingYarn"
+               @create="$emit('create-yarn')"
+               @edit="$emit('edit-yarn', $event)"
+               @delete="$emit('delete-yarn', $event)"
+               @adjust="$emit('adjust-yarn', $event)"
             />
          </div>
       </div>

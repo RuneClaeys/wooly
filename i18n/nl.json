@@ -87,6 +87,33 @@
       "projects": "Projecten",
       "yarn": "Garen"
    },
+   "yarn": {
+      "archive": "Voorraadarchief",
+      "type": "Garentype | Garentypes",
+      "color": "Kleur | Kleuren",
+      "skein-weight-grams": "Skein gewicht (g)",
+      "skein-weight-grams-short": "Gewicht",
+      "skein-weight-grams-placeholder": "bijv. 50",
+      "thickness-mm": "Dikte (mm)",
+      "thickness-mm-short": "Dikte",
+      "thickness-mm-placeholder": "bijv. 2.5",
+      "specs-not-set": "Geen gewicht/dikte opgegeven",
+      "stash": "Voorraad",
+      "used": "Gebruikt",
+      "remaining": "Resterend",
+      "stash-count": "Voorraadteller",
+      "type-name-placeholder": "bijv. Friends Cotton",
+      "color-name": "Kleurnaam",
+      "color-name-placeholder": "bijv. Rose",
+      "select-color-placeholder": "Selecteer een garenkleur",
+      "or-create-new-color": "Of maak een nieuw garentype en kleur",
+      "no-types": "Nog geen garentypes",
+      "no-types-hint": "Maak je eerste garentype en voeg kleuren toe aan je voorraad.",
+      "no-colors": "Nog geen kleuren",
+      "project-usage-description": "Houd bij hoeveel van elke garenkleur dit project heeft gebruikt.",
+      "no-project-yarn": "Nog geen garen gebruikt",
+      "no-project-yarn-hint": "Voeg een garenkleur toe om gebruik bij te houden."
+   },
    "parts": {
       "mark-complete": "Onderdeel als afgewerkt markeren",
       "mark-incomplete": "Onderdeel terug actief zetten",
@@ -101,7 +128,8 @@
       "overview": "Overzicht",
       "parts": "Onderdelen",
       "photos": "Foto's",
-      "skeins": "Skeins"
+      "skeins": "Skeins",
+      "yarn": "Garen"
    },
    "trackers": {
       "no-skeins": "Nog geen skeins",

@@ -30,18 +30,7 @@ function isOverdue(endDate: string | null) {
 
 <template>
    <div class="space-y-3">
-      <LayoutHeading :title="$t('bingo.board', 2)">
-         <template #otherFilters>
-            <UButton
-               size="md"
-               icon="i-heroicons-plus-16-solid"
-               color="primary"
-               class="tap-target"
-               :label="$t('actions.create-type', { type: $t('bingo.board') })"
-               @click="emit('create')"
-            />
-         </template>
-      </LayoutHeading>
+      <LayoutHeading :title="$t('bingo.board', 2)" />
 
       <div v-if="pending" class="space-y-2">
          <SkeletonCard />
@@ -56,14 +45,6 @@ function isOverdue(endDate: string | null) {
             <p class="wooly-title text-lg font-bold">{{ $t('bingo.no-boards') }}</p>
             <p class="wooly-muted text-sm max-w-sm mx-auto">{{ $t('bingo.no-boards-hint') }}</p>
          </div>
-         <UButton
-            color="primary"
-            icon="i-heroicons-plus-16-solid"
-            size="lg"
-            class="tap-target"
-            :label="$t('actions.create-type', { type: $t('bingo.board') })"
-            @click="emit('create')"
-         />
       </div>
 
       <div v-else class="grid grid-cols-1 gap-3">

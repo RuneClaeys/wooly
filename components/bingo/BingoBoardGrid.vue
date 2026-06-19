@@ -51,26 +51,18 @@ const positions = computed(() => Array.from({ length: totalSlots.value }, (_, in
          gridTemplateColumns: `repeat(${size}, minmax(120px, 1fr))`,
       }"
    >
-      <!-- Filled Cell -->
-      <BingoCellCard
-         v-for="position in positions"
-         v-show="cellByPosition.get(position)"
-         :key="position"
-         :position="position"
-         :cell="cellByPosition.get(position)!"
-         @edit="emit('edit-cell', $event)"
-         @delete="emit('delete-cell', $event)"
-         @toggle-manual="emit('toggle-manual', $event)"
-         @set-progress="emit('set-progress', $event)"
-      />
+      <template v-for="position in positions" :key="position">
+         <BingoCellCard
+            v-if="cellByPosition.get(position)"
+            :position="position"
+            :cell="cellByPosition.get(position)!"
+            @edit="emit('edit-cell', $event)"
+            @delete="emit('delete-cell', $event)"
+            @toggle-manual="emit('toggle-manual', $event)"
+            @set-progress="emit('set-progress', $event)"
+         />
 
-      <!-- Empty Cell Slot -->
-      <BingoCellEmpty
-         v-for="position in positions"
-         v-show="!cellByPosition.get(position)"
-         :key="`empty-${position}`"
-         :position="position"
-         @create="emit('create-cell', $event)"
-      />
+         <BingoCellEmpty v-else :position="position" @create="emit('create-cell', $event)" />
+      </template>
    </div>
 </template>

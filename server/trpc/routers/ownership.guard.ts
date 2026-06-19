@@ -1,6 +1,6 @@
 import { TRPCError } from '@trpc/server';
 import { and, eq } from 'drizzle-orm';
-import { bingoBoards, bingoCells, parts, projectPhotos, projectSkeins, projects, yarnSkeins } from '~/db/schema';
+import { bingoBoards, bingoCells, parts, projectPhotos, projectYarns, projects, yarnColors, yarnTypes } from '~/db/schema';
 import type { Context } from '../context';
 
 export async function assertProjectOwnership(ctx: Context, projectId: number) {
@@ -26,20 +26,31 @@ export async function assertPartOwnership(ctx: Context, partId: number) {
    return part;
 }
 
-export async function assertYarnSkeinOwnership(ctx: Context, skeinId: number) {
-   const skein = await ctx.db.query.yarnSkeins.findFirst({
-      where: and(eq(yarnSkeins.id, skeinId), eq(yarnSkeins.userId, ctx.session.user.id)),
+export async function assertYarnTypeOwnership(ctx: Context, yarnTypeId: number) {
+   const yarnType = await ctx.db.query.yarnTypes.findFirst({
+      where: and(eq(yarnTypes.id, yarnTypeId), eq(yarnTypes.userId, ctx.session.user.id)),
    });
 
-   if (!skein) {
+   if (!yarnType) {
       throw new TRPCError({ code: 'NOT_FOUND' });
    }
 
-   return skein;
+   return yarnType;
 }
 
-export async function assertProjectSkeinOwnership(ctx: Context, usageId: number) {
-   const usage = await ctx.db.query.projectSkeins.findFirst({ where: eq(projectSkeins.id, usageId) });
+export async function assertYarnColorOwnership(ctx: Context, yarnColorId: number) {
+   const color = await ctx.db.query.yarnColors.findFirst({ where: eq(yarnColors.id, yarnColorId) });
+
+   if (!color) {
+      throw new TRPCError({ code: 'NOT_FOUND' });
+   }
+
+   await assertYarnTypeOwnership(ctx, color.yarnTypeId);
+   return color;
+}
+
+export async function assertProjectYarnOwnership(ctx: Context, usageId: number) {
+   const usage = await ctx.db.query.projectYarns.findFirst({ where: eq(projectYarns.id, usageId) });
 
    if (!usage) {
       throw new TRPCError({ code: 'NOT_FOUND' });
@@ -47,6 +58,15 @@ export async function assertProjectSkeinOwnership(ctx: Context, usageId: number)
 
    await assertProjectOwnership(ctx, usage.projectId);
    return usage;
+}
+
+// Temporary wrappers during skein -> yarn rollout.
+export async function assertYarnSkeinOwnership(ctx: Context, skeinId: number) {
+   return assertYarnTypeOwnership(ctx, skeinId);
+}
+
+export async function assertProjectSkeinOwnership(ctx: Context, usageId: number) {
+   return assertProjectYarnOwnership(ctx, usageId);
 }
 
 export async function assertProjectPhotoOwnership(ctx: Context, photoId: number) {

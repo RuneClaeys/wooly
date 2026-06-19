@@ -29,9 +29,15 @@ const authMiddleware = t.middleware(async ({ ctx, next }) => {
       throw new TRPCError({ code: 'UNAUTHORIZED' });
    }
 
+   // Normalize provider IDs to string so query params always match varchar user_id columns.
+   const normalizedUser = {
+      ...user,
+      id: String(user.id),
+   };
+
    return next({
       ctx: {
-         session: { ...ctx.session, user },
+         session: { ...ctx.session, user: normalizedUser },
       },
    });
 });

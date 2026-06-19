@@ -219,20 +219,6 @@ async function recompute() {
             :occupied-positions="(boardData?.cells ?? []).map((c) => c.position)"
             @save-cell="updateCell"
          />
-
-         <!-- Floating Action Button -->
-         <Teleport to="body">
-            <div class="fixed bottom-[calc(6rem+env(safe-area-inset-bottom))] right-4 z-40">
-               <UButton
-                  icon="i-heroicons-plus-16-solid"
-                  size="lg"
-                  color="primary"
-                  class="h-14 w-14 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 tap-target !p-0 flex items-center justify-center hover:scale-110"
-                  :aria-label="$t('actions.create-type', { type: $t('bingo.cell') })"
-                  @click="showCreateCell = true"
-               />
-            </div>
-         </Teleport>
       </div>
    </NuxtLayout>
 </template>

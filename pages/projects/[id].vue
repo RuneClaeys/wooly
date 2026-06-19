@@ -2,10 +2,10 @@
 import imageCompression from 'browser-image-compression';
 import { useRouteNumericParam } from '~/composables/useRouteNumericParam';
 import { useToast } from '~/composables/useToast';
-import type { SelectPart, SelectProjectPhoto, SelectYarnSkein } from '~/db/schema';
+import type { SelectPart, SelectProjectPhoto } from '~/db/schema';
 
 //#region Globals
-const { projectRouter, partRouter, skeinRouter } = useTrpcClient();
+const { projectRouter, partRouter, yarnRouter } = useTrpcClient();
 const { promptDeleteConfirmation } = useConfirmation();
 const { success: showSuccessToast, error: showErrorToast } = useToast();
 const { t } = useI18n();
@@ -25,28 +25,53 @@ const input = computed(() => ({
 const { data: parts, execute: refresh, pending } = partRouter.list.useQuery(input, { watch: [input], deep: true });
 //#endregion
 
-//#region Skein Tracker
-type SkeinCatalogItem = { label: string; value: number };
-type SkeinUsageRow = { id: number; skeinId: number; skeinName: string; counter: number };
+//#region Yarn Tracker
+type YarnUsageRow = {
+   id: number;
+   yarnTypeId: number;
+   yarnTypeName: string;
+   yarnColorId: number;
+   yarnColorName: string;
+   usedCount: number;
+};
 
-const { data: skeinCatalog } = skeinRouter.catalogList.useQuery();
-const catalogItems = computed<SkeinCatalogItem[]>(() =>
-   (skeinCatalog.value ?? []).map((skein: SelectYarnSkein) => ({ label: skein.name, value: skein.id })),
-);
+type ArchiveType = {
+   id: number;
+   name: string;
+   skeinWeightGrams: number | null;
+   thicknessMm: number | null;
+   colors: Array<{
+      id: number;
+      name: string;
+      stashCount: number;
+      usedCount: number;
+      remainingCount: number;
+   }>;
+};
 
-const skeinInput = computed(() => ({
+type YarnColorOption = { label: string; value: number };
+
+const { data: yarnArchive } = yarnRouter.archiveList.useQuery();
+const yarnColorOptions = computed<YarnColorOption[]>(() => {
+   const types = (yarnArchive.value ?? []) as ArchiveType[];
+   return types.flatMap((type) =>
+      type.colors.map((color) => ({
+         label: `${type.name} - ${color.name}`,
+         value: color.id,
+      })),
+   );
+});
+
+const yarnInput = computed(() => ({
    projectId: projectId.value,
    sorting: query.value,
 }));
 
 const {
-   data: skeinUsages,
-   execute: refreshSkeins,
-   pending: pendingSkeins,
-} = skeinRouter.list.useQuery(skeinInput, { watch: [skeinInput], deep: true });
-const skeinTotal = computed<number>(() =>
-   (skeinUsages.value ?? []).reduce((total: number, skein: SkeinUsageRow) => total + (skein.counter ?? 0), 0),
-);
+   data: yarnUsages,
+   execute: refreshYarn,
+   pending: pendingYarn,
+} = yarnRouter.projectList.useQuery(yarnInput, { watch: [yarnInput], deep: true });
 //#endregion
 
 //#region Project Photos
@@ -240,29 +265,61 @@ async function incrementOrDecrement(part: SelectPart, increment: boolean) {
 }
 //#endregion
 
-//#region Add Skein
-const showCreateSkeinForm = ref(false);
+//#region Add Yarn
+const showCreateYarnForm = ref(false);
 
-async function ensureCatalogSkein(skein: { skeinId: number | null; skeinName: string; counter: number }) {
-   if (skein.skeinId) return skein.skeinId;
+async function ensureYarnColor(payload: {
+   yarnColorId: number | null;
+   newTypeName: string;
+   newTypeSkeinWeightGrams: number | null;
+   newTypeThicknessMm: number | null;
+   newColorName: string;
+   newColorStashCount: number;
+}) {
+   if (payload.yarnColorId) return payload.yarnColorId;
 
-   const created = await skeinRouter.catalogCreate.mutate({ name: skein.skeinName });
-   if (!created) throw new Error('Unable to create skein');
-   return created.id;
+   if (!payload.newTypeName || !payload.newColorName) {
+      throw new Error('Missing yarn type or color');
+   }
+
+   const createdType = await yarnRouter.typeCreate.mutate({
+      name: payload.newTypeName,
+      skeinWeightGrams: payload.newTypeSkeinWeightGrams,
+      thicknessMm: payload.newTypeThicknessMm,
+   });
+
+   const createdColor = await yarnRouter.colorCreate.mutate({
+      yarnTypeId: createdType.id,
+      name: payload.newColorName,
+      stashCount: payload.newColorStashCount,
+   });
+
+   return createdColor.id;
 }
 
-async function createSkein(payload: { skein: { skeinId: number | null; skeinName: string; counter: number }; done: () => void }) {
+async function createYarn(payload: {
+   yarn: {
+      yarnColorId: number | null;
+      usedCount: number;
+      newTypeName: string;
+      newTypeSkeinWeightGrams: number | null;
+      newTypeThicknessMm: number | null;
+      newColorName: string;
+      newColorStashCount: number;
+   };
+   done: () => void;
+}) {
    try {
-      const skeinId = await ensureCatalogSkein(payload.skein);
+      const yarnColorId = await ensureYarnColor(payload.yarn);
 
-      const response = await skeinRouter.create.mutate({
+      const response = await yarnRouter.projectAdd.mutate({
          projectId: projectId.value,
-         skeinId,
-         counter: payload.skein.counter,
+         yarnColorId,
+         usedCount: payload.yarn.usedCount,
       });
 
-      if (response) refreshSkeins();
-      showCreateSkeinForm.value = false;
+      if (response) refreshYarn();
+      showCreateYarnForm.value = false;
       payload.done();
       showSuccessToast(t('actions.save'));
    } catch {
@@ -270,43 +327,58 @@ async function createSkein(payload: { skein: { skeinId: number | null; skeinName
    }
 }
 
-async function deleteSkein(id: number) {
-   promptDeleteConfirmation(t('trackers.skein'), async (done) => {
+async function deleteYarn(id: number) {
+   promptDeleteConfirmation(t('yarn.color'), async (done) => {
       try {
-         await skeinRouter.delete.mutate(id);
+         await yarnRouter.projectRemove.mutate(id);
          done();
-         skeinUsages.value = (skeinUsages.value ?? []).filter((skein: SkeinUsageRow) => skein.id !== id);
+         yarnUsages.value = (yarnUsages.value ?? []).filter((yarn: YarnUsageRow) => yarn.id !== id);
          showSuccessToast(t('actions.delete'));
       } catch {
-         showErrorToast(t('actions.confirm-delete-type', { type: t('trackers.skein') }));
+         showErrorToast(t('actions.confirm-delete-type', { type: t('yarn.color') }));
       }
    });
 }
 
-async function incrementOrDecrementSkein(skein: SkeinUsageRow, increment: boolean) {
-   const previousCounter = skein.counter;
+async function incrementOrDecrementYarn(yarn: YarnUsageRow, increment: boolean) {
+   const previousCounter = yarn.usedCount;
    try {
-      skein.counter += increment ? 1 : -1;
-      await skeinRouter.update.mutate({ id: skein.id, skeinId: skein.skeinId, counter: skein.counter });
-      await refreshSkeins();
+      yarn.usedCount += increment ? 1 : -1;
+      await yarnRouter.projectUpdate.mutate({ id: yarn.id, yarnColorId: yarn.yarnColorId, usedCount: yarn.usedCount });
+      await refreshYarn();
    } catch {
-      skein.counter = previousCounter;
+      yarn.usedCount = previousCounter;
       showErrorToast(t('actions.save'));
    }
 }
 //#endregion
 
-//#region Edit Skein
-const showEditSkeinForm = ref(false);
-const skeinToEdit = ref<SkeinUsageRow | undefined>(undefined);
+//#region Edit Yarn
+const showEditYarnForm = ref(false);
+const yarnToEdit = ref<YarnUsageRow | undefined>(undefined);
 
-async function changeSkein(payload: { skein: { skeinId: number | null; skeinName: string; counter: number }; done: () => void }) {
+async function changeYarn(payload: {
+   yarn: {
+      yarnColorId: number | null;
+      usedCount: number;
+      newTypeName: string;
+      newTypeSkeinWeightGrams: number | null;
+      newTypeThicknessMm: number | null;
+      newColorName: string;
+      newColorStashCount: number;
+   };
+   done: () => void;
+}) {
    try {
-      const skeinId = await ensureCatalogSkein(payload.skein);
+      const yarnColorId = await ensureYarnColor(payload.yarn);
 
-      const response = await skeinRouter.update.mutate({ id: skeinToEdit.value!.id, skeinId, counter: payload.skein.counter });
-      if (response) refreshSkeins();
-      showEditSkeinForm.value = false;
+      const response = await yarnRouter.projectUpdate.mutate({
+         id: yarnToEdit.value!.id,
+         yarnColorId,
+         usedCount: payload.yarn.usedCount,
+      });
+      if (response) refreshYarn();
+      showEditYarnForm.value = false;
       payload.done();
       showSuccessToast(t('actions.save'));
    } catch {
@@ -314,13 +386,13 @@ async function changeSkein(payload: { skein: { skeinId: number | null; skeinName
    }
 }
 
-function editSkein(skein: SkeinUsageRow) {
-   skeinToEdit.value = { ...skein };
-   showEditSkeinForm.value = true;
+function editYarn(yarn: YarnUsageRow) {
+   yarnToEdit.value = { ...yarn };
+   showEditYarnForm.value = true;
 }
 
-function handleSkeinAdjust(payload: { skein: SkeinUsageRow; increment: boolean }) {
-   return incrementOrDecrementSkein(payload.skein, payload.increment);
+function handleYarnAdjust(payload: { yarn: YarnUsageRow; increment: boolean }) {
+   return incrementOrDecrementYarn(payload.yarn, payload.increment);
 }
 
 //#endregion
@@ -388,22 +460,21 @@ async function togglePartCompleted(payload: { partId: number; completed: boolean
             :project-status="data?.finished ?? false"
             :parts="parts ?? null"
             :photos="photos ?? null"
-            :skein-usages="skeinUsages ?? null"
-            :skein-catalog="skeinCatalog ?? null"
+            :yarn-usages="yarnUsages ?? null"
             :pending-parts="pending"
             :pending-photos="pendingPhotos"
-            :pending-skeins="pendingSkeins"
+            :pending-yarn="pendingYarn"
             :uploading-photo="uploadingPhoto"
             :photo-error="photoError"
             @edit-part="editPart"
             @delete-part="deletePart"
             @adjust-part="handlePartAdjust"
             @toggle-part-completed="togglePartCompleted"
-            @edit-skein="editSkein"
-            @delete-skein="deleteSkein"
-            @adjust-skein="handleSkeinAdjust"
+            @edit-yarn="editYarn"
+            @delete-yarn="deleteYarn"
+            @adjust-yarn="handleYarnAdjust"
             @create-part="showCreatePartForm = true"
-            @create-skein="showCreateSkeinForm = true"
+            @create-yarn="showCreateYarnForm = true"
             @upload-photo="openUploadDialog"
             @open-photo="openPhotoViewerById"
             @delete-photo="deletePhoto"
@@ -467,8 +538,20 @@ async function togglePartCompleted(payload: { partId: number; completed: boolean
          <!-- Modals -->
          <ModalsPart v-model="showCreatePartForm" @save-part="createPart" />
          <ModalsPart v-model="showEditProjectForm" :initial-part="partToEdit" @save-part="changePart" />
-         <ModalsSkein v-model="showCreateSkeinForm" :catalog-items="catalogItems" @save-skein="createSkein" />
-         <ModalsSkein v-model="showEditSkeinForm" :catalog-items="catalogItems" :initial-usage="skeinToEdit" @save-skein="changeSkein" />
+         <ModalsProjectYarn v-model="showCreateYarnForm" :color-options="yarnColorOptions" @save-project-yarn="createYarn" />
+         <ModalsProjectYarn
+            v-model="showEditYarnForm"
+            :color-options="yarnColorOptions"
+            :initial-usage="
+               yarnToEdit
+                  ? {
+                       yarnColorId: yarnToEdit.yarnColorId,
+                       usedCount: yarnToEdit.usedCount,
+                    }
+                  : undefined
+            "
+            @save-project-yarn="changeYarn"
+         />
 
          <!-- Hidden File Input -->
          <input ref="uploadInput" type="file" accept="image/*" multiple class="hidden" @change="uploadPhotos" />

@@ -87,6 +87,33 @@
       "projects": "Projects",
       "yarn": "Yarn"
    },
+   "yarn": {
+      "archive": "Stash archive",
+      "type": "Yarn type | Yarn types",
+      "color": "Color | Colors",
+      "skein-weight-grams": "Skein weight (g)",
+      "skein-weight-grams-short": "Weight",
+      "skein-weight-grams-placeholder": "e.g. 50",
+      "thickness-mm": "Thickness (mm)",
+      "thickness-mm-short": "Thickness",
+      "thickness-mm-placeholder": "e.g. 2.5",
+      "specs-not-set": "No weight/thickness set",
+      "stash": "Stash",
+      "used": "Used",
+      "remaining": "Remaining",
+      "stash-count": "Stash count",
+      "type-name-placeholder": "e.g. Friends Cotton",
+      "color-name": "Color name",
+      "color-name-placeholder": "e.g. Rose",
+      "select-color-placeholder": "Select a yarn color",
+      "or-create-new-color": "Or create a new yarn type and color",
+      "no-types": "No yarn types yet",
+      "no-types-hint": "Create your first yarn type and add colors to your stash.",
+      "no-colors": "No colors yet",
+      "project-usage-description": "Track how much yarn color this project has used.",
+      "no-project-yarn": "No yarn used yet",
+      "no-project-yarn-hint": "Add a yarn color to start tracking usage."
+   },
    "parts": {
       "mark-complete": "Mark part as complete",
       "mark-incomplete": "Mark part as incomplete",
@@ -101,7 +128,8 @@
       "overview": "Overview",
       "parts": "Parts",
       "photos": "Photos",
-      "skeins": "Skeins"
+      "skeins": "Skeins",
+      "yarn": "Yarn"
    },
    "trackers": {
       "no-skeins": "No skeins yet",

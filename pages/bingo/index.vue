@@ -5,6 +5,11 @@ const { bingoRouter } = useTrpcClient();
 const { promptDeleteConfirmation } = useConfirmation();
 const { success: showSuccessToast, error: showErrorToast } = useToast();
 const { t } = useI18n();
+const colorMode = useColorMode();
+
+const isDark = computed(() => colorMode.value === 'dark');
+const fabColor = computed(() => (isDark.value ? 'neutral' : 'primary'));
+const fabVariant = computed(() => (isDark.value ? 'soft' : 'solid'));
 
 const { data: boards, execute: refreshBoards, pending } = bingoRouter.listBoards.useQuery();
 
@@ -68,13 +73,16 @@ function openBoard(boardId: number) {
 
 <template>
    <div class="space-y-4 pb-[calc(9rem+env(safe-area-inset-bottom))]">
-      <BingoBoardsSection
-         :boards="boards"
-         :pending="pending"
-         @create="showCreateBoard = true"
-         @open="openBoard"
-         @edit="editBoard"
-         @delete="deleteBoard"
+      <BingoBoardsSection :boards="boards" :pending="pending" @open="openBoard" @edit="editBoard" @delete="deleteBoard" />
+
+      <UButton
+         class="wooly-fab tap-target tap-target-icon"
+         size="xl"
+         icon="i-heroicons-plus-16-solid"
+         :color="fabColor"
+         :variant="fabVariant"
+         :aria-label="$t('actions.create-type', { type: $t('bingo.board') })"
+         @click="showCreateBoard = true"
       />
 
       <ModalsBingoBoard v-model="showCreateBoard" @save-board="createBoard" />

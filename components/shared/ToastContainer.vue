@@ -27,7 +27,7 @@ const getToastColor = (type: string) => {
 <template>
    <Teleport to="body">
       <div
-         class="toast-container fixed bottom-0 left-4 right-4 z-50 flex flex-col items-center gap-2 pointer-events-none sm:left-auto sm:right-6 sm:items-end"
+         class="toast-container fixed top-0 left-4 right-4 z-50 flex flex-col items-center gap-2 pointer-events-none sm:left-auto sm:right-6 sm:items-end"
          :style="{ maxWidth: 'min(calc(100vw - 2rem), 24rem)', marginInline: 'auto' }"
       >
          <TransitionGroup name="toast" tag="div" class="flex flex-col gap-2 w-full">
@@ -36,7 +36,7 @@ const getToastColor = (type: string) => {
                   <UIcon
                      :name="getToastIcon(toast.type)"
                      :class="[
-                        'flex-shrink-0 w-5 h-5 mt-0.5',
+                        'shrink-0 w-5 h-5 mt-0.5',
                         toast.type === 'success' && 'text-success-500',
                         toast.type === 'error' && 'text-error-500',
                         toast.type === 'warning' && 'text-warning-500',
@@ -45,7 +45,7 @@ const getToastColor = (type: string) => {
                   />
                   <div class="flex-1 text-sm font-medium leading-snug">{{ toast.message }}</div>
                   <button
-                     class="flex-shrink-0 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
+                     class="shrink-0 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
                      :aria-label="`Dismiss ${toast.type} notification`"
                      @click="removeToast(toast.id)"
                   >
@@ -76,12 +76,12 @@ const getToastColor = (type: string) => {
 }
 
 .toast-container {
-   padding-bottom: calc(5rem + max(0.5rem, env(safe-area-inset-bottom)) + 0.75rem);
+   padding-top: calc(env(safe-area-inset-top) + 0.75rem);
 }
 
 @media (min-width: 640px) {
    .toast-container {
-      padding-bottom: 1.5rem;
+      padding-top: 1.5rem;
    }
 }
 
@@ -92,12 +92,12 @@ const getToastColor = (type: string) => {
 
 .toast-enter-from {
    opacity: 0;
-   transform: translateY(1rem) scale(0.95);
+   transform: translateY(-1rem) scale(0.95);
 }
 
 .toast-leave-to {
    opacity: 0;
-   transform: translateY(0.5rem) scale(0.97);
+   transform: translateY(-0.5rem) scale(0.97);
 }
 
 @media (min-width: 640px) {

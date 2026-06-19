@@ -1,6 +1,6 @@
 import { and, asc, desc, eq, sql } from 'drizzle-orm';
 import { z } from 'zod';
-import { bingoBoards, bingoCellProgress, bingoCells, parts, projectSkeins, projects } from '~/db/schema';
+import { bingoBoards, bingoCellProgress, bingoCells, parts, projectYarns, projects } from '~/db/schema';
 import type { Context } from '../context';
 import { protectedProcedure, router } from '../trpc';
 import { assertBingoBoardOwnership, assertBingoCellOwnership, assertProjectOwnership } from './ownership.guard';
@@ -83,9 +83,9 @@ async function getRawTrackedValue(ctx: Context, kind: z.infer<typeof bingoKindSc
 
    if (kind === 'skeins_count') {
       const [row] = await ctx.db
-         .select({ value: sql<number>`coalesce(sum(${projectSkeins.counter}), 0)::int` })
-         .from(projectSkeins)
-         .where(eq(projectSkeins.projectId, linkedProjectId));
+         .select({ value: sql<number>`coalesce(sum(${projectYarns.usedCount}), 0)::int` })
+         .from(projectYarns)
+         .where(eq(projectYarns.projectId, linkedProjectId));
 
       return row?.value ?? 0;
    }
