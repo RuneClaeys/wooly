@@ -39,6 +39,15 @@ export default defineNuxtConfig({
       'dayjs-nuxt',
    ],
 
+   components: [
+      { path: '~/components/bingo', pathPrefix: false },
+      { path: '~/components/projects', pathPrefix: false },
+      { path: '~/components/project-details', pathPrefix: false },
+      { path: '~/components/shared', pathPrefix: false },
+      { path: '~/components/modals', prefix: 'Modals', pathPrefix: false },
+      { path: '~/components/layout', prefix: 'Layout', pathPrefix: false },
+   ],
+
    build: {
       transpile: ['trpc-nuxt'],
    },
