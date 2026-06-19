@@ -94,7 +94,9 @@ const positionOptions = computed(() => {
 
 const showProjectSelector = computed(() => cell.value.kind === 'project_finish' || cell.value.kind === 'parts_count');
 const showTarget = computed(() => cell.value.kind === 'parts_count' || cell.value.kind === 'skeins_count');
-const autoLabelKind = computed(() => cell.value.kind === 'project_finish' || cell.value.kind === 'parts_count' || cell.value.kind === 'skeins_count');
+const autoLabelKind = computed(
+   () => cell.value.kind === 'project_finish' || cell.value.kind === 'parts_count' || cell.value.kind === 'skeins_count',
+);
 const showLabelField = computed(() => !autoLabelKind.value);
 
 const selectedProjectName = computed(() => {

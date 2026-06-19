@@ -132,25 +132,25 @@ function applyStep(direction: -1 | 1) {
                <UIcon name="i-heroicons-minus-small" class="size-5" />
             </button>
 
-         <UInput
-            :model-value="displayValue"
-            :type="type"
-            :placeholder="placeholder"
-            :disabled="disabled"
-            :maxlength="maxLength"
-            :min="min"
-            :max="max"
-            :step="step"
-            :color="hasError ? 'red' : 'gray'"
-            :ui="{
-               base: 'disabled:cursor-not-allowed disabled:opacity-50',
-               form: 'transition-colors',
-            }"
-            class="wooly-input"
-            :class="['w-full min-h-11 rounded-lg font-normal', hasStepper ? 'wooly-input-stepper' : '']"
-            @update:model-value="$emit('update:modelValue', $event)"
-            @blur="$emit('blur')"
-         />
+            <UInput
+               :model-value="displayValue"
+               :type="type"
+               :placeholder="placeholder"
+               :disabled="disabled"
+               :maxlength="maxLength"
+               :min="min"
+               :max="max"
+               :step="step"
+               :color="hasError ? 'red' : 'gray'"
+               :ui="{
+                  base: 'disabled:cursor-not-allowed disabled:opacity-50',
+                  form: 'transition-colors',
+               }"
+               class="wooly-input"
+               :class="['w-full min-h-11 rounded-lg font-normal', hasStepper ? 'wooly-input-stepper' : '']"
+               @update:model-value="$emit('update:modelValue', $event)"
+               @blur="$emit('blur')"
+            />
 
             <button
                v-if="hasStepper"
@@ -230,7 +230,10 @@ function applyStep(direction: -1 | 1) {
    border-radius: 0.8rem;
    position: relative;
    background: color-mix(in oklab, var(--wooly-bg-1) 82%, white);
-   transition: border-color 0.18s ease, box-shadow 0.18s ease, background-color 0.18s ease;
+   transition:
+      border-color 0.18s ease,
+      box-shadow 0.18s ease,
+      background-color 0.18s ease;
 }
 
 .dark .wooly-field-shell {
@@ -269,7 +272,10 @@ function applyStep(direction: -1 | 1) {
    border-radius: 999px;
    color: var(--wooly-text-soft);
    background: color-mix(in oklab, var(--wooly-bg-1) 75%, white);
-   transition: background-color 0.16s ease, color 0.16s ease, opacity 0.16s ease;
+   transition:
+      background-color 0.16s ease,
+      color 0.16s ease,
+      opacity 0.16s ease;
    z-index: 1;
 }
 

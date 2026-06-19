@@ -214,7 +214,11 @@ async function recompute() {
                   <p class="wooly-title text-2xl font-bold">{{ boardData?.board?.name ?? $t('bingo.board') }}</p>
                   <p class="text-sm wooly-muted font-medium flex items-center gap-1.5">
                      <UIcon name="i-heroicons-calendar-days-16-solid" class="h-4 w-4" />
-                     {{ $t('bingo.ends-on', { date: boardData?.board?.endDate ? $dayjs(boardData.board.endDate).format('D MMM YYYY') : '-' }) }}
+                     {{
+                        $t('bingo.ends-on', {
+                           date: boardData?.board?.endDate ? $dayjs(boardData.board.endDate).format('D MMM YYYY') : '-',
+                        })
+                     }}
                   </p>
                </div>
             </div>
