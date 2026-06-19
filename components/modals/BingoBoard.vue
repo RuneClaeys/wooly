@@ -81,7 +81,7 @@ function onSubmit() {
 </script>
 
 <template>
-   <UModal v-model:open="open" :title="title" :ui="{ content: 'mx-2 w-[calc(100%-1rem)] sm:mx-0 sm:max-w-lg' }">
+   <ResponsiveModal v-model:open="open" :title="title" :ui="{ content: 'mx-2 w-[calc(100%-1rem)] sm:mx-0 sm:max-w-lg' }">
       <template #body>
          <div class="space-y-4">
             <FormField
@@ -120,5 +120,5 @@ function onSubmit() {
             </UButton>
          </div>
       </template>
-   </UModal>
+   </ResponsiveModal>
 </template>

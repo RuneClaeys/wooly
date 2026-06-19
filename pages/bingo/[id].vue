@@ -202,9 +202,23 @@ async function recompute() {
             @set-progress="setManualProgress"
          />
 
-         <ModalsBingoCell v-model="showCreateCell" :projects="projectOptions" :locked-position="lockedPosition" @save-cell="createCell" />
+         <ModalsBingoCell
+            v-model="showCreateCell"
+            :projects="projectOptions"
+            :locked-position="lockedPosition"
+            :total-positions="(boardData?.board?.size ?? 3) * (boardData?.board?.size ?? 3)"
+            :occupied-positions="(boardData?.cells ?? []).map((c) => c.position)"
+            @save-cell="createCell"
+         />
 
-         <ModalsBingoCell v-model="showEditCell" :projects="projectOptions" :initial-cell="cellToEdit" @save-cell="updateCell" />
+         <ModalsBingoCell
+            v-model="showEditCell"
+            :projects="projectOptions"
+            :initial-cell="cellToEdit"
+            :total-positions="(boardData?.board?.size ?? 3) * (boardData?.board?.size ?? 3)"
+            :occupied-positions="(boardData?.cells ?? []).map((c) => c.position)"
+            @save-cell="updateCell"
+         />
 
          <!-- Floating Action Button -->
          <Teleport to="body">

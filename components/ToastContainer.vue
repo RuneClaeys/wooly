@@ -27,12 +27,12 @@ const getToastColor = (type: string) => {
 <template>
    <Teleport to="body">
       <div
-         class="fixed bottom-4 right-4 z-50 flex flex-col gap-2 pointer-events-none sm:bottom-6 sm:right-6"
-         :style="{ maxWidth: 'min(calc(100vw - 2rem), 24rem)' }"
+         class="toast-container fixed bottom-0 left-4 right-4 z-50 flex flex-col items-center gap-2 pointer-events-none sm:left-auto sm:right-6 sm:items-end"
+         :style="{ maxWidth: 'min(calc(100vw - 2rem), 24rem)', marginInline: 'auto' }"
       >
-         <TransitionGroup name="toast" tag="div" class="flex flex-col gap-2">
-            <div v-for="toast in toasts" :key="toast.id" class="wooly-slide-in-up pointer-events-auto">
-               <UCard class="wooly-shell flex gap-3 items-start p-4" :ui="{ base: 'relative' }">
+         <TransitionGroup name="toast" tag="div" class="flex flex-col gap-2 w-full">
+            <div v-for="toast in toasts" :key="toast.id" class="pointer-events-auto">
+               <div class="toast-card flex gap-3 items-start px-4 py-3 rounded-2xl shadow-lg">
                   <UIcon
                      :name="getToastIcon(toast.type)"
                      :class="[
@@ -43,7 +43,7 @@ const getToastColor = (type: string) => {
                         toast.type === 'info' && 'text-blue-500',
                      ]"
                   />
-                  <div class="flex-1 text-sm leading-snug">{{ toast.message }}</div>
+                  <div class="flex-1 text-sm font-medium leading-snug">{{ toast.message }}</div>
                   <button
                      class="flex-shrink-0 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
                      :aria-label="`Dismiss ${toast.type} notification`"
@@ -51,7 +51,7 @@ const getToastColor = (type: string) => {
                   >
                      <UIcon name="i-heroicons-x-mark-16-solid" class="w-4 h-4" />
                   </button>
-               </UCard>
+               </div>
             </div>
          </TransitionGroup>
       </div>
@@ -59,22 +59,60 @@ const getToastColor = (type: string) => {
 </template>
 
 <style scoped>
+.toast-card {
+   background: var(--wooly-card);
+   border: 1px solid var(--wooly-card-border);
+   backdrop-filter: blur(12px) saturate(120%);
+   -webkit-backdrop-filter: blur(12px) saturate(120%);
+   box-shadow:
+      0 4px 24px rgba(0, 0, 0, 0.1),
+      0 1px 4px rgba(0, 0, 0, 0.06);
+}
+
+:root.dark .toast-card {
+   box-shadow:
+      0 4px 24px rgba(0, 0, 0, 0.35),
+      0 1px 4px rgba(0, 0, 0, 0.2);
+}
+
+.toast-container {
+   padding-bottom: calc(5rem + max(0.5rem, env(safe-area-inset-bottom)) + 0.75rem);
+}
+
+@media (min-width: 640px) {
+   .toast-container {
+      padding-bottom: 1.5rem;
+   }
+}
+
 .toast-enter-active,
 .toast-leave-active {
-   transition: all 120ms ease-out;
+   transition: all 200ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .toast-enter-from {
    opacity: 0;
-   transform: translateX(100%);
+   transform: translateY(1rem) scale(0.95);
 }
 
 .toast-leave-to {
    opacity: 0;
-   transform: translateX(100%);
+   transform: translateY(0.5rem) scale(0.97);
+}
+
+@media (min-width: 640px) {
+   .toast-enter-from {
+      opacity: 0;
+      transform: translateX(100%);
+   }
+
+   .toast-leave-to {
+      opacity: 0;
+      transform: translateX(100%);
+   }
 }
 
 .toast-move {
-   transition: transform 120ms ease-out;
+   transition: transform 200ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 </style>

@@ -3,7 +3,7 @@ const { showConfirmation, confirmationPrompt, closeConfirmation } = useConfirmat
 </script>
 
 <template>
-   <UModal
+   <ResponsiveModal
       :open="showConfirmation"
       :title="confirmationPrompt?.title"
       :description="confirmationPrompt?.description"
@@ -25,5 +25,5 @@ const { showConfirmation, confirmationPrompt, closeConfirmation } = useConfirmat
             </UButton>
          </div>
       </template>
-   </UModal>
+   </ResponsiveModal>
 </template>

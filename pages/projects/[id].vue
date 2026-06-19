@@ -356,7 +356,7 @@ function handlePartAdjust(payload: { part: SelectPart; increment: boolean }) {
 
 async function togglePartCompleted(payload: { partId: number; completed: boolean }) {
    try {
-      await partRouter.setCompleted.mutate(payload);
+      await partRouter.setCompleted.mutate({ id: payload.partId, completed: payload.completed });
       await refresh();
       showSuccessToast(t('actions.save'));
    } catch {

@@ -37,6 +37,7 @@ function isCompleted(cell: BingoCellItem | undefined) {
 }
 
 function progressValue(cell: BingoCellItem) {
+   if (cell.manualCompleted) return progressTarget(cell);
    return cell.currentValue ?? 0;
 }
 
@@ -52,110 +53,92 @@ function kindLabel(kind: BingoCellItem['kind']) {
    if (kind === 'skeins_count') return 'bingo.kind-skeins';
    return 'bingo.kind-free';
 }
+
+function kindLabelShort(kind: BingoCellItem['kind']) {
+   if (kind === 'project_finish') return 'bingo.kind-project-short';
+   if (kind === 'parts_count') return 'bingo.kind-parts-short';
+   if (kind === 'skeins_count') return 'bingo.kind-skeins-short';
+   return 'bingo.kind-free-short';
+}
 </script>
 
 <template>
    <div v-if="cell" class="relative group aspect-square">
-      <UCard
-         class="wooly-shell h-full transition-all duration-200 relative overflow-hidden flex flex-col"
+      <div
+         class="h-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-2 sm:p-3 flex flex-col transition-all duration-200 overflow-hidden"
          :class="{
-            'ring-2 ring-success-500 ring-offset-2 dark:ring-offset-slate-950 shadow-lg shadow-success-500/20': isCompleted(cell),
-            'hover:shadow-md hover:shadow-slate-300/20 dark:hover:shadow-slate-800/40': true,
+            'ring-2 ring-success-500 bg-success-50/50 dark:bg-success-950/20': isCompleted(cell),
+            'hover:shadow-md': !isCompleted(cell),
          }"
       >
-         <!-- Completed overlay -->
-         <div
-            v-if="isCompleted(cell)"
-            class="absolute inset-0 bg-linear-to-br from-success-500/5 via-transparent to-success-400/5 dark:from-success-400/3 dark:to-success-300/2 pointer-events-none"
-         />
+         <!-- Top row: badge (if fits) + actions -->
+         <div class="flex items-start justify-between gap-1 shrink-0">
+            <UBadge size="xs" color="primary" variant="subtle" class="text-[9px] sm:text-[10px] font-medium truncate max-w-[70%]">
+               <span class="sm:hidden">{{ $t(kindLabelShort(cell.kind)) }}</span>
+               <span class="hidden sm:inline">{{ $t(kindLabel(cell.kind)) }}</span>
+            </UBadge>
 
-         <div class="space-y-1.5 sm:space-y-3 flex flex-col h-full overflow-hidden">
-            <!-- Header -->
-            <div class="flex items-center justify-between gap-1">
-               <UBadge size="sm" color="primary" variant="soft" class="text-[10px] sm:text-xs font-semibold truncate">
-                  {{ $t(kindLabel(cell.kind)) }}
-               </UBadge>
+            <UButton
+               icon="i-heroicons-ellipsis-vertical-16-solid"
+               variant="ghost"
+               color="neutral"
+               size="xs"
+               class="shrink-0 -mr-1 -mt-0.5"
+               :aria-label="$t('actions.more')"
+               @click="isActionsModalOpen = true"
+            />
+         </div>
 
-               <UButton
-                  icon="i-heroicons-ellipsis-vertical-16-solid"
-                  variant="ghost"
-                  color="neutral"
-                  size="xs"
-                  class="shrink-0 hover:bg-slate-100 dark:hover:bg-slate-800"
-                  :aria-label="$t('actions.more')"
-                  @click="isActionsModalOpen = true"
+         <!-- Title -->
+         <p class="text-xs sm:text-sm font-semibold text-slate-900 dark:text-slate-50 line-clamp-2 leading-snug mt-1.5 grow min-h-0">
+            {{ cell.label || $t('bingo.no-label') }}
+         </p>
+
+         <!-- Progress (compact, bottom-anchored) -->
+         <div class="mt-auto pt-1.5 shrink-0">
+            <!-- Free text: simple done/not-done indicator -->
+            <div v-if="cell.kind === 'free_text'" class="flex items-center gap-1">
+               <UIcon
+                  :name="isCompleted(cell) ? 'i-heroicons-check-circle-solid' : 'i-heroicons-circle-stack'"
+                  class="size-4"
+                  :class="isCompleted(cell) ? 'text-success-500' : 'text-slate-400 dark:text-slate-500'"
                />
+               <span
+                  class="text-[10px] sm:text-xs font-medium"
+                  :class="isCompleted(cell) ? 'text-success-600 dark:text-success-400' : 'text-slate-500 dark:text-slate-400'"
+               >
+                  {{ isCompleted(cell) ? $t('generic.completed') : $t('generic.active') }}
+               </span>
             </div>
 
-            <!-- Content -->
-            <div class="flex-grow min-h-0 overflow-hidden space-y-1">
-               <p class="text-xs sm:text-base font-bold text-slate-900 dark:text-slate-50 line-clamp-2 leading-tight">
-                  {{ cell.label || $t('bingo.no-label') }}
-               </p>
-               <p v-if="cell.linkedProjectName" class="text-[10px] sm:text-xs wooly-muted line-clamp-1 font-medium truncate">
-                  📌 {{ cell.linkedProjectName }}
-               </p>
-
-               <!-- Progress Section -->
-               <div v-if="cell.kind !== 'free_text'" class="space-y-1 sm:space-y-2 pt-0.5 sm:pt-1">
-                  <div class="font-bold text-slate-700 dark:text-slate-300 text-[11px] sm:text-sm">
-                     {{ progressValue(cell) }}<span v-if="progressTarget(cell) !== null"> / {{ progressTarget(cell) }}</span>
-                  </div>
-
-                  <!-- Progress bar -->
-                  <div v-if="progressTarget(cell) !== null" class="h-1 sm:h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
-                     <div
-                        class="h-full bg-gradient-to-r from-primary-400 via-primary-500 to-primary-600 transition-all duration-300 rounded-full"
-                        :style="{
-                           width: `${Math.min(100, (progressValue(cell) / (progressTarget(cell) || 1)) * 100)}%`,
-                        }"
-                     />
-                  </div>
-
-                  <!-- Manual input (desktop only) -->
-                  <UInput
-                     v-if="cell.kind !== 'project_finish'"
-                     type="number"
-                     min="0"
-                     :model-value="progressValue(cell)"
-                     class="hidden sm:block text-sm h-8"
-                     placeholder="Enter value"
-                     @update:model-value="
-                        emit('set-progress', {
-                           cellId: cell.id,
-                           currentValue: Number($event),
-                        })
-                     "
+            <!-- Tracked progress: number + bar -->
+            <div v-else class="space-y-1">
+               <div class="flex items-baseline justify-between">
+                  <span class="text-[11px] sm:text-xs font-bold text-slate-700 dark:text-slate-300">
+                     {{ progressValue(cell) }} / {{ progressTarget(cell) }}
+                  </span>
+                  <UIcon v-if="isCompleted(cell)" name="i-heroicons-check-circle-solid" class="size-3.5 text-success-500" />
+               </div>
+               <div class="h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+                  <div
+                     class="h-full rounded-full transition-all duration-300"
+                     :class="isCompleted(cell) ? 'bg-success-500' : 'bg-primary-500'"
+                     :style="{
+                        width: `${Math.min(100, (progressValue(cell) / (progressTarget(cell) || 1)) * 100)}%`,
+                     }"
                   />
                </div>
             </div>
-
-            <!-- Footer -->
-            <div class="flex items-center justify-between pt-1 sm:pt-3 border-t border-slate-200 dark:border-slate-700 mt-auto">
-               <USwitch
-                  size="sm"
-                  :model-value="Boolean(cell.manualCompleted)"
-                  @update:model-value="
-                     emit('toggle-manual', {
-                        cellId: cell.id,
-                        completed: Boolean($event),
-                     })
-                  "
-               />
-
-               <UBadge
-                  :color="isCompleted(cell) ? 'success' : 'neutral'"
-                  variant="soft"
-                  size="sm"
-                  class="font-semibold text-[10px] sm:text-xs"
-               >
-                  <span class="hidden sm:inline">{{ isCompleted(cell) ? $t('generic.completed') : $t('generic.active') }}</span>
-                  <span class="sm:hidden">{{ isCompleted(cell) ? '✓' : '○' }}</span>
-               </UBadge>
-            </div>
          </div>
-      </UCard>
+      </div>
 
-      <ModalsBingoCellActions v-model:open="isActionsModalOpen" @edit="emit('edit', cell)" @delete="emit('delete', cell.id)" />
+      <ModalsBingoCellActions
+         v-model:open="isActionsModalOpen"
+         :cell="cell"
+         @edit="emit('edit', cell)"
+         @delete="emit('delete', cell.id)"
+         @toggle-manual="emit('toggle-manual', $event)"
+         @set-progress="emit('set-progress', $event)"
+      />
    </div>
 </template>

@@ -46,7 +46,7 @@ const positions = computed(() => Array.from({ length: totalSlots.value }, (_, in
 
 <template>
    <div
-      class="grid gap-2 sm:gap-3 overflow-x-auto pb-2"
+      class="grid gap-2 sm:gap-3 overflow-x-auto p-1"
       :style="{
          gridTemplateColumns: `repeat(${size}, minmax(120px, 1fr))`,
       }"

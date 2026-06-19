@@ -141,7 +141,7 @@ function handleModalOpenChange() {
 </script>
 
 <template>
-   <UModal
+   <ResponsiveModal
       v-model:open="open"
       :title="modalTitle"
       :ui="{ content: 'mx-2 w-[calc(100%-1rem)] sm:mx-0 sm:max-w-xl rounded-2xl overflow-hidden wooly-pop' }"
@@ -204,7 +204,7 @@ function handleModalOpenChange() {
             </UButton>
          </div>
       </template>
-   </UModal>
+   </ResponsiveModal>
 </template>
 
 <style scoped>

@@ -20,6 +20,8 @@ const props = defineProps<{
    projects: ProjectOption[];
    initialCell?: InitialCell;
    lockedPosition?: number;
+   totalPositions: number;
+   occupiedPositions: number[];
 }>();
 
 const emit = defineEmits<{
@@ -62,6 +64,7 @@ watch(
          targetValue: initialCell?.targetValue ?? 1,
          newProjectName: '',
       };
+      projectMode.value = initialCell?.linkedProjectId ? 'existing' : 'existing';
       errors.value = {};
    },
 );
@@ -82,8 +85,25 @@ const kindOptions = computed(() => [
    { label: t('bingo.kind-free'), value: 'free_text' },
 ]);
 
+const positionOptions = computed(() => {
+   const currentPosition = props.initialCell?.position ?? props.lockedPosition;
+   return Array.from({ length: props.totalPositions }, (_, i) => i + 1)
+      .filter((pos) => pos === currentPosition || !props.occupiedPositions.includes(pos))
+      .map((pos) => ({ label: String(pos), value: pos }));
+});
+
 const showProjectSelector = computed(() => cell.value.kind !== 'free_text');
 const showTarget = computed(() => cell.value.kind === 'parts_count' || cell.value.kind === 'skeins_count');
+
+const projectMode = ref<'existing' | 'new'>(props.initialCell?.linkedProjectId ? 'existing' : 'existing');
+
+watch(projectMode, (mode) => {
+   if (mode === 'existing') {
+      cell.value.newProjectName = '';
+   } else {
+      cell.value.linkedProjectId = null;
+   }
+});
 
 const title = computed(() =>
    props.initialCell ? t('actions.edit-type', { type: t('bingo.cell') }) : t('actions.create-type', { type: t('bingo.cell') }),
@@ -143,17 +163,25 @@ function onSubmit() {
 </script>
 
 <template>
-   <UModal v-model:open="open" :title="title" :ui="{ content: 'mx-2 w-[calc(100%-1rem)] sm:mx-0 sm:max-w-xl' }">
+   <ResponsiveModal v-model:open="open" :title="title" :ui="{ content: 'mx-2 w-[calc(100%-1rem)] sm:mx-0 sm:max-w-xl' }">
       <template #body>
          <div class="space-y-4">
-            <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
-               <UFormField :label="$t('bingo.position')" :error="errors.position" size="lg">
-                  <UInput v-model="cell.position" type="number" min="1" :disabled="Boolean(lockedPosition)" />
-               </UFormField>
+            <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+               <FormSelect
+                  :model-value="cell.position"
+                  :label="$t('bingo.position')"
+                  :items="positionOptions"
+                  :error="errors.position"
+                  :disabled="Boolean(lockedPosition)"
+                  @update:model-value="(val) => (cell.position = Number(val))"
+               />
 
-               <UFormField :label="$t('bingo.kind')" size="lg">
-                  <USelect v-model="cell.kind" :items="kindOptions" />
-               </UFormField>
+               <FormSelect
+                  :model-value="cell.kind"
+                  :label="$t('bingo.kind')"
+                  :items="kindOptions"
+                  @update:model-value="(val) => (cell.kind = val as typeof cell.kind)"
+               />
             </div>
 
             <FormField
@@ -161,22 +189,73 @@ function onSubmit() {
                :label="$t('bingo.label')"
                :error="errors.label"
                :placeholder="$t('bingo.label-placeholder')"
-               @update:model-value="(value) => (cell.label = value)"
+               @update:model-value="(val) => (cell.label = String(val))"
             />
 
             <div v-if="showProjectSelector" class="space-y-3">
-               <UFormField :label="$t('bingo.project-link')" :error="errors.linkedProjectId" size="lg">
-                  <USelect v-model="cell.linkedProjectId" :items="projects" :placeholder="$t('bingo.project-link-placeholder')" />
-               </UFormField>
+               <label class="block text-sm font-medium text-slate-700 dark:text-slate-300">
+                  {{ $t('bingo.project-link') }}
+               </label>
 
-               <UFormField :label="$t('bingo.create-project-inline')" size="lg">
-                  <UInput v-model="cell.newProjectName" :placeholder="$t('bingo.create-project-inline-placeholder')" />
-               </UFormField>
+               <!-- Toggle between existing / new -->
+               <div class="flex rounded-lg bg-slate-100 dark:bg-slate-800 p-1 gap-1">
+                  <button
+                     type="button"
+                     :class="[
+                        'flex-1 rounded-md px-3 py-2 text-sm font-medium transition-all tap-target',
+                        projectMode === 'existing'
+                           ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm'
+                           : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300',
+                     ]"
+                     @click="projectMode = 'existing'"
+                  >
+                     {{ $t('bingo.project-existing') }}
+                  </button>
+                  <button
+                     type="button"
+                     :class="[
+                        'flex-1 rounded-md px-3 py-2 text-sm font-medium transition-all tap-target',
+                        projectMode === 'new'
+                           ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm'
+                           : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300',
+                     ]"
+                     @click="projectMode = 'new'"
+                  >
+                     {{ $t('bingo.project-new') }}
+                  </button>
+               </div>
+
+               <!-- Existing project select -->
+               <FormSelect
+                  v-if="projectMode === 'existing'"
+                  :model-value="cell.linkedProjectId"
+                  :label="''"
+                  :items="projects"
+                  :placeholder="$t('bingo.project-link-placeholder')"
+                  :error="errors.linkedProjectId"
+                  @update:model-value="(val) => (cell.linkedProjectId = val as number | null)"
+               />
+
+               <!-- New project name -->
+               <FormField
+                  v-else
+                  :model-value="cell.newProjectName"
+                  :label="''"
+                  :placeholder="$t('bingo.create-project-inline-placeholder')"
+                  :error="errors.linkedProjectId"
+                  @update:model-value="(val) => (cell.newProjectName = String(val))"
+               />
             </div>
 
-            <UFormField v-if="showTarget" :label="$t('bingo.target')" :error="errors.targetValue" size="lg">
-               <UInput v-model="cell.targetValue" type="number" min="1" />
-            </UFormField>
+            <FormField
+               v-if="showTarget"
+               :model-value="cell.targetValue"
+               :label="$t('bingo.target')"
+               :error="errors.targetValue"
+               type="number"
+               :min="1"
+               @update:model-value="(val) => (cell.targetValue = Number(val))"
+            />
          </div>
       </template>
 
@@ -190,5 +269,5 @@ function onSubmit() {
             </UButton>
          </div>
       </template>
-   </UModal>
+   </ResponsiveModal>
 </template>
