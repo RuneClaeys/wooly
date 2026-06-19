@@ -99,7 +99,7 @@ function handleCounterBlur() {
       v-model:open="open"
       :title="modalTitle"
       :ui="{ content: 'mx-2 w-[calc(100%-1rem)] sm:mx-0 sm:max-w-lg' }"
-      @update:open="() => (errors.value = {})"
+      @update:open="() => (errors = {})"
    >
       <template #body>
          <div class="space-y-4">
@@ -110,7 +110,7 @@ function handleCounterBlur() {
                :placeholder="$t('generic.name')"
                required
                :max-length="100"
-               @update:model-value="(val) => (part.name = val)"
+               @update:model-value="(val) => (part.name = String(val))"
                @blur="handleNameBlur"
             />
 
@@ -121,6 +121,9 @@ function handleCounterBlur() {
                :error="errors.counter"
                :placeholder="'0'"
                :min="0"
+               show-stepper
+               :decrement-aria-label="$t('actions.decrease-count', { type: $t('parts.row-count') })"
+               :increment-aria-label="$t('actions.increase-count', { type: $t('parts.row-count') })"
                @update:model-value="(val) => (part.counter = Number(val))"
                @blur="handleCounterBlur"
             />

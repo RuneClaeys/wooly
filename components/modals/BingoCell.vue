@@ -92,8 +92,40 @@ const positionOptions = computed(() => {
       .map((pos) => ({ label: String(pos), value: pos }));
 });
 
-const showProjectSelector = computed(() => cell.value.kind !== 'free_text');
+const showProjectSelector = computed(() => cell.value.kind === 'project_finish' || cell.value.kind === 'parts_count');
 const showTarget = computed(() => cell.value.kind === 'parts_count' || cell.value.kind === 'skeins_count');
+const autoLabelKind = computed(() => cell.value.kind === 'project_finish' || cell.value.kind === 'parts_count' || cell.value.kind === 'skeins_count');
+const showLabelField = computed(() => !autoLabelKind.value);
+
+const selectedProjectName = computed(() => {
+   if (projectMode.value === 'new') return cell.value.newProjectName.trim();
+   const selected = props.projects.find((project) => project.value === cell.value.linkedProjectId);
+   return selected?.label?.trim() ?? '';
+});
+
+const autoLabelPreview = computed(() => {
+   const target = Math.max(1, Number(cell.value.targetValue) || 1);
+
+   if (cell.value.kind === 'skeins_count') {
+      return t(target === 1 ? 'bingo.auto-label-skeins-singular' : 'bingo.auto-label-skeins-plural', { target });
+   }
+
+   const projectName = selectedProjectName.value;
+   if (!projectName) return '';
+
+   if (cell.value.kind === 'project_finish') {
+      return t('bingo.auto-label-project', { projectName });
+   }
+
+   if (cell.value.kind === 'parts_count') {
+      return t(target === 1 ? 'bingo.auto-label-parts-singular' : 'bingo.auto-label-parts-plural', {
+         target,
+         projectName,
+      });
+   }
+
+   return '';
+});
 
 const projectMode = ref<'existing' | 'new'>(props.initialCell?.linkedProjectId ? 'existing' : 'existing');
 
@@ -124,7 +156,7 @@ function validate() {
       errors.value.targetValue = t('bingo.target-min');
    }
 
-   if (cell.value.kind === 'free_text' && !cell.value.label.trim()) {
+   if (showLabelField.value && !cell.value.label.trim()) {
       errors.value.label = t('form.field-required');
    }
 
@@ -139,7 +171,7 @@ function onSubmit() {
       cell: {
          position: cell.value.position,
          kind: cell.value.kind,
-         label: cell.value.label.trim() || null,
+         label: showLabelField.value ? cell.value.label.trim() || null : null,
          linkedProjectId: cell.value.linkedProjectId,
          targetValue: showTarget.value ? cell.value.targetValue : null,
          newProjectName: cell.value.newProjectName.trim() || null,
@@ -185,6 +217,7 @@ function onSubmit() {
             </div>
 
             <FormField
+               v-if="showLabelField"
                :model-value="cell.label"
                :label="$t('bingo.label')"
                :error="errors.label"
@@ -245,6 +278,14 @@ function onSubmit() {
                   :error="errors.linkedProjectId"
                   @update:model-value="(val) => (cell.newProjectName = String(val))"
                />
+
+               <div
+                  v-if="autoLabelKind"
+                  class="rounded-lg border border-primary-200 bg-primary-50 px-3 py-2 text-sm text-primary-800 dark:border-primary-800 dark:bg-primary-950/40 dark:text-primary-200"
+               >
+                  <p class="font-medium">{{ $t('bingo.auto-label') }}</p>
+                  <p>{{ autoLabelPreview || $t('bingo.auto-label-missing-project') }}</p>
+               </div>
             </div>
 
             <FormField
@@ -254,6 +295,9 @@ function onSubmit() {
                :error="errors.targetValue"
                type="number"
                :min="1"
+               show-stepper
+               :decrement-aria-label="$t('actions.decrease-count', { type: $t('bingo.target') })"
+               :increment-aria-label="$t('actions.increase-count', { type: $t('bingo.target') })"
                @update:model-value="(val) => (cell.targetValue = Number(val))"
             />
          </div>

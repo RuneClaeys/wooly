@@ -40,6 +40,11 @@ type LastUsedFilterOption = 'all' | 'used' | 'unused';
 const typeSearchQuery = ref('');
 const typeSort = ref<TypeSortOption>('name-asc');
 const lastUsedFilter = ref<LastUsedFilterOption>('all');
+const showFilters = ref(false);
+
+const hasActiveFilters = computed(
+   () => Boolean(typeSearchQuery.value.trim()) || typeSort.value !== 'name-asc' || lastUsedFilter.value !== 'all',
+);
 
 const expandedTypeIds = ref<number[]>([]);
 const hasInitializedExpandedTypes = ref(false);
@@ -319,7 +324,13 @@ async function setCurrentStash(payload: { amount: number; done: () => void }) {
 
 <template>
    <div class="space-y-4 pb-[calc(9rem+env(safe-area-inset-bottom))]">
-      <YarnArchiveSummaryCard :stash="totals.stash" :used="totals.used" :remaining="totals.remaining" />
+      <YarnArchiveSummaryCard
+         :stash="totals.stash"
+         :used="totals.used"
+         :remaining="totals.remaining"
+         :has-active-filters="hasActiveFilters"
+         @toggle-filters="showFilters = !showFilters"
+      />
 
       <div v-if="pending" class="space-y-2">
          <SkeletonCard />
@@ -330,7 +341,7 @@ async function setCurrentStash(payload: { amount: number; done: () => void }) {
       <YarnArchiveEmptyState v-else-if="!hasArchive" />
 
       <div v-else class="space-y-3">
-         <div class="wooly-shell rounded-xl p-3">
+         <div v-if="showFilters" class="wooly-shell rounded-xl p-3">
             <div class="grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto_auto]">
                <UInput
                   v-model="typeSearchQuery"

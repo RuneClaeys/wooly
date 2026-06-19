@@ -93,6 +93,9 @@ async function onSubmit() {
                :error="errors.amount"
                :placeholder="'0'"
                :min="0"
+               show-stepper
+               :decrement-aria-label="$t('actions.decrease-count', { type: $t('yarn.stash') })"
+               :increment-aria-label="$t('actions.increase-count', { type: $t('yarn.stash') })"
                @update:model-value="(val) => (form.amount = Number(val))"
             />
          </div>

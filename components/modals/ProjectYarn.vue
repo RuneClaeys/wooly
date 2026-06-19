@@ -205,6 +205,9 @@ async function onSubmit() {
                         :label="$t('yarn.skein-weight-grams')"
                         :placeholder="$t('yarn.skein-weight-grams-placeholder')"
                         :min="1"
+                        show-stepper
+                        :decrement-aria-label="$t('actions.decrease-count', { type: $t('yarn.skein-weight-grams') })"
+                        :increment-aria-label="$t('actions.increase-count', { type: $t('yarn.skein-weight-grams') })"
                         @update:model-value="(val) => (form.newTypeSkeinWeightGrams = val === '' ? null : Number(val))"
                      />
 
@@ -214,6 +217,10 @@ async function onSubmit() {
                         :label="$t('yarn.thickness-mm')"
                         :placeholder="$t('yarn.thickness-mm-placeholder')"
                         :min="0.01"
+                        :step="0.01"
+                        show-stepper
+                        :decrement-aria-label="$t('actions.decrease-count', { type: $t('yarn.thickness-mm') })"
+                        :increment-aria-label="$t('actions.increase-count', { type: $t('yarn.thickness-mm') })"
                         @update:model-value="(val) => (form.newTypeThicknessMm = val === '' ? null : Number(val))"
                      />
 
@@ -230,6 +237,9 @@ async function onSubmit() {
                         :label="$t('yarn.stash-count')"
                         :placeholder="'0'"
                         :min="0"
+                        show-stepper
+                        :decrement-aria-label="$t('actions.decrease-count', { type: $t('yarn.stash') })"
+                        :increment-aria-label="$t('actions.increase-count', { type: $t('yarn.stash') })"
                         @update:model-value="(val) => (form.newColorStashCount = Number(val))"
                      />
                   </div>
@@ -243,6 +253,9 @@ async function onSubmit() {
                :error="errors.usedCount"
                :placeholder="'0'"
                :min="0"
+               show-stepper
+               :decrement-aria-label="$t('actions.decrease-count', { type: $t('yarn.used') })"
+               :increment-aria-label="$t('actions.increase-count', { type: $t('yarn.used') })"
                @update:model-value="(val) => (form.usedCount = Number(val))"
             />
          </div>

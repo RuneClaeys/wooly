@@ -15,6 +15,18 @@ const { data: activeProjects } = projectRouter.list.useQuery({
    query: { orderBy: 'updatedAt', order: 'asc' },
 });
 
+const boardCells = computed(
+   () =>
+      (boardData.value?.cells ?? []) as Array<{
+         position: number;
+         manualCompleted: boolean | null;
+         autoCompleted: boolean | null;
+      }>,
+);
+
+const completedCellsCount = computed(() => boardCells.value.filter((cell) => cell.manualCompleted || cell.autoCompleted).length);
+const occupiedPositions = computed(() => boardCells.value.map((cell) => cell.position));
+
 const projectOptions = computed(() =>
    (activeProjects.value ?? []).map((project: SelectProject) => ({
       label: project.name ?? `#${project.id}`,
@@ -31,6 +43,40 @@ async function ensureProject(projectName: string | null) {
    if (!projectName) return null;
    const created = await projectRouter.create.mutate({ name: projectName, finished: false });
    return created?.id ?? null;
+}
+
+function resolveProjectName(projectId: number | null, newProjectName: string | null) {
+   const trimmedNewName = newProjectName?.trim() ?? '';
+   if (trimmedNewName) return trimmedNewName;
+   if (!projectId) return null;
+
+   const selectedProject = (activeProjects.value ?? []).find((project: SelectProject) => project.id === projectId);
+   return selectedProject?.name ?? null;
+}
+
+function buildAutoLabel(
+   kind: 'project_finish' | 'parts_count' | 'skeins_count' | 'free_text',
+   projectName: string | null,
+   targetValue: number | null,
+   fallbackLabel: string | null,
+) {
+   const target = Math.max(1, Number(targetValue) || 1);
+
+   if (kind === 'skeins_count') {
+      return t(target === 1 ? 'bingo.auto-label-skeins-singular' : 'bingo.auto-label-skeins-plural', { target });
+   }
+
+   if (!projectName) return fallbackLabel;
+
+   if (kind === 'project_finish') {
+      return t('bingo.auto-label-project', { projectName });
+   }
+
+   if (kind === 'parts_count') {
+      return t(target === 1 ? 'bingo.auto-label-parts-singular' : 'bingo.auto-label-parts-plural', { target, projectName });
+   }
+
+   return fallbackLabel;
 }
 
 function openCreateCell(position: number) {
@@ -58,12 +104,16 @@ async function createCell(payload: {
 }) {
    try {
       const createdProjectId = payload.cell.newProjectName ? await ensureProject(payload.cell.newProjectName) : null;
+      const linkedProjectId = payload.cell.linkedProjectId ?? createdProjectId;
+      const projectName = resolveProjectName(linkedProjectId, payload.cell.newProjectName);
+      const computedLabel = buildAutoLabel(payload.cell.kind, projectName, payload.cell.targetValue, payload.cell.label);
+
       await bingoRouter.createCell.mutate({
          boardId: boardId.value,
          position: payload.cell.position,
          kind: payload.cell.kind,
-         label: payload.cell.label,
-         linkedProjectId: payload.cell.linkedProjectId ?? createdProjectId,
+         label: computedLabel,
+         linkedProjectId,
          targetValue: payload.cell.targetValue,
       });
       await refreshBoard();
@@ -90,12 +140,16 @@ async function updateCell(payload: {
 
    try {
       const createdProjectId = payload.cell.newProjectName ? await ensureProject(payload.cell.newProjectName) : null;
+      const linkedProjectId = payload.cell.linkedProjectId ?? createdProjectId;
+      const projectName = resolveProjectName(linkedProjectId, payload.cell.newProjectName);
+      const computedLabel = buildAutoLabel(payload.cell.kind, projectName, payload.cell.targetValue, payload.cell.label);
+
       await bingoRouter.updateCell.mutate({
          id: cellToEdit.value.id,
          position: payload.cell.position,
          kind: payload.cell.kind,
-         label: payload.cell.label,
-         linkedProjectId: payload.cell.linkedProjectId ?? createdProjectId,
+         label: computedLabel,
+         linkedProjectId,
          targetValue: payload.cell.targetValue,
       });
       await refreshBoard();
@@ -156,10 +210,11 @@ async function recompute() {
          <!-- Board Header Card -->
          <div class="wooly-shell p-5 space-y-3">
             <div class="flex items-start justify-between gap-3">
-               <div class="space-y-2 flex-grow">
+               <div class="space-y-2 grow">
                   <p class="wooly-title text-2xl font-bold">{{ boardData?.board?.name ?? $t('bingo.board') }}</p>
-                  <p class="text-sm wooly-muted font-medium">
-                     📅 {{ $t('bingo.ends-on', { date: boardData?.board?.endDate ? $dayjs(boardData.board.endDate).format('ll') : '-' }) }}
+                  <p class="text-sm wooly-muted font-medium flex items-center gap-1.5">
+                     <UIcon name="i-heroicons-calendar-days-16-solid" class="h-4 w-4" />
+                     {{ $t('bingo.ends-on', { date: boardData?.board?.endDate ? $dayjs(boardData.board.endDate).format('D MMM YYYY') : '-' }) }}
                   </p>
                </div>
             </div>
@@ -169,9 +224,7 @@ async function recompute() {
                   {{ boardData?.board?.size }}x{{ boardData?.board?.size }} {{ $t('bingo.grid') }}
                </UBadge>
                <UBadge color="neutral" variant="soft" size="md" class="font-semibold">
-                  {{ boardData?.cells?.filter((c) => c.manualCompleted || c.autoCompleted).length ?? 0 }}/{{
-                     boardData?.cells?.length ?? 0
-                  }}
+                  {{ completedCellsCount }}/{{ boardData?.cells?.length ?? 0 }}
                   {{ $t('generic.completed') }}
                </UBadge>
             </div>
@@ -207,7 +260,7 @@ async function recompute() {
             :projects="projectOptions"
             :locked-position="lockedPosition"
             :total-positions="(boardData?.board?.size ?? 3) * (boardData?.board?.size ?? 3)"
-            :occupied-positions="(boardData?.cells ?? []).map((c) => c.position)"
+            :occupied-positions="occupiedPositions"
             @save-cell="createCell"
          />
 
@@ -216,7 +269,7 @@ async function recompute() {
             :projects="projectOptions"
             :initial-cell="cellToEdit"
             :total-positions="(boardData?.board?.size ?? 3) * (boardData?.board?.size ?? 3)"
-            :occupied-positions="(boardData?.cells ?? []).map((c) => c.position)"
+            :occupied-positions="occupiedPositions"
             @save-cell="updateCell"
          />
       </div>

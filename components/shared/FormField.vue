@@ -13,6 +13,10 @@ interface Props {
    maxLength?: number;
    min?: number;
    max?: number;
+   step?: number;
+   showStepper?: boolean;
+   decrementAriaLabel?: string;
+   incrementAriaLabel?: string;
 }
 
 interface Emits {
@@ -21,7 +25,7 @@ interface Emits {
 }
 
 const props = defineProps<Props>();
-defineEmits<Emits>();
+const emit = defineEmits<Emits>();
 
 const hasError = computed(() => Boolean(props.error));
 
@@ -42,6 +46,63 @@ const displayValue = computed(() => {
    const value = props.modelValue;
    return value !== null && value !== undefined ? String(value) : '';
 });
+
+const stepValue = computed(() => {
+   if (typeof props.step === 'number' && Number.isFinite(props.step) && props.step > 0) return props.step;
+   return 1;
+});
+
+const hasStepper = computed(() => props.type === 'number' && props.showStepper);
+
+const numericValue = computed(() => {
+   const parsed = Number(props.modelValue);
+   if (Number.isFinite(parsed)) return parsed;
+   if (typeof props.min === 'number') return props.min;
+   return 0;
+});
+
+const stepPrecision = computed(() => {
+   const asString = String(stepValue.value);
+   const decimalPart = asString.split('.')[1];
+   return decimalPart ? decimalPart.length : 0;
+});
+
+const canDecrement = computed(() => {
+   if (!hasStepper.value || props.disabled) return false;
+   if (typeof props.min !== 'number') return true;
+   return numericValue.value > props.min;
+});
+
+const canIncrement = computed(() => {
+   if (!hasStepper.value || props.disabled) return false;
+   if (typeof props.max !== 'number') return true;
+   return numericValue.value < props.max;
+});
+
+function clampValue(value: number): number {
+   let next = value;
+
+   if (typeof props.min === 'number') {
+      next = Math.max(next, props.min);
+   }
+
+   if (typeof props.max === 'number') {
+      next = Math.min(next, props.max);
+   }
+
+   return next;
+}
+
+function applyStep(direction: -1 | 1) {
+   if (!hasStepper.value || props.disabled) return;
+
+   const delta = stepValue.value * direction;
+   const nextRaw = numericValue.value + delta;
+   const nextClamped = clampValue(nextRaw);
+   const next = Number(nextClamped.toFixed(stepPrecision.value));
+
+   emit('update:modelValue', next);
+}
 </script>
 
 <template>
@@ -60,6 +121,17 @@ const displayValue = computed(() => {
                   : 'border-slate-200/90 hover:border-slate-300 dark:border-slate-700 dark:hover:border-slate-600',
             ]"
          >
+            <button
+               v-if="hasStepper"
+               type="button"
+               :disabled="!canDecrement"
+               :aria-label="decrementAriaLabel || 'Decrease value'"
+               class="stepper-btn stepper-btn-left"
+               @click="applyStep(-1)"
+            >
+               <UIcon name="i-heroicons-minus-small" class="size-5" />
+            </button>
+
          <UInput
             :model-value="displayValue"
             :type="type"
@@ -68,28 +140,40 @@ const displayValue = computed(() => {
             :maxlength="maxLength"
             :min="min"
             :max="max"
+            :step="step"
             :color="hasError ? 'red' : 'gray'"
             :ui="{
                base: 'disabled:cursor-not-allowed disabled:opacity-50',
                form: 'transition-colors',
             }"
             class="wooly-input"
-            :class="['w-full min-h-11 rounded-lg font-normal']"
+            :class="['w-full min-h-11 rounded-lg font-normal', hasStepper ? 'wooly-input-stepper' : '']"
             @update:model-value="$emit('update:modelValue', $event)"
             @blur="$emit('blur')"
          />
+
+            <button
+               v-if="hasStepper"
+               type="button"
+               :disabled="!canIncrement"
+               :aria-label="incrementAriaLabel || 'Increase value'"
+               class="stepper-btn stepper-btn-right"
+               @click="applyStep(1)"
+            >
+               <UIcon name="i-heroicons-plus-small" class="size-5" />
+            </button>
          </div>
 
          <!-- Error icon -->
          <UIcon
-            v-if="hasError"
+            v-if="hasError && !hasStepper"
             name="i-heroicons-exclamation-circle-16-solid"
             class="absolute right-3 top-1/2 -translate-y-1/2 text-error-500 dark:text-error-400 pointer-events-none"
          />
 
          <!-- Success icon -->
          <UIcon
-            v-else-if="shouldShowSuccess"
+            v-else-if="shouldShowSuccess && !hasStepper"
             name="i-heroicons-check-circle-16-solid"
             class="absolute right-3 top-1/2 -translate-y-1/2 text-success-500 dark:text-success-400 pointer-events-none"
          />
@@ -129,6 +213,12 @@ const displayValue = computed(() => {
    color: var(--wooly-text-main);
 }
 
+.wooly-input-stepper :deep(input) {
+   padding-left: 2.8rem !important;
+   padding-right: 2.8rem !important;
+   text-align: center;
+}
+
 .wooly-input :deep(input:focus) {
    outline: none !important;
    box-shadow: none !important;
@@ -138,6 +228,7 @@ const displayValue = computed(() => {
    border-width: 1px;
    border-style: solid;
    border-radius: 0.8rem;
+   position: relative;
    background: color-mix(in oklab, var(--wooly-bg-1) 82%, white);
    transition: border-color 0.18s ease, box-shadow 0.18s ease, background-color 0.18s ease;
 }
@@ -164,5 +255,43 @@ const displayValue = computed(() => {
 
 .wooly-input:focus {
    outline: none;
+}
+
+.stepper-btn {
+   position: absolute;
+   top: 50%;
+   transform: translateY(-50%);
+   display: inline-flex;
+   align-items: center;
+   justify-content: center;
+   width: 2.1rem;
+   height: 2.1rem;
+   border-radius: 999px;
+   color: var(--wooly-text-soft);
+   background: color-mix(in oklab, var(--wooly-bg-1) 75%, white);
+   transition: background-color 0.16s ease, color 0.16s ease, opacity 0.16s ease;
+   z-index: 1;
+}
+
+.dark .stepper-btn {
+   background: color-mix(in oklab, var(--wooly-bg-2) 82%, black);
+}
+
+.stepper-btn:hover:not(:disabled) {
+   color: var(--wooly-text-main);
+   background: color-mix(in oklab, var(--wooly-primary) 14%, white);
+}
+
+.stepper-btn:disabled {
+   opacity: 0.45;
+   cursor: not-allowed;
+}
+
+.stepper-btn-left {
+   left: 0.4rem;
+}
+
+.stepper-btn-right {
+   right: 0.4rem;
 }
 </style>

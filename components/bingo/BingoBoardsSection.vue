@@ -90,8 +90,9 @@ function isOverdue(endDate: string | null) {
                   </div>
 
                   <!-- End Date -->
-                  <p class="text-xs wooly-muted font-medium">
-                     📅 {{ $t('bingo.ends-on', { date: board.endDate ? $dayjs(board.endDate).format('ll') : '-' }) }}
+                  <p class="text-xs wooly-muted font-medium flex items-center gap-1.5">
+                     <UIcon name="i-heroicons-calendar-days-16-solid" class="h-4 w-4" />
+                     {{ $t('bingo.ends-on', { date: board.endDate ? $dayjs(board.endDate).format('D MMM YYYY') : '-' }) }}
                   </p>
                </div>
 

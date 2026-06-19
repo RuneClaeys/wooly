@@ -138,7 +138,7 @@ function handleThicknessBlur() {
       v-model:open="open"
       :title="modalTitle"
       :ui="{ content: 'mx-2 w-[calc(100%-1rem)] sm:mx-0 sm:max-w-lg' }"
-      @update:open="() => (errors.value = {})"
+      @update:open="() => (errors = {})"
    >
       <template #body>
          <div class="space-y-4">
@@ -161,6 +161,9 @@ function handleThicknessBlur() {
                :placeholder="$t('yarn.skein-weight-grams-placeholder')"
                :min="1"
                :step="10"
+               show-stepper
+               :decrement-aria-label="$t('actions.decrease-count', { type: $t('yarn.skein-weight-grams') })"
+               :increment-aria-label="$t('actions.increase-count', { type: $t('yarn.skein-weight-grams') })"
                @update:model-value="(val) => (yarnType.skeinWeightGrams = val === '' ? null : Number(val))"
                @blur="handleSkeinWeightBlur"
             />
@@ -173,6 +176,9 @@ function handleThicknessBlur() {
                :placeholder="$t('yarn.thickness-mm-placeholder')"
                :min="0.5"
                :step="0.5"
+               show-stepper
+               :decrement-aria-label="$t('actions.decrease-count', { type: $t('yarn.thickness-mm') })"
+               :increment-aria-label="$t('actions.increase-count', { type: $t('yarn.thickness-mm') })"
                @update:model-value="(val) => (yarnType.thicknessMm = val === '' ? null : Number(val))"
                @blur="handleThicknessBlur"
             />
