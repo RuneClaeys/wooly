@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import type { SelectProject } from '~/db/schema';
 import type { Sorting } from '~/composables/useSorting';
+import type { SelectProject } from '~/db/schema';
 
 const { t } = useI18n();
 
