@@ -29,6 +29,7 @@ export const skeinRouter = router({
             name: yarnColors.name,
             stashCount: yarnColors.stashCount,
             usedCount: sql<number>`coalesce(sum(${projectYarns.usedCount}), 0)::int`,
+            lastUsedAt: sql<string | null>`max(${projectYarns.updatedAt})::text`,
          })
          .from(yarnColors)
          .leftJoin(projectYarns, eq(projectYarns.yarnColorId, yarnColors.id))
@@ -48,6 +49,13 @@ export const skeinRouter = router({
          const typeColors = colorsByType.get(type.id) ?? [];
          const usedCount = typeColors.reduce((sum, color) => sum + color.usedCount, 0);
          const stashCount = typeColors.reduce((sum, color) => sum + color.stashCount, 0);
+         const lastUsedAt = typeColors.reduce<string | null>((latest, color) => {
+            if (!color.lastUsedAt) return latest;
+            if (!latest) return color.lastUsedAt;
+
+            return new Date(color.lastUsedAt) > new Date(latest) ? color.lastUsedAt : latest;
+         }, null);
+
          return {
             id: type.id,
             name: type.name,
@@ -56,6 +64,7 @@ export const skeinRouter = router({
             usedCount,
             stashCount,
             remainingCount: stashCount - usedCount,
+            lastUsedAt,
             colors: typeColors.map((color) => ({
                id: color.id,
                name: color.name,

@@ -15,6 +15,7 @@
       "edit-type": "edit {type}",
       "increase-count": "Increase {type} count",
       "open-type": "open {type}",
+      "open-menu": "open actions menu",
       "save": "Save",
       "upload": "Upload"
    },
@@ -60,10 +61,14 @@
    },
    "app-name": "Wooly",
    "filters": {
+      "direction": "Direction",
       "created-on": "Created on",
       "last-changed-at": "Last edited",
       "newest-first": "Newest first",
-      "oldest-first": "Oldest first"
+      "oldest-first": "Oldest first",
+      "open": "Filter and sort",
+      "sort-by": "Sort by",
+      "title": "Filter and sort"
    },
    "form": {
       "field-required": "This field is required"
@@ -110,6 +115,14 @@
       "no-types": "No yarn types yet",
       "no-types-hint": "Create your first yarn type and add colors to your stash.",
       "no-colors": "No colors yet",
+      "search-types-placeholder": "Search yarn types",
+      "sort-name-asc": "Name (A-Z)",
+      "sort-name-desc": "Name (Z-A)",
+      "sort-last-used-desc": "Last used (recent first)",
+      "sort-last-used-asc": "Last used (oldest first)",
+      "filter-all-types": "All types",
+      "filter-used-types": "Used before",
+      "filter-unused-types": "Never used",
       "project-usage-description": "Track how much yarn color this project has used.",
       "no-project-yarn": "No yarn used yet",
       "no-project-yarn-hint": "Add a yarn color to start tracking usage."

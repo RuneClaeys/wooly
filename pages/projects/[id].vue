@@ -443,15 +443,7 @@ async function togglePartCompleted(payload: { partId: number; completed: boolean
    <NuxtLayout :root="false" :title="data?.name ?? $t('generic.loading')" navigate-back-to="/">
       <div class="space-y-4 pb-[calc(9rem+env(safe-area-inset-bottom))]">
          <!-- Breadcrumb Navigation -->
-         <nav class="flex items-center gap-2 px-4 sm:px-0" aria-label="breadcrumb">
-            <NuxtLink to="/" class="text-sm text-primary-600 dark:text-primary-400 hover:underline">
-               {{ $t('projects.projects') }}
-            </NuxtLink>
-            <UIcon name="i-heroicons-chevron-right-16-solid" class="w-4 h-4 text-slate-400 dark:text-slate-600" />
-            <span class="text-sm wooly-text-main font-medium">
-               {{ data?.name ?? $t('generic.loading') }}
-            </span>
-         </nav>
+         <ProjectBreadcrumb :project-name="data?.name ?? $t('generic.loading')" />
 
          <!-- Tab-Based Content -->
          <ProjectDetailTabs
@@ -481,59 +473,16 @@ async function togglePartCompleted(payload: { partId: number; completed: boolean
          />
 
          <!-- Photo Viewer Modal -->
-         <UModal
+         <ProjectPhotoViewerModal
             v-model:open="showPhotoViewer"
-            :title="activePhoto?.name ?? $t('photos.photo')"
-            :description="
-               photos?.length
-                  ? $t('photos.position', {
-                       current: activePhotoIndex + 1,
-                       total: photos.length,
-                    })
-                  : undefined
-            "
-            :ui="{ content: 'mx-2 w-[calc(100%-1rem)] sm:mx-0 sm:max-w-4xl' }"
-         >
-            <template #body>
-               <div v-if="activePhoto" class="space-y-3">
-                  <div class="relative overflow-hidden rounded-xl bg-neutral-950/95">
-                     <img :src="photoSrc(activePhoto.id)" :alt="activePhoto.name" class="max-h-[70vh] w-full object-contain" />
-
-                     <div
-                        v-if="hasMultiplePhotos"
-                        class="pointer-events-none absolute inset-y-0 left-0 right-0 flex items-center justify-between px-2"
-                     >
-                        <UButton
-                           icon="i-heroicons-chevron-left-16-solid"
-                           color="neutral"
-                           variant="solid"
-                           class="pointer-events-auto"
-                           :aria-label="$t('photos.previous')"
-                           @click="showPreviousPhoto"
-                        />
-
-                        <UButton
-                           icon="i-heroicons-chevron-right-16-solid"
-                           color="neutral"
-                           variant="solid"
-                           class="pointer-events-auto"
-                           :aria-label="$t('photos.next')"
-                           @click="showNextPhoto"
-                        />
-                     </div>
-                  </div>
-
-                  <p class="text-center text-sm wooly-muted">
-                     {{
-                        $t('photos.position', {
-                           current: activePhotoIndex + 1,
-                           total: photos?.length ?? 1,
-                        })
-                     }}
-                  </p>
-               </div>
-            </template>
-         </UModal>
+            :active-photo="activePhoto"
+            :active-photo-index="activePhotoIndex"
+            :total-photos="photos?.length ?? 0"
+            :has-multiple-photos="hasMultiplePhotos"
+            :photo-src="photoSrc"
+            @previous="showPreviousPhoto"
+            @next="showNextPhoto"
+         />
 
          <!-- Modals -->
          <ModalsPart v-model="showCreatePartForm" @save-part="createPart" />

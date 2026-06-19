@@ -42,6 +42,7 @@ export default defineNuxtConfig({
    components: [
       { path: '~/components/bingo', pathPrefix: false },
       { path: '~/components/projects', pathPrefix: false },
+      { path: '~/components/yarn', pathPrefix: false },
       { path: '~/components/project-details', pathPrefix: false },
       { path: '~/components/shared', pathPrefix: false },
       { path: '~/components/modals', prefix: 'Modals', pathPrefix: false },

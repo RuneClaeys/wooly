@@ -19,27 +19,46 @@ const props = defineProps<Props>();
 defineEmits<Emits>();
 
 const { sorting } = useSorting('parts');
+const { t } = useI18n();
+const showFilters = ref(false);
+
+const orderByOptions = computed(() => [
+   { label: t('generic.name'), value: 'name' },
+   { label: t('filters.created-on'), value: 'createdAt' },
+   { label: t('filters.last-changed-at'), value: 'updatedAt' },
+]);
+
+const orderOptions = computed(() => [
+   { label: t('filters.newest-first'), value: 'asc' },
+   { label: t('filters.oldest-first'), value: 'desc' },
+]);
 
 const hasAnyData = computed(() => (props.parts?.length ?? 0) > 0);
 </script>
 
 <template>
    <div class="space-y-3">
-      <!-- Header -->
       <div class="flex items-center justify-between px-2">
          <h3 class="wooly-title text-sm">{{ $t('parts.parts') }} ({{ parts?.length ?? 0 }})</h3>
-         <UButton
-            size="xs"
-            variant="ghost"
-            icon="i-heroicons-plus-16-solid"
-            :aria-label="$t('actions.create-type', { type: $t('parts.part') })"
-            @click="$emit('create')"
-         />
+         <div class="flex items-center gap-1">
+            <UButton
+               size="xs"
+               variant="ghost"
+               icon="i-heroicons-funnel-16-solid"
+               :aria-label="$t('filters.open')"
+               @click="showFilters = true"
+            />
+            <UButton
+               size="xs"
+               variant="ghost"
+               icon="i-heroicons-plus-16-solid"
+               :aria-label="$t('actions.create-type', { type: $t('parts.part') })"
+               @click="$emit('create')"
+            />
+         </div>
       </div>
 
-      <!-- Sorting Controls -->
       <ProjectPartsSection
-         v-model:sorting="sorting"
          :parts="parts ?? []"
          :pending="pending"
          @edit="$emit('edit', $event)"
@@ -48,7 +67,34 @@ const hasAnyData = computed(() => (props.parts?.length ?? 0) > 0);
          @toggle-completed="$emit('toggle-completed', $event)"
       />
 
-      <!-- Empty State -->
+      <UDrawer v-model:open="showFilters" :title="$t('filters.title')">
+         <template #body>
+            <div class="space-y-4 px-4 py-3">
+               <div class="space-y-2">
+                  <p class="text-sm wooly-muted">{{ $t('filters.sort-by') }}</p>
+                  <USelect
+                     :model-value="sorting.orderBy"
+                     :items="orderByOptions"
+                     size="md"
+                     class="w-full wooly-select-clean"
+                     @update:model-value="sorting = { ...sorting, orderBy: $event }"
+                  />
+               </div>
+
+               <div class="space-y-2">
+                  <p class="text-sm wooly-muted">{{ $t('filters.direction') }}</p>
+                  <USelect
+                     :model-value="sorting.order"
+                     :items="orderOptions"
+                     size="md"
+                     class="w-full wooly-select-clean"
+                     @update:model-value="sorting = { ...sorting, order: $event }"
+                  />
+               </div>
+            </div>
+         </template>
+      </UDrawer>
+
       <div v-if="!pending && !hasAnyData" class="wooly-shell rounded-xl p-6 text-center space-y-3">
          <UIcon name="i-heroicons-list-bullet-16-solid" class="w-12 h-12 mx-auto wooly-muted" />
          <div>

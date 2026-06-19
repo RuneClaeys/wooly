@@ -173,7 +173,7 @@ async function onSubmit() {
       v-model:open="open"
       :title="modalTitle"
       :ui="{ content: 'mx-2 w-[calc(100%-1rem)] sm:mx-0 sm:max-w-lg' }"
-      @update:open="() => (errors.value = {})"
+      @update:open="() => (errors = {})"
    >
       <template #body>
          <div class="space-y-4">
@@ -182,12 +182,13 @@ async function onSubmit() {
                   :model-value="form.yarnColorId"
                   :label="$t('yarn.color')"
                   :items="colorOptions"
+                  clearable
                   :error="errors.selection"
                   :placeholder="$t('yarn.select-color-placeholder')"
                   @update:model-value="onSelectExistingColor"
                />
 
-               <div class="rounded-lg border border-slate-200/80 p-3 dark:border-slate-700">
+               <div v-if="!form.yarnColorId" class="rounded-lg border border-slate-200/80 p-3 dark:border-slate-700">
                   <p class="text-xs wooly-muted mb-3">{{ $t('yarn.or-create-new-color') }}</p>
 
                   <div class="space-y-3">

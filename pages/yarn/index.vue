@@ -17,6 +17,7 @@ type ArchiveType = {
    stashCount: number;
    usedCount: number;
    remainingCount: number;
+   lastUsedAt?: string | null;
    colors: ArchiveColor[];
 };
 
@@ -32,6 +33,13 @@ const fabVariant = computed(() => (isDark.value ? 'soft' : 'solid'));
 
 const { data: archiveData, pending, execute: refreshArchive } = yarnRouter.archiveList.useQuery();
 const archiveList = computed<ArchiveType[]>(() => (archiveData.value ?? []) as ArchiveType[]);
+
+type TypeSortOption = 'name-asc' | 'name-desc' | 'last-used-desc' | 'last-used-asc';
+type LastUsedFilterOption = 'all' | 'used' | 'unused';
+
+const typeSearchQuery = ref('');
+const typeSort = ref<TypeSortOption>('name-asc');
+const lastUsedFilter = ref<LastUsedFilterOption>('all');
 
 const expandedTypeIds = ref<number[]>([]);
 const hasInitializedExpandedTypes = ref(false);
@@ -67,6 +75,44 @@ const totals = computed(() => {
 });
 
 const hasArchive = computed(() => archiveList.value.length > 0);
+const normalizedSearchQuery = computed(() => typeSearchQuery.value.trim().toLocaleLowerCase());
+
+function getLastUsedMs(type: ArchiveType) {
+   if (!type.lastUsedAt) return null;
+
+   const parsed = new Date(type.lastUsedAt).getTime();
+   return Number.isNaN(parsed) ? null : parsed;
+}
+
+const visibleArchiveList = computed<ArchiveType[]>(() => {
+   const query = normalizedSearchQuery.value;
+
+   const filtered = archiveList.value.filter((type) => {
+      const matchesSearch = !query || type.name.toLocaleLowerCase().includes(query);
+      const isUsed = Boolean(type.lastUsedAt);
+      const matchesLastUsedFilter =
+         lastUsedFilter.value === 'all' ||
+         (lastUsedFilter.value === 'used' && isUsed) ||
+         (lastUsedFilter.value === 'unused' && !isUsed);
+
+      return matchesSearch && matchesLastUsedFilter;
+   });
+
+   return [...filtered].sort((a, b) => {
+      if (typeSort.value === 'name-asc') return a.name.localeCompare(b.name);
+      if (typeSort.value === 'name-desc') return b.name.localeCompare(a.name);
+
+      const aLastUsed = getLastUsedMs(a);
+      const bLastUsed = getLastUsedMs(b);
+      const aValue = aLastUsed ?? Number.NEGATIVE_INFINITY;
+      const bValue = bLastUsed ?? Number.NEGATIVE_INFINITY;
+
+      if (typeSort.value === 'last-used-desc') return bValue - aValue;
+      return aValue - bValue;
+   });
+});
+
+const hasVisibleArchive = computed(() => visibleArchiveList.value.length > 0);
 
 watch(
    archiveList,
@@ -227,29 +273,7 @@ async function deleteColor(color: ArchiveColor) {
 
 <template>
    <div class="space-y-4 pb-[calc(9rem+env(safe-area-inset-bottom))]">
-      <UCard class="wooly-shell">
-         <div class="flex items-center justify-between gap-2">
-            <div>
-               <p class="text-xs wooly-muted">{{ $t('yarn.archive') }}</p>
-               <p class="wooly-title text-lg">{{ $t('navigation.yarn') }}</p>
-            </div>
-         </div>
-
-         <div class="mt-4 grid grid-cols-3 gap-2">
-            <div class="rounded-xl bg-primary-50/60 p-3 dark:bg-primary-950/30">
-               <p class="text-xs wooly-muted">{{ $t('yarn.stash') }}</p>
-               <p class="wooly-title text-lg">{{ totals.stash }}</p>
-            </div>
-            <div class="rounded-xl bg-amber-50/70 p-3 dark:bg-amber-950/30">
-               <p class="text-xs wooly-muted">{{ $t('yarn.used') }}</p>
-               <p class="wooly-title text-lg">{{ totals.used }}</p>
-            </div>
-            <div class="rounded-xl bg-emerald-50/70 p-3 dark:bg-emerald-950/30">
-               <p class="text-xs wooly-muted">{{ $t('yarn.remaining') }}</p>
-               <p class="wooly-title text-lg">{{ totals.remaining }}</p>
-            </div>
-         </div>
-      </UCard>
+      <YarnArchiveSummaryCard :stash="totals.stash" :used="totals.used" :remaining="totals.remaining" />
 
       <div v-if="pending" class="space-y-2">
          <SkeletonCard />
@@ -257,132 +281,57 @@ async function deleteColor(color: ArchiveColor) {
          <SkeletonCard />
       </div>
 
-      <div v-else-if="!hasArchive" class="wooly-shell rounded-xl p-6 text-center space-y-3">
-         <UIcon name="i-heroicons-archive-box-16-solid" class="w-10 h-10 mx-auto wooly-muted" />
-         <div>
-            <p class="wooly-title text-sm">{{ $t('yarn.no-types') }}</p>
-            <p class="wooly-muted text-xs mt-1">{{ $t('yarn.no-types-hint') }}</p>
-         </div>
-      </div>
+      <YarnArchiveEmptyState v-else-if="!hasArchive" />
 
       <div v-else class="space-y-3">
-         <UCard v-for="type in archiveList" :key="type.id" class="wooly-shell">
-            <div class="space-y-3">
-               <div class="flex items-start justify-between gap-3">
-                  <button type="button" class="text-left min-w-0" @click="toggleExpanded(type.id)">
-                     <p class="wooly-title text-base truncate">{{ type.name }}</p>
-                     <p class="text-xs wooly-muted">
-                        {{
-                           [
-                              type.skeinWeightGrams ? `${$t('yarn.skein-weight-grams-short')}: ${type.skeinWeightGrams}g` : null,
-                              type.thicknessMm ? `${$t('yarn.thickness-mm-short')}: ${type.thicknessMm}mm` : null,
-                           ]
-                              .filter(Boolean)
-                              .join(' • ') || $t('yarn.specs-not-set')
-                        }}
-                     </p>
-                  </button>
+         <UCard class="wooly-shell">
+            <div class="flex flex-col gap-3">
+               <UInput
+                  v-model="typeSearchQuery"
+                  icon="i-heroicons-magnifying-glass-16-solid"
+                  :placeholder="$t('yarn.search-types-placeholder')"
+               />
 
-                  <div class="flex items-center gap-1">
-                     <UButton
-                        icon="i-heroicons-plus-16-solid"
-                        variant="ghost"
-                        color="primary"
-                        size="sm"
-                        :aria-label="$t('actions.create-type', { type: $t('yarn.color') })"
-                        @click="openCreateColor(type)"
-                     />
-                     <UButton
-                        icon="i-heroicons-pencil-16-solid"
-                        variant="ghost"
-                        color="neutral"
-                        size="sm"
-                        :aria-label="$t('actions.edit-type', { type: $t('yarn.type') })"
-                        @click="editType(type)"
-                     />
-                     <UButton
-                        icon="i-heroicons-trash-16-solid"
-                        variant="ghost"
-                        color="error"
-                        size="sm"
-                        :aria-label="$t('actions.delete-type', { type: $t('yarn.type') })"
-                        @click="deleteType(type)"
-                     />
-                  </div>
-               </div>
-
-               <div class="grid grid-cols-3 gap-2">
-                  <div class="rounded-lg bg-primary-50/60 p-2 dark:bg-primary-950/25">
-                     <p class="text-[11px] wooly-muted">{{ $t('yarn.stash') }}</p>
-                     <p class="text-sm font-semibold">{{ type.stashCount }}</p>
-                  </div>
-                  <div class="rounded-lg bg-amber-50/70 p-2 dark:bg-amber-950/25">
-                     <p class="text-[11px] wooly-muted">{{ $t('yarn.used') }}</p>
-                     <p class="text-sm font-semibold">{{ type.usedCount }}</p>
-                  </div>
-                  <div
-                     class="rounded-lg p-2"
-                     :class="type.remainingCount < 0 ? 'bg-red-50/80 dark:bg-red-950/25' : 'bg-emerald-50/70 dark:bg-emerald-950/25'"
-                  >
-                     <p class="text-[11px] wooly-muted">{{ $t('yarn.remaining') }}</p>
-                     <p class="text-sm font-semibold">{{ type.remainingCount }}</p>
-                  </div>
-               </div>
-
-               <div v-if="isExpanded(type.id)" class="pt-1">
-                  <div v-if="!type.colors.length" class="text-xs wooly-muted">
-                     {{ $t('yarn.no-colors') }}
-                  </div>
-
-                  <div v-else class="divide-y divide-slate-200/80 dark:divide-slate-700/80">
-                     <div v-for="color in type.colors" :key="color.id" class="py-2 first:pt-0 last:pb-0">
-                        <div class="flex items-start justify-between gap-2">
-                           <div class="min-w-0 flex-1">
-                              <p class="font-medium truncate">{{ color.name }}</p>
-                              <div class="mt-1 flex flex-wrap items-center gap-2 text-xs">
-                                 <span class="rounded-md bg-primary-50/60 px-2 py-1 dark:bg-primary-950/30">
-                                    {{ $t('yarn.stash') }}: {{ color.stashCount }}
-                                 </span>
-                                 <span class="rounded-md bg-amber-50/70 px-2 py-1 dark:bg-amber-950/30">
-                                    {{ $t('yarn.used') }}: {{ color.usedCount }}
-                                 </span>
-                                 <span
-                                    class="rounded-md px-2 py-1"
-                                    :class="
-                                       color.remainingCount < 0
-                                          ? 'bg-red-50/80 dark:bg-red-950/30'
-                                          : 'bg-emerald-50/70 dark:bg-emerald-950/30'
-                                    "
-                                 >
-                                    {{ $t('yarn.remaining') }}: {{ color.remainingCount }}
-                                 </span>
-                              </div>
-                           </div>
-
-                           <div class="flex items-center gap-1">
-                              <UButton
-                                 icon="i-heroicons-pencil-16-solid"
-                                 variant="ghost"
-                                 color="neutral"
-                                 size="xs"
-                                 :aria-label="$t('actions.edit-type', { type: $t('yarn.color') })"
-                                 @click="editColor(type, color)"
-                              />
-                              <UButton
-                                 icon="i-heroicons-trash-16-solid"
-                                 variant="ghost"
-                                 color="error"
-                                 size="xs"
-                                 :aria-label="$t('actions.delete-type', { type: $t('yarn.color') })"
-                                 @click="deleteColor(color)"
-                              />
-                           </div>
-                        </div>
-                     </div>
-                  </div>
+               <div class="grid gap-2 sm:grid-cols-2">
+                  <USelect
+                     v-model="typeSort"
+                     value-key="value"
+                     :items="[
+                        { label: $t('yarn.sort-name-asc'), value: 'name-asc' },
+                        { label: $t('yarn.sort-name-desc'), value: 'name-desc' },
+                        { label: $t('yarn.sort-last-used-desc'), value: 'last-used-desc' },
+                        { label: $t('yarn.sort-last-used-asc'), value: 'last-used-asc' },
+                     ]"
+                  />
+                  <USelect
+                     v-model="lastUsedFilter"
+                     value-key="value"
+                     :items="[
+                        { label: $t('yarn.filter-all-types'), value: 'all' },
+                        { label: $t('yarn.filter-used-types'), value: 'used' },
+                        { label: $t('yarn.filter-unused-types'), value: 'unused' },
+                     ]"
+                  />
                </div>
             </div>
          </UCard>
+
+         <div v-if="!hasVisibleArchive" class="rounded-xl border border-dashed border-slate-300/80 p-4 text-sm wooly-muted dark:border-slate-700">
+            {{ $t('generic.no-results-for-type', { type: $t('yarn.type') }) }}
+         </div>
+
+         <YarnArchiveTypeCard
+            v-for="type in visibleArchiveList"
+            :key="type.id"
+            :type="type"
+            :expanded="isExpanded(type.id)"
+            @toggle="toggleExpanded"
+            @create-color="openCreateColor"
+            @edit-type="editType"
+            @delete-type="deleteType"
+            @edit-color="editColor($event.type, $event.color)"
+            @delete-color="deleteColor"
+         />
       </div>
 
       <UButton

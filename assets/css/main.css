@@ -19,6 +19,7 @@
    --wooly-success: #10b981;
    --wooly-error: #ef4444;
    --wooly-warning: #f59e0b;
+   --wooly-icon-size: 1rem;
 }
 
 .dark {
@@ -97,7 +98,22 @@ body::before {
    display: inline-flex;
    align-items: center;
    justify-content: center;
+   min-height: 2rem;
+   min-width: 2rem;
    padding: 0 !important;
+}
+
+@media (max-width: 640px) {
+   .tap-target-icon {
+      min-height: 2.25rem;
+      min-width: 2.25rem;
+   }
+}
+
+/* Keep action icon sizes consistent in interactive controls across the app. */
+:is(button, [role='button'], a[role='button']) :is([class*='i-heroicons-'], .iconify) {
+   width: var(--wooly-icon-size) !important;
+   height: var(--wooly-icon-size) !important;
 }
 
 .wooly-fab {

@@ -14,6 +14,7 @@ interface Props {
    placeholder?: string;
    required?: boolean;
    disabled?: boolean;
+   clearable?: boolean;
 }
 
 const props = defineProps<Props>();
@@ -38,11 +39,14 @@ const hasError = computed(() => Boolean(props.error));
                   : 'border-slate-200/90 hover:border-slate-300 dark:border-slate-700 dark:hover:border-slate-600',
             ]"
          >
-            <USelect
+            <USelectMenu
                :model-value="modelValue"
                :items="items"
+               value-key="value"
                :placeholder="placeholder"
+               :search-input="false"
                :disabled="disabled"
+               :clear="clearable"
                class="wooly-select w-full"
                @update:model-value="$emit('update:modelValue', $event)"
             />

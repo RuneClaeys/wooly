@@ -53,18 +53,6 @@ const hasAnyData = computed(() => (props.yarnUsages?.length ?? 0) > 0);
 
          <!-- Skeins List -->
          <div v-else class="space-y-2">
-            <!-- Summary Card -->
-            <UCard class="wooly-shell bg-linear-to-r from-primary-50/50 to-primary-100/30 dark:from-primary-950/30 dark:to-primary-900/20">
-               <div class="flex items-center justify-between">
-                  <div>
-                     <p class="wooly-muted text-xs">{{ $t('yarn.used') }}</p>
-                     <p class="wooly-title text-2xl">{{ yarnTotal }}</p>
-                  </div>
-                  <UIcon name="i-heroicons-sparkles-16-solid" class="w-8 h-8 text-primary-500" />
-               </div>
-            </UCard>
-
-            <!-- Individual Yarn Colors -->
             <ProjectTrackersSection
                :yarn-usages="yarnUsages ?? []"
                :yarn-total="yarnTotal"

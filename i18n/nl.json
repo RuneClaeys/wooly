@@ -15,6 +15,7 @@
       "edit-type": "{type} bewerken",
       "increase-count": "Aantal {type} verhogen",
       "open-type": "{type} openen",
+      "open-menu": "actiemenu openen",
       "save": "Opslaan",
       "upload": "Uploaden"
    },
@@ -60,10 +61,14 @@
    },
    "app-name": "Wooly",
    "filters": {
+      "direction": "Volgorde",
       "created-on": "Aangemaakt op",
       "last-changed-at": "Laatst bewerkt",
       "newest-first": "Nieuwste eerst",
-      "oldest-first": "Oudste eerst"
+      "oldest-first": "Oudste eerst",
+      "open": "Filteren en sorteren",
+      "sort-by": "Sorteer op",
+      "title": "Filteren en sorteren"
    },
    "form": {
       "field-required": "Dit veld is verplicht"
@@ -110,6 +115,14 @@
       "no-types": "Nog geen garentypes",
       "no-types-hint": "Maak je eerste garentype en voeg kleuren toe aan je voorraad.",
       "no-colors": "Nog geen kleuren",
+      "search-types-placeholder": "Zoek garentypes",
+      "sort-name-asc": "Naam (A-Z)",
+      "sort-name-desc": "Naam (Z-A)",
+      "sort-last-used-desc": "Laatst gebruikt (recent eerst)",
+      "sort-last-used-asc": "Laatst gebruikt (oudst eerst)",
+      "filter-all-types": "Alle types",
+      "filter-used-types": "Al gebruikt",
+      "filter-unused-types": "Nog nooit gebruikt",
       "project-usage-description": "Houd bij hoeveel van elke garenkleur dit project heeft gebruikt.",
       "no-project-yarn": "Nog geen garen gebruikt",
       "no-project-yarn-hint": "Voeg een garenkleur toe om gebruik bij te houden."

@@ -94,7 +94,7 @@ onMounted(() => {
       </div>
 
       <!-- Tab Content -->
-      <div class="px-4 sm:px-0">
+      <div class="sm:px-0">
          <!-- Overview Tab (parts-first) -->
          <div v-show="activeTab === 'overview'" class="space-y-4 wooly-scale-up">
             <TabParts
