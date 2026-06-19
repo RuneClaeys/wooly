@@ -48,6 +48,8 @@ const showCreateTypeModal = ref(false);
 const showEditTypeModal = ref(false);
 const showCreateColorModal = ref(false);
 const showEditColorModal = ref(false);
+const showManualUsageModal = ref(false);
+const showCurrentStashModal = ref(false);
 
 const typeToEdit = ref<
    | {
@@ -60,6 +62,8 @@ const typeToEdit = ref<
 >(undefined);
 const colorToEdit = ref<{ id: number; name: string; stashCount: number } | undefined>(undefined);
 const activeTypeForColor = ref<{ id: number; name: string } | undefined>(undefined);
+const colorToAdjustUsage = ref<{ id: number; name: string } | undefined>(undefined);
+const colorToSetCurrentStash = ref<{ id: number; name: string; stashCount: number } | undefined>(undefined);
 
 const totals = computed(() => {
    const list = archiveList.value;
@@ -91,9 +95,7 @@ const visibleArchiveList = computed<ArchiveType[]>(() => {
       const matchesSearch = !query || type.name.toLocaleLowerCase().includes(query);
       const isUsed = Boolean(type.lastUsedAt);
       const matchesLastUsedFilter =
-         lastUsedFilter.value === 'all' ||
-         (lastUsedFilter.value === 'used' && isUsed) ||
-         (lastUsedFilter.value === 'unused' && !isUsed);
+         lastUsedFilter.value === 'all' || (lastUsedFilter.value === 'used' && isUsed) || (lastUsedFilter.value === 'unused' && !isUsed);
 
       return matchesSearch && matchesLastUsedFilter;
    });
@@ -269,6 +271,50 @@ async function deleteColor(color: ArchiveColor) {
       }
    });
 }
+
+function openManualUsage(color: ArchiveColor) {
+   colorToAdjustUsage.value = { id: color.id, name: color.name };
+   showManualUsageModal.value = true;
+}
+
+function openCurrentStash(color: ArchiveColor) {
+   colorToSetCurrentStash.value = { id: color.id, name: color.name, stashCount: color.stashCount };
+   showCurrentStashModal.value = true;
+}
+
+async function addManualUsage(payload: { amount: number; done: () => void }) {
+   if (!colorToAdjustUsage.value) return;
+
+   try {
+      await yarnRouter.colorAddUsed.mutate({
+         id: colorToAdjustUsage.value.id,
+         amount: payload.amount,
+      });
+      payload.done();
+      showManualUsageModal.value = false;
+      await refreshArchive();
+      showSuccessToast(t('actions.save'));
+   } catch {
+      showErrorToast(t('actions.save'));
+   }
+}
+
+async function setCurrentStash(payload: { amount: number; done: () => void }) {
+   if (!colorToSetCurrentStash.value) return;
+
+   try {
+      await yarnRouter.colorUpdate.mutate({
+         id: colorToSetCurrentStash.value.id,
+         stashCount: payload.amount,
+      });
+      payload.done();
+      showCurrentStashModal.value = false;
+      await refreshArchive();
+      showSuccessToast(t('actions.save'));
+   } catch {
+      showErrorToast(t('actions.save'));
+   }
+}
 </script>
 
 <template>
@@ -284,39 +330,44 @@ async function deleteColor(color: ArchiveColor) {
       <YarnArchiveEmptyState v-else-if="!hasArchive" />
 
       <div v-else class="space-y-3">
-         <UCard class="wooly-shell">
-            <div class="flex flex-col gap-3">
+         <div class="wooly-shell rounded-xl p-3">
+            <div class="grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto_auto]">
                <UInput
                   v-model="typeSearchQuery"
+                  size="sm"
                   icon="i-heroicons-magnifying-glass-16-solid"
                   :placeholder="$t('yarn.search-types-placeholder')"
                />
 
-               <div class="grid gap-2 sm:grid-cols-2">
-                  <USelect
-                     v-model="typeSort"
-                     value-key="value"
-                     :items="[
-                        { label: $t('yarn.sort-name-asc'), value: 'name-asc' },
-                        { label: $t('yarn.sort-name-desc'), value: 'name-desc' },
-                        { label: $t('yarn.sort-last-used-desc'), value: 'last-used-desc' },
-                        { label: $t('yarn.sort-last-used-asc'), value: 'last-used-asc' },
-                     ]"
-                  />
-                  <USelect
-                     v-model="lastUsedFilter"
-                     value-key="value"
-                     :items="[
-                        { label: $t('yarn.filter-all-types'), value: 'all' },
-                        { label: $t('yarn.filter-used-types'), value: 'used' },
-                        { label: $t('yarn.filter-unused-types'), value: 'unused' },
-                     ]"
-                  />
-               </div>
-            </div>
-         </UCard>
+               <USelect
+                  v-model="typeSort"
+                  size="sm"
+                  value-key="value"
+                  :items="[
+                     { label: $t('yarn.sort-name-asc'), value: 'name-asc' },
+                     { label: $t('yarn.sort-name-desc'), value: 'name-desc' },
+                     { label: $t('yarn.sort-last-used-desc'), value: 'last-used-desc' },
+                     { label: $t('yarn.sort-last-used-asc'), value: 'last-used-asc' },
+                  ]"
+               />
 
-         <div v-if="!hasVisibleArchive" class="rounded-xl border border-dashed border-slate-300/80 p-4 text-sm wooly-muted dark:border-slate-700">
+               <USelect
+                  v-model="lastUsedFilter"
+                  size="sm"
+                  value-key="value"
+                  :items="[
+                     { label: $t('yarn.filter-all-types'), value: 'all' },
+                     { label: $t('yarn.filter-used-types'), value: 'used' },
+                     { label: $t('yarn.filter-unused-types'), value: 'unused' },
+                  ]"
+               />
+            </div>
+         </div>
+
+         <div
+            v-if="!hasVisibleArchive"
+            class="rounded-xl border border-dashed border-slate-300/80 p-4 text-sm wooly-muted dark:border-slate-700"
+         >
             {{ $t('generic.no-results-for-type', { type: $t('yarn.type') }) }}
          </div>
 
@@ -329,6 +380,8 @@ async function deleteColor(color: ArchiveColor) {
             @create-color="openCreateColor"
             @edit-type="editType"
             @delete-type="deleteType"
+            @add-manual-used="openManualUsage"
+            @set-current-stash="openCurrentStash"
             @edit-color="editColor($event.type, $event.color)"
             @delete-color="deleteColor"
          />
@@ -352,6 +405,13 @@ async function deleteColor(color: ArchiveColor) {
          :initial-color="colorToEdit"
          :yarn-type-name="activeTypeForColor?.name"
          @save-color="updateColor"
+      />
+      <ModalsYarnManualUsage v-model="showManualUsageModal" :color-name="colorToAdjustUsage?.name" @save-manual-usage="addManualUsage" />
+      <ModalsYarnCurrentStash
+         v-model="showCurrentStashModal"
+         :color-name="colorToSetCurrentStash?.name"
+         :initial-stash-count="colorToSetCurrentStash?.stashCount"
+         @save-current-stash="setCurrentStash"
       />
    </div>
 </template>

@@ -24,23 +24,62 @@ const statusOptions = computed(() => [
    { label: t('generic.active'), value: 'active' },
    { label: t('generic.completed'), value: 'finished' },
 ]);
+
+const showFilters = ref(false);
+const hasActiveFilters = computed(
+   () => status.value === 'finished' || sorting.value?.orderBy !== 'createdAt' || sorting.value?.order !== 'desc',
+);
 </script>
 
 <template>
-   <LayoutHeading v-model:sorting="sorting" :title="$t('projects.project', 2)">
-      <template #otherFilters>
-         <USelect v-model="status" :items="statusOptions" size="md" class="w-full md:w-44 wooly-select-clean" />
-      </template>
-   </LayoutHeading>
+   <div class="flex flex-wrap items-center justify-between gap-2 px-1">
+      <div class="flex items-center gap-2">
+         <p class="text-sm wooly-muted">
+            {{ $t('projects.visible-count', { count: projects?.length ?? 0 }) }}
+         </p>
+         <UBadge color="neutral" variant="soft" size="sm">
+            {{ status === 'finished' ? $t('generic.completed') : $t('generic.active') }}
+         </UBadge>
+      </div>
 
-   <div class="flex items-center justify-between px-1">
-      <p class="text-sm wooly-muted">
-         {{ $t('projects.visible-count', { count: projects?.length ?? 0 }) }}
-      </p>
-      <UBadge color="neutral" variant="soft" size="sm">
-         {{ status === 'finished' ? $t('generic.completed') : $t('generic.active') }}
-      </UBadge>
+      <UButton
+         icon="i-heroicons-funnel-16-solid"
+         color="neutral"
+         size="sm"
+         :variant="hasActiveFilters ? 'soft' : 'ghost'"
+         class="tap-target tap-target-icon"
+         :aria-label="$t('filters.open')"
+         :title="$t('filters.open')"
+         @click="showFilters = !showFilters"
+      />
    </div>
+
+   <UCard v-if="showFilters" class="wooly-shell">
+      <div class="grid gap-2 md:grid-cols-3">
+         <USelect
+            v-model="sorting.orderBy"
+            :items="[
+               { label: $t('generic.name'), value: 'name' },
+               { label: $t('filters.created-on'), value: 'createdAt' },
+               { label: $t('filters.last-changed-at'), value: 'updatedAt' },
+            ]"
+            size="md"
+            class="w-full wooly-select-clean"
+         />
+
+         <USelect
+            v-model="sorting.order"
+            :items="[
+               { label: $t('filters.newest-first'), value: 'asc' },
+               { label: $t('filters.oldest-first'), value: 'desc' },
+            ]"
+            size="md"
+            class="w-full wooly-select-clean"
+         />
+
+         <USelect v-model="status" :items="statusOptions" size="md" class="w-full wooly-select-clean" />
+      </div>
+   </UCard>
 
    <div v-if="errorMessage" class="wooly-shell px-4 py-3 text-sm text-red-700 dark:text-red-300">
       {{ errorMessage }}

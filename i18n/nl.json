@@ -123,6 +123,12 @@
       "filter-all-types": "Alle types",
       "filter-used-types": "Al gebruikt",
       "filter-unused-types": "Nog nooit gebruikt",
+      "set-current-stash": "Huidige voorraad instellen",
+      "current-stash": "Huidige voorraad",
+      "current-stash-min": "Voorraad moet nul of hoger zijn",
+      "add-manual-usage": "Manueel verbruik toevoegen",
+      "manual-usage-amount": "Gebruikte skeins",
+      "manual-usage-min": "Voeg minstens 1 skein toe",
       "project-usage-description": "Houd bij hoeveel van elke garenkleur dit project heeft gebruikt.",
       "no-project-yarn": "Nog geen garen gebruikt",
       "no-project-yarn-hint": "Voeg een garenkleur toe om gebruik bij te houden."

@@ -232,6 +232,7 @@ export const yarnColors = pgTable('yarn_colors', {
    yarnTypeId: integer('yarn_type_id').notNull(),
    name: text('name').notNull(),
    stashCount: integer('stash_count').notNull().default(0),
+   manualUsedCount: integer('manual_used_count').notNull().default(0),
    createdAt: timestamp('created_at').default(sql`CURRENT_TIMESTAMP`),
    updatedAt: timestamp('updated_at').default(sql`CURRENT_TIMESTAMP`),
 });

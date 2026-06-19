@@ -123,7 +123,9 @@ function handleDeleteYarn() {
             @toggle="toggleExpanded(group.yarnTypeId)"
          >
             <template #header-right>
-               <span class="rounded-md bg-amber-50/70 px-2 py-1 text-xs dark:bg-amber-950/30"> {{ $t('yarn.used') }}: {{ group.totalUsed }} </span>
+               <span class="rounded-md bg-amber-50/70 px-2 py-1 text-xs dark:bg-amber-950/30">
+                  {{ $t('yarn.used') }}: {{ group.totalUsed }}
+               </span>
             </template>
 
             <template #expanded-content>

@@ -30,8 +30,6 @@ function isOverdue(endDate: string | null) {
 
 <template>
    <div class="space-y-3">
-      <LayoutHeading :title="$t('bingo.board', 2)" />
-
       <div v-if="pending" class="space-y-2">
          <SkeletonCard />
          <SkeletonCard />

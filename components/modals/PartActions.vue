@@ -47,10 +47,7 @@ function handleToggleCompleted() {
                   :aria-label="part.completed ? $t('parts.mark-incomplete') : $t('parts.mark-complete')"
                   @click="handleToggleCompleted"
                >
-                  <UIcon
-                     :name="part.completed ? 'i-heroicons-arrow-path-16-solid' : 'i-heroicons-check-16-solid'"
-                     class="size-5"
-                  />
+                  <UIcon :name="part.completed ? 'i-heroicons-arrow-path-16-solid' : 'i-heroicons-check-16-solid'" class="size-5" />
                   {{ part.completed ? $t('parts.mark-incomplete') : $t('parts.mark-complete') }}
                </button>
 

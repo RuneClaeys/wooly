@@ -28,8 +28,10 @@ export const skeinRouter = router({
             yarnTypeId: yarnColors.yarnTypeId,
             name: yarnColors.name,
             stashCount: yarnColors.stashCount,
-            usedCount: sql<number>`coalesce(sum(${projectYarns.usedCount}), 0)::int`,
-            lastUsedAt: sql<string | null>`max(${projectYarns.updatedAt})::text`,
+            manualUsedCount: yarnColors.manualUsedCount,
+            projectUsedCount: sql<number>`coalesce(sum(${projectYarns.usedCount}), 0)::int`,
+            projectLastUsedAt: sql<string | null>`max(${projectYarns.updatedAt})::text`,
+            updatedAt: sql<string | null>`${yarnColors.updatedAt}::text`,
          })
          .from(yarnColors)
          .leftJoin(projectYarns, eq(projectYarns.yarnColorId, yarnColors.id))
@@ -47,13 +49,18 @@ export const skeinRouter = router({
 
       return types.map((type) => {
          const typeColors = colorsByType.get(type.id) ?? [];
-         const usedCount = typeColors.reduce((sum, color) => sum + color.usedCount, 0);
+         const usedCount = typeColors.reduce((sum, color) => sum + color.projectUsedCount + color.manualUsedCount, 0);
          const stashCount = typeColors.reduce((sum, color) => sum + color.stashCount, 0);
          const lastUsedAt = typeColors.reduce<string | null>((latest, color) => {
-            if (!color.lastUsedAt) return latest;
-            if (!latest) return color.lastUsedAt;
+            const manualLastUsedAt = color.manualUsedCount > 0 ? color.updatedAt : null;
+            const candidate = [color.projectLastUsedAt, manualLastUsedAt]
+               .filter((value): value is string => Boolean(value))
+               .sort((a, b) => new Date(b).getTime() - new Date(a).getTime())[0];
 
-            return new Date(color.lastUsedAt) > new Date(latest) ? color.lastUsedAt : latest;
+            if (!candidate) return latest;
+            if (!latest) return candidate;
+
+            return new Date(candidate) > new Date(latest) ? candidate : latest;
          }, null);
 
          return {
@@ -69,8 +76,8 @@ export const skeinRouter = router({
                id: color.id,
                name: color.name,
                stashCount: color.stashCount,
-               usedCount: color.usedCount,
-               remainingCount: color.stashCount - color.usedCount,
+               usedCount: color.projectUsedCount + color.manualUsedCount,
+               remainingCount: color.stashCount - (color.projectUsedCount + color.manualUsedCount),
             })),
          };
       });
@@ -202,6 +209,30 @@ export const skeinRouter = router({
             .returning()
             .execute();
 
+         return updatedColor;
+      }),
+
+   colorAddUsed: protectedProcedure
+      .input(
+         z.object({
+            id: z.number(),
+            amount: z.number().int().min(1),
+         }),
+      )
+      .mutation(async ({ ctx, input }) => {
+         await assertYarnColorOwnership(ctx, input.id);
+
+         const [updatedColor] = await ctx.db
+            .update(yarnColors)
+            .set({
+               manualUsedCount: sql`${yarnColors.manualUsedCount} + ${input.amount}`,
+               updatedAt: new Date(),
+            })
+            .where(eq(yarnColors.id, input.id))
+            .returning()
+            .execute();
+
+         await recomputeBingoBoardsForUser(ctx);
          return updatedColor;
       }),
 

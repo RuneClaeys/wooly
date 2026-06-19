@@ -29,6 +29,8 @@ const emit = defineEmits<{
    'create-color': [type: ArchiveType];
    'edit-type': [type: ArchiveType];
    'delete-type': [type: ArchiveType];
+   'add-manual-used': [color: ArchiveColor];
+   'set-current-stash': [color: ArchiveColor];
    'edit-color': [payload: { type: ArchiveType; color: ArchiveColor }];
    'delete-color': [color: ArchiveColor];
 }>();
@@ -67,6 +69,16 @@ function handleDeleteType() {
 function handleEditColor() {
    if (!activeColor.value) return;
    emit('edit-color', { type: props.type, color: activeColor.value });
+}
+
+function handleAddManualUsed() {
+   if (!activeColor.value) return;
+   emit('add-manual-used', activeColor.value);
+}
+
+function handleSetCurrentStash() {
+   if (!activeColor.value) return;
+   emit('set-current-stash', activeColor.value);
 }
 
 function handleDeleteColor() {
@@ -119,9 +131,7 @@ function handleDeleteColor() {
             <span class="rounded-md bg-primary-50/60 px-2 py-1 dark:bg-primary-950/30">
                {{ $t('yarn.stash') }}: {{ type.stashCount }}
             </span>
-            <span class="rounded-md bg-amber-50/70 px-2 py-1 dark:bg-amber-950/30">
-               {{ $t('yarn.used') }}: {{ type.usedCount }}
-            </span>
+            <span class="rounded-md bg-amber-50/70 px-2 py-1 dark:bg-amber-950/30"> {{ $t('yarn.used') }}: {{ type.usedCount }} </span>
             <span
                class="rounded-md px-2 py-1"
                :class="type.remainingCount < 0 ? 'bg-red-50/80 dark:bg-red-950/30' : 'bg-emerald-50/70 dark:bg-emerald-950/30'"
@@ -152,9 +162,7 @@ function handleDeleteColor() {
                            <span
                               class="rounded-md px-2 py-1"
                               :class="
-                                 color.remainingCount < 0
-                                    ? 'bg-red-50/80 dark:bg-red-950/30'
-                                    : 'bg-emerald-50/70 dark:bg-emerald-950/30'
+                                 color.remainingCount < 0 ? 'bg-red-50/80 dark:bg-red-950/30' : 'bg-emerald-50/70 dark:bg-emerald-950/30'
                               "
                            >
                               {{ $t('yarn.remaining') }}: {{ color.remainingCount }}
@@ -189,6 +197,10 @@ function handleDeleteColor() {
    <ModalsYarnColorActions
       v-model:open="showColorActions"
       :color-name="activeColor?.name"
+      allow-adjust-usage
+      allow-set-current-stash
+      @adjust-usage="handleAddManualUsed"
+      @set-current-stash="handleSetCurrentStash"
       @edit="handleEditColor"
       @delete="handleDeleteColor"
    />

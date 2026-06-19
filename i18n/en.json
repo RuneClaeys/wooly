@@ -123,6 +123,12 @@
       "filter-all-types": "All types",
       "filter-used-types": "Used before",
       "filter-unused-types": "Never used",
+      "set-current-stash": "Set current stash",
+      "current-stash": "Current stash",
+      "current-stash-min": "Stash must be zero or higher",
+      "add-manual-usage": "Add manual usage",
+      "manual-usage-amount": "Skeins used",
+      "manual-usage-min": "Use at least 1 skein",
       "project-usage-description": "Track how much yarn color this project has used.",
       "no-project-yarn": "No yarn used yet",
       "no-project-yarn-hint": "Add a yarn color to start tracking usage."
