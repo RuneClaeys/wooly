@@ -4,7 +4,7 @@
    "type": "module",
    "scripts": {
       "build": "nuxt build",
-      "vercel-build": "nuxt build && drizzle-kit push --config=drizzle.config.ts",
+      "vercel-build": "nuxt build && drizzle-kit push",
       "dev": "nuxt dev",
       "dev:prod": "nuxt dev --dotenv .env.prod",
       "generate": "nuxt generate",

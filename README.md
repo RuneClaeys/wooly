@@ -1,24 +1,46 @@
 # Wooly
 
-Wooly is a Nuxt 3 + TypeScript app for tracking projects and their parts.
+## What This App Is
 
-## Stack
+Wooly is a personal crochet/knitting project tracker.
 
-- Nuxt 3 + Vue 3 + TypeScript
-- tRPC (client/server contract)
+It helps you:
+
+- manage projects and break them down into trackable parts
+- track progress counters per part
+- keep project photos in one place
+- manage yarn archive data (types, colors, stash, and usage)
+- track yarn usage per project
+- create and manage bingo boards for goals/challenges
+
+The app is built as a Nuxt SPA with typed API contracts and a PostgreSQL-backed data layer.
+
+## Tech Stack
+
+- Nuxt 4 + Vue 3 + TypeScript
+- tRPC (typed client/server API)
 - Drizzle ORM + PostgreSQL
 - Auth.js via `@sidebase/nuxt-auth` (Google provider)
 - Nuxt UI + TailwindCSS
 
-## Requirements
+## Technical Setup (Local Development)
 
-- Node.js 20+
-- A PostgreSQL database
+### 1) Prerequisites
+
+- Node.js `26.x` (matches `engines` in `package.json`)
+- npm
+- PostgreSQL database
 - Google OAuth credentials
 
-## Environment Variables
+### 2) Install Dependencies
 
-Create a `.env` file with:
+```bash
+npm install
+```
+
+### 3) Configure Environment
+
+Create a `.env` file in the project root:
 
 ```bash
 POSTGRES_URL=postgres://...
@@ -31,68 +53,52 @@ BLOB_READ_WRITE_TOKEN=...
 
 Notes:
 
-- `AUTH_ORIGIN` must include `/api/auth` for auth callbacks.
-- Seeder and Drizzle both use `POSTGRES_URL`.
-- Project photos are compressed in the browser and rejected if still larger than 10 MB.
+- `AUTH_ORIGIN` must include `/api/auth`.
+- Drizzle and the seed script both use `POSTGRES_URL`.
+- `BLOB_READ_WRITE_TOKEN` is used for project photo uploads.
 
-## Install
+### 4) Prepare The Database
 
-```bash
-npm install
-```
-
-## Run Locally
-
-```bash
-npm run dev
-```
-
-App runs on `http://localhost:3000`.
-
-## Database
-
-Generate migrations:
-
-```bash
-npm run db:migrate
-```
-
-Push schema to database:
+Push schema to your database:
 
 ```bash
 npm run db:push
 ```
 
-Open Drizzle Studio:
+Optional: generate migration files from schema changes:
 
 ```bash
-npm run drizzle:studio
+npm run db:migrate
 ```
 
-Seed database:
+Optional: seed sample/default data:
 
 ```bash
-# reset + seed default records
+# reset + seed
 npm run db:seed
 
-# append/update without reset
+# append/update only
 npm run db:seed:append
 ```
 
-## Build And Preview
+### 5) Start The App
+
+```bash
+npm run dev
+```
+
+Local URL: `http://localhost:3000`
+
+### 6) Build And Preview Production
 
 ```bash
 npm run build
 npm run preview
 ```
 
-## Scripts
+### Useful Commands
 
-- `npm run dev`: start local dev server
-- `npm run build`: build production app
-- `npm run preview`: preview production build
-- `npm run db:migrate`: generate Drizzle migration files
-- `npm run db:push`: apply schema directly to DB
-- `npm run drizzle:studio`: open DB studio
-- `npm run db:seed`: reset and seed sample data
-- `npm run db:seed:append`: append/update sample data
+- `npm run drizzle:studio` - open Drizzle Studio
+- `npm run dev:prod` - run dev server with `.env.prod`
+- `npm run generate` - static generate
+- `npm run vercel-build` - build and push schema (Vercel-oriented)
