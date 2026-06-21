@@ -4,7 +4,7 @@
    "type": "module",
    "scripts": {
       "build": "nuxt build",
-      "vercel-build": "nuxt build && if [ \"$RUN_DB_PUSH\" = \"true\" ]; then drizzle-kit push; else echo 'Skipping drizzle-kit push (set RUN_DB_PUSH=true to enable).'; fi",
+      "vercel-build": "nuxt build && drizzle-kit push",
       "dev": "nuxt dev",
       "dev:prod": "nuxt dev --dotenv .env.prod",
       "generate": "nuxt generate",
