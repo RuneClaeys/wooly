@@ -6,6 +6,7 @@
       "build": "nuxt build",
       "vercel-build": "nuxt build && drizzle-kit push --config=drizzle.config.ts",
       "dev": "nuxt dev",
+      "dev:prod": "nuxt dev --dotenv .env.prod",
       "generate": "nuxt generate",
       "preview": "nuxt preview",
       "postinstall": "nuxt prepare",
