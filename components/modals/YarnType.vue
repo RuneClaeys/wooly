@@ -34,16 +34,18 @@ const modalTitle = computed(() =>
    props.initialType ? t('actions.edit-type', { type: t('yarn.type') }) : t('actions.create-type', { type: t('yarn.type') }),
 );
 
+function syncYarnTypeFromInitialType(initialType?: typeof props.initialType) {
+   yarnType.value = {
+      name: initialType?.name ?? '',
+      skeinWeightGrams: initialType?.skeinWeightGrams ?? null,
+      thicknessMm: initialType?.thicknessMm ?? null,
+   };
+   errors.value = {};
+}
+
 watch(
    () => props.initialType,
-   (initialType) => {
-      yarnType.value = {
-         name: initialType?.name ?? '',
-         skeinWeightGrams: initialType?.skeinWeightGrams ?? null,
-         thicknessMm: initialType?.thicknessMm ?? null,
-      };
-      errors.value = {};
-   },
+   syncYarnTypeFromInitialType,
 );
 
 const validateName = (name: string): string | null => {

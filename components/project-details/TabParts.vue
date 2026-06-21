@@ -61,6 +61,7 @@ const hasAnyData = computed(() => (props.parts?.length ?? 0) > 0);
       <ProjectPartsSection
          :parts="parts ?? []"
          :pending="pending"
+         :storage-key="`wooly:project:${projectId}:parts:last-open`"
          @edit="$emit('edit', $event)"
          @delete="$emit('delete', $event)"
          @adjust="$emit('adjust', $event)"

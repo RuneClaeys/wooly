@@ -28,15 +28,17 @@ const modalTitle = computed(() =>
    props.initialColor ? t('actions.edit-type', { type: t('yarn.color') }) : t('actions.create-type', { type: t('yarn.color') }),
 );
 
+function syncYarnColorFromInitialColor(initialColor?: typeof props.initialColor) {
+   yarnColor.value = {
+      name: initialColor?.name ?? '',
+      stashCount: initialColor?.stashCount ?? 0,
+   };
+   errors.value = {};
+}
+
 watch(
    () => props.initialColor,
-   (initialColor) => {
-      yarnColor.value = {
-         name: initialColor?.name ?? '',
-         stashCount: initialColor?.stashCount ?? 0,
-      };
-      errors.value = {};
-   },
+   syncYarnColorFromInitialColor,
 );
 
 const validateName = (name: string): string | null => {

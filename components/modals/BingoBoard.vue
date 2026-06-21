@@ -29,16 +29,18 @@ const board = ref({
 const errors = ref<Record<string, string>>({});
 const isSubmitting = ref(false);
 
+function syncBoardFromInitialBoard(initialBoard?: InitialBoard) {
+   board.value = {
+      name: initialBoard?.name ?? '',
+      size: (initialBoard?.size ?? 3) as 3 | 4,
+      endDate: initialBoard?.endDate ? new Date(initialBoard.endDate).toISOString().slice(0, 10) : '',
+   };
+   errors.value = {};
+}
+
 watch(
    () => props.initialBoard,
-   (initialBoard) => {
-      board.value = {
-         name: initialBoard?.name ?? '',
-         size: (initialBoard?.size ?? 3) as 3 | 4,
-         endDate: initialBoard?.endDate ? new Date(initialBoard.endDate).toISOString().slice(0, 10) : '',
-      };
-      errors.value = {};
-   },
+   syncBoardFromInitialBoard,
 );
 
 const title = computed(() =>

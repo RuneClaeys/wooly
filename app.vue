@@ -5,10 +5,11 @@ const { userRouter } = useTrpcClient();
 const route = useRoute();
 const { t } = useI18n();
 
-const isMainTabPage = computed(() => route.path === '/' || route.path === '/bingo' || route.path === '/yarn');
+const isMainTabPage = computed(() => route.path === '/' || route.path === '/bingo' || route.path === '/yarn' || route.path === '/year-goals');
 
 const mainTabTitle = computed(() => {
    if (route.path === '/bingo') return t('bingo.board', 2);
+   if (route.path === '/year-goals') return t('year-goals.title');
    if (route.path === '/yarn') return t('trackers.skeins-used');
    return t('projects.projects');
 });
@@ -24,7 +25,11 @@ async function syncUserLocale(currentStatus: string) {
    }
 }
 
-watch(status, (nextStatus) => syncUserLocale(nextStatus), { immediate: true });
+function handleAuthStatusChange(nextStatus: string) {
+   void syncUserLocale(nextStatus);
+}
+
+watch(status, handleAuthStatusChange, { immediate: true });
 </script>
 
 <template>

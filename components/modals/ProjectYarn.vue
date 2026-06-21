@@ -52,20 +52,22 @@ const modalTitle = computed(() =>
    props.initialUsage ? t('actions.edit-type', { type: t('yarn.color') }) : t('actions.create-type', { type: t('yarn.color') }),
 );
 
+function syncFormFromInitialUsage(initialUsage?: typeof props.initialUsage) {
+   form.value = {
+      yarnColorId: initialUsage?.yarnColorId ?? null,
+      usedCount: initialUsage?.usedCount ?? 0,
+      newTypeName: '',
+      newTypeSkeinWeightGrams: null,
+      newTypeThicknessMm: null,
+      newColorName: '',
+      newColorStashCount: 0,
+   };
+   errors.value = {};
+}
+
 watch(
    () => props.initialUsage,
-   (initialUsage) => {
-      form.value = {
-         yarnColorId: initialUsage?.yarnColorId ?? null,
-         usedCount: initialUsage?.usedCount ?? 0,
-         newTypeName: '',
-         newTypeSkeinWeightGrams: null,
-         newTypeThicknessMm: null,
-         newColorName: '',
-         newColorStashCount: 0,
-      };
-      errors.value = {};
-   },
+   syncFormFromInitialUsage,
 );
 
 function validateSelection(): string | null {

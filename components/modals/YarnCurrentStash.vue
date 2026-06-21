@@ -25,23 +25,27 @@ const form = ref<CurrentStashForm>({
 const errors = ref<Record<string, string>>({});
 const isSubmitting = ref(false);
 
+function resetCurrentStashOnOpen(isOpen: boolean) {
+   if (isOpen) {
+      form.value.amount = props.initialStashCount ?? 0;
+      errors.value = {};
+   }
+}
+
+function syncCurrentStashWhenClosed(nextCount?: number) {
+   if (!open.value) {
+      form.value.amount = nextCount ?? 0;
+   }
+}
+
 watch(
    () => open.value,
-   (isOpen) => {
-      if (isOpen) {
-         form.value.amount = props.initialStashCount ?? 0;
-         errors.value = {};
-      }
-   },
+   resetCurrentStashOnOpen,
 );
 
 watch(
    () => props.initialStashCount,
-   (nextCount) => {
-      if (!open.value) {
-         form.value.amount = nextCount ?? 0;
-      }
-   },
+   syncCurrentStashWhenClosed,
 );
 
 function validate(): boolean {

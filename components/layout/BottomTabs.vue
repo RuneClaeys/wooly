@@ -15,6 +15,12 @@ const tabs = [
       isActive: (path: string) => path === '/bingo' || path.startsWith('/bingo/'),
    },
    {
+      key: 'year-goals',
+      icon: 'i-heroicons-calendar-days-20-solid',
+      to: '/year-goals',
+      isActive: (path: string) => path === '/year-goals' || path.startsWith('/year-goals/'),
+   },
+   {
       key: 'yarn',
       icon: 'i-heroicons-archive-box-20-solid',
       to: '/yarn',
@@ -26,7 +32,7 @@ const tabs = [
 <template>
    <nav class="fixed inset-x-0 bottom-0 z-30 pb-[max(0.5rem,env(safe-area-inset-bottom))]" aria-label="Main navigation">
       <UContainer class="w-full max-w-300 px-3 md:px-4">
-         <div class="wooly-shell wooly-pop grid grid-cols-3 gap-1 p-1.5">
+         <div class="wooly-shell wooly-pop grid grid-cols-4 gap-1 p-1.5">
             <NuxtLink
                v-for="tab in tabs"
                :key="tab.key"

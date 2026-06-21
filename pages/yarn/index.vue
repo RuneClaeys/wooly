@@ -121,14 +121,16 @@ const visibleArchiveList = computed<ArchiveType[]>(() => {
 
 const hasVisibleArchive = computed(() => visibleArchiveList.value.length > 0);
 
+function initializeExpandedTypes(types: ArchiveType[]) {
+   if (hasInitializedExpandedTypes.value || !types.length) return;
+
+   expandedTypeIds.value = types.filter((type) => type.colors.length > 0).map((type) => type.id);
+   hasInitializedExpandedTypes.value = true;
+}
+
 watch(
    archiveList,
-   (types) => {
-      if (hasInitializedExpandedTypes.value || !types.length) return;
-
-      expandedTypeIds.value = types.filter((type) => type.colors.length > 0).map((type) => type.id);
-      hasInitializedExpandedTypes.value = true;
-   },
+   initializeExpandedTypes,
    { immediate: true },
 );
 

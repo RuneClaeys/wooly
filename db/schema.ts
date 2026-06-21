@@ -15,6 +15,7 @@ export const usersRelations = relations(users, ({ many }) => ({
    projects: many(projects),
    yarnTypes: many(yarnTypes),
    bingoBoards: many(bingoBoards),
+   yearGoals: many(yearGoals),
 }));
 
 export type SelectUser = typeof users.$inferSelect;
@@ -38,6 +39,7 @@ export const projectsRelations = relations(projects, ({ one, many }) => ({
    yarnUsages: many(projectYarns),
    photos: many(projectPhotos),
    linkedBingoCells: many(bingoCells),
+   linkedYearGoals: many(yearGoals),
 }));
 
 export type InsertProject = Omit<typeof projects.$inferInsert, 'createdAt' | 'updatedAt'> & {
@@ -194,6 +196,73 @@ export type SelectBingoCellProgress = Omit<typeof bingoCellProgress.$inferSelect
 };
 
 export type InsertBingoCellProgress = Omit<typeof bingoCellProgress.$inferInsert, 'updatedAt' | 'completedAt'> & {
+   updatedAt?: string | null;
+   completedAt?: string | null;
+};
+
+// year goals
+export const yearGoals = pgTable('year_goals', {
+   id: serial('id').primaryKey(),
+   year: integer('year').notNull(),
+   kind: varchar('kind', { length: 40 }).notNull(),
+   label: text('label'),
+   linkedProjectId: integer('linked_project_id'),
+   targetValue: integer('target_value'),
+   createdAt: timestamp('created_at').default(sql`CURRENT_TIMESTAMP`),
+   updatedAt: timestamp('updated_at').default(sql`CURRENT_TIMESTAMP`),
+   userId: varchar('user_id', { length: 255 }).notNull(),
+});
+
+export const yearGoalsRelations = relations(yearGoals, ({ one }) => ({
+   user: one(users, {
+      fields: [yearGoals.userId],
+      references: [users.id],
+   }),
+   linkedProject: one(projects, {
+      fields: [yearGoals.linkedProjectId],
+      references: [projects.id],
+   }),
+   progress: one(yearGoalProgress, {
+      fields: [yearGoals.id],
+      references: [yearGoalProgress.goalId],
+   }),
+}));
+
+export type SelectYearGoal = Omit<typeof yearGoals.$inferSelect, 'createdAt' | 'updatedAt'> & {
+   createdAt?: string | null;
+   updatedAt?: string | null;
+};
+
+export type InsertYearGoal = Omit<typeof yearGoals.$inferInsert, 'createdAt' | 'updatedAt'> & {
+   createdAt?: string | null;
+   updatedAt?: string | null;
+};
+
+// year goal progress
+export const yearGoalProgress = pgTable('year_goal_progress', {
+   id: serial('id').primaryKey(),
+   goalId: integer('goal_id').notNull(),
+   baselineValue: integer('baseline_value').notNull().default(0),
+   currentValue: integer('current_value').notNull().default(0),
+   autoCompleted: boolean('auto_completed').notNull().default(false),
+   manualCompleted: boolean('manual_completed').notNull().default(false),
+   completedAt: timestamp('completed_at'),
+   updatedAt: timestamp('updated_at').default(sql`CURRENT_TIMESTAMP`),
+});
+
+export const yearGoalProgressRelations = relations(yearGoalProgress, ({ one }) => ({
+   goal: one(yearGoals, {
+      fields: [yearGoalProgress.goalId],
+      references: [yearGoals.id],
+   }),
+}));
+
+export type SelectYearGoalProgress = Omit<typeof yearGoalProgress.$inferSelect, 'updatedAt' | 'completedAt'> & {
+   updatedAt?: string | null;
+   completedAt?: string | null;
+};
+
+export type InsertYearGoalProgress = Omit<typeof yearGoalProgress.$inferInsert, 'updatedAt' | 'completedAt'> & {
    updatedAt?: string | null;
    completedAt?: string | null;
 };

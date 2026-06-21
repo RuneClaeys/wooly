@@ -61,19 +61,21 @@ const initializedExpandedTypes = ref(false);
 const showYarnActions = ref(false);
 const activeYarn = ref<ProjectYarnUsageRow | null>(null);
 
+function syncExpandedTypeIds(groups: ProjectYarnTypeGroup[]) {
+   const availableIds = groups.map((group) => group.yarnTypeId);
+
+   if (!initializedExpandedTypes.value) {
+      expandedTypeIds.value = [...availableIds];
+      initializedExpandedTypes.value = true;
+      return;
+   }
+
+   expandedTypeIds.value = expandedTypeIds.value.filter((id) => availableIds.includes(id));
+}
+
 watch(
    groupedYarnUsages,
-   (groups) => {
-      const availableIds = groups.map((group) => group.yarnTypeId);
-
-      if (!initializedExpandedTypes.value) {
-         expandedTypeIds.value = [...availableIds];
-         initializedExpandedTypes.value = true;
-         return;
-      }
-
-      expandedTypeIds.value = expandedTypeIds.value.filter((id) => availableIds.includes(id));
-   },
+   syncExpandedTypeIds,
    { immediate: true },
 );
 

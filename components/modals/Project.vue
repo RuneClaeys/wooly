@@ -15,12 +15,14 @@ const isSubmitting = ref(false);
 
 const modalTitle = computed(() => (props.initialProject ? t('actions.edit-project') : t('actions.create-project')));
 
+function syncProjectFromInitialProject(initialProject?: SelectProject) {
+   project.value = { name: initialProject?.name ?? '', finished: initialProject?.finished ?? false };
+   errors.value = {};
+}
+
 watch(
    () => props.initialProject,
-   (initialProject) => {
-      project.value = { name: initialProject?.name ?? '', finished: initialProject?.finished ?? false };
-      errors.value = {};
-   },
+   syncProjectFromInitialProject,
 );
 
 const validateName = (name: string): string | null => {

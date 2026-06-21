@@ -24,14 +24,16 @@ const form = ref<ManualUsageForm>({
 const errors = ref<Record<string, string>>({});
 const isSubmitting = ref(false);
 
+function resetManualUsageOnOpen(isOpen: boolean) {
+   if (isOpen) {
+      form.value.amount = 1;
+      errors.value = {};
+   }
+}
+
 watch(
    () => open.value,
-   (isOpen) => {
-      if (isOpen) {
-         form.value.amount = 1;
-         errors.value = {};
-      }
-   },
+   resetManualUsageOnOpen,
 );
 
 function validate(): boolean {

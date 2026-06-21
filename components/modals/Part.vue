@@ -19,16 +19,18 @@ const isSubmitting = ref(false);
 
 const modalTitle = computed(() => (props.initialPart ? t('actions.edit-part') : t('actions.create-part')));
 
+function syncPartFromInitialPart(initialPart?: SelectPart) {
+   part.value = {
+      name: initialPart?.name ?? '',
+      counter: initialPart?.counter ?? 0,
+      completed: initialPart?.completed ?? false,
+   };
+   errors.value = {};
+}
+
 watch(
    () => props.initialPart,
-   (initialPart) => {
-      part.value = {
-         name: initialPart?.name ?? '',
-         counter: initialPart?.counter ?? 0,
-         completed: initialPart?.completed ?? false,
-      };
-      errors.value = {};
-   },
+   syncPartFromInitialPart,
 );
 
 const validateName = (name: string): string | null => {

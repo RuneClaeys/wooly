@@ -53,29 +53,33 @@ const cell = ref({
 const errors = ref<Record<string, string>>({});
 const isSubmitting = ref(false);
 
+function syncCellFromInitialCell(initialCell?: InitialCell) {
+   cell.value = {
+      position: initialCell?.position ?? props.lockedPosition ?? 1,
+      kind: initialCell?.kind ?? 'free_text',
+      label: initialCell?.label ?? '',
+      linkedProjectId: initialCell?.linkedProjectId ?? null,
+      targetValue: initialCell?.targetValue ?? 1,
+      newProjectName: '',
+   };
+   projectMode.value = initialCell?.linkedProjectId ? 'existing' : 'existing';
+   errors.value = {};
+}
+
+function syncPositionFromLockedPosition(lockedPosition?: number) {
+   if (!props.initialCell && lockedPosition) {
+      cell.value.position = lockedPosition;
+   }
+}
+
 watch(
    () => props.initialCell,
-   (initialCell) => {
-      cell.value = {
-         position: initialCell?.position ?? props.lockedPosition ?? 1,
-         kind: initialCell?.kind ?? 'free_text',
-         label: initialCell?.label ?? '',
-         linkedProjectId: initialCell?.linkedProjectId ?? null,
-         targetValue: initialCell?.targetValue ?? 1,
-         newProjectName: '',
-      };
-      projectMode.value = initialCell?.linkedProjectId ? 'existing' : 'existing';
-      errors.value = {};
-   },
+   syncCellFromInitialCell,
 );
 
 watch(
    () => props.lockedPosition,
-   (lockedPosition) => {
-      if (!props.initialCell && lockedPosition) {
-         cell.value.position = lockedPosition;
-      }
-   },
+   syncPositionFromLockedPosition,
 );
 
 const kindOptions = computed(() => [
@@ -131,13 +135,15 @@ const autoLabelPreview = computed(() => {
 
 const projectMode = ref<'existing' | 'new'>(props.initialCell?.linkedProjectId ? 'existing' : 'existing');
 
-watch(projectMode, (mode) => {
+function syncProjectFieldsForMode(mode: 'existing' | 'new') {
    if (mode === 'existing') {
       cell.value.newProjectName = '';
    } else {
       cell.value.linkedProjectId = null;
    }
-});
+}
+
+watch(projectMode, syncProjectFieldsForMode);
 
 const title = computed(() =>
    props.initialCell ? t('actions.edit-type', { type: t('bingo.cell') }) : t('actions.create-type', { type: t('bingo.cell') }),
