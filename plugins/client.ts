@@ -18,6 +18,12 @@ export default defineNuxtPlugin(() => {
       links: [
          httpBatchLink({
             url: '/api/trpc',
+            fetch(url, options) {
+               return fetch(url, {
+                  ...options,
+                  credentials: 'include',
+               });
+            },
          }),
       ],
    });
