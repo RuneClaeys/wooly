@@ -38,15 +38,9 @@ function syncCurrentStashWhenClosed(nextCount?: number) {
    }
 }
 
-watch(
-   () => open.value,
-   resetCurrentStashOnOpen,
-);
+watch(() => open.value, resetCurrentStashOnOpen);
 
-watch(
-   () => props.initialStashCount,
-   syncCurrentStashWhenClosed,
-);
+watch(() => props.initialStashCount, syncCurrentStashWhenClosed);
 
 function validate(): boolean {
    errors.value = {};

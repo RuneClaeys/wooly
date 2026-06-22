@@ -73,11 +73,7 @@ function syncExpandedTypeIds(groups: ProjectYarnTypeGroup[]) {
    expandedTypeIds.value = expandedTypeIds.value.filter((id) => availableIds.includes(id));
 }
 
-watch(
-   groupedYarnUsages,
-   syncExpandedTypeIds,
-   { immediate: true },
-);
+watch(groupedYarnUsages, syncExpandedTypeIds, { immediate: true });
 
 function isExpanded(typeId: number) {
    return expandedTypeIds.value.includes(typeId);

@@ -67,15 +67,9 @@ function syncGoalYearWithSelectedYear(selectedYear: number) {
    }
 }
 
-watch(
-   () => props.initialGoal,
-   syncGoalFromInitialGoal,
-);
+watch(() => props.initialGoal, syncGoalFromInitialGoal);
 
-watch(
-   () => props.selectedYear,
-   syncGoalYearWithSelectedYear,
-);
+watch(() => props.selectedYear, syncGoalYearWithSelectedYear);
 
 const kindOptions = computed(() => [
    { label: t('year-goals.kind-projects-count'), value: 'projects_count' },

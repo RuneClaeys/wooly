@@ -65,10 +65,7 @@ function syncFormFromInitialUsage(initialUsage?: typeof props.initialUsage) {
    errors.value = {};
 }
 
-watch(
-   () => props.initialUsage,
-   syncFormFromInitialUsage,
-);
+watch(() => props.initialUsage, syncFormFromInitialUsage);
 
 function validateSelection(): string | null {
    if (!isCreateMode.value) return null;

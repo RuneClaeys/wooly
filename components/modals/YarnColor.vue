@@ -36,10 +36,7 @@ function syncYarnColorFromInitialColor(initialColor?: typeof props.initialColor)
    errors.value = {};
 }
 
-watch(
-   () => props.initialColor,
-   syncYarnColorFromInitialColor,
-);
+watch(() => props.initialColor, syncYarnColorFromInitialColor);
 
 const validateName = (name: string): string | null => {
    if (!name || name.trim().length === 0) return t('form.field-required');

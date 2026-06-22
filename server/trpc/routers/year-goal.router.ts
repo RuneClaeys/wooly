@@ -1,6 +1,6 @@
 import { and, desc, eq, sql } from 'drizzle-orm';
 import { z } from 'zod';
-import { projectYarns, projects, yearGoalProgress, yearGoals, yarnColors, yarnTypes } from '~/db/schema';
+import { projectYarns, projects, yarnColors, yarnTypes, yearGoalProgress, yearGoals } from '~/db/schema';
 import type { Context } from '../context';
 import { protectedProcedure, router } from '../trpc';
 import { assertProjectOwnership, assertYearGoalOwnership } from './ownership.guard';

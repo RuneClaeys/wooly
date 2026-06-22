@@ -99,28 +99,16 @@ function resetOpenPartIfMissing(partIds: number[]) {
    }
 }
 
-watch(
-   resolvedStorageKey,
-   handleStorageKeyChange,
-   { immediate: true },
-);
+watch(resolvedStorageKey, handleStorageKeyChange, { immediate: true });
 
 watch(openPartId, persistOpenPartId);
 
-watch(
-   () => (props.parts ?? []).map(part => part.id),
-   resetOpenPartIfMissing,
-   { immediate: true },
-);
+watch(() => (props.parts ?? []).map((part) => part.id), resetOpenPartIfMissing, { immediate: true });
 </script>
 
 <template>
    <div v-auto-animate class="grid grid-cols-1 gap-2" :class="{ 'opacity-75': pending }">
-      <UCard
-         v-for="part in parts ?? []"
-         :key="part.id"
-         class="wooly-shell w-full px-2.5 py-1.5"
-      >
+      <UCard v-for="part in parts ?? []" :key="part.id" class="wooly-shell w-full px-2.5 py-1.5">
          <div
             :class="openPartId === part.id ? 'space-y-3' : 'space-y-1.5'"
             role="button"
@@ -148,7 +136,9 @@ watch(
                         <span class="truncate">{{ part.completed ? $t('generic.completed') : $t('generic.active') }}</span>
                         <span aria-hidden="true" class="opacity-60">•</span>
                         <span class="whitespace-nowrap">{{ $t('parts.row-count') }}:</span>
-                        <span class="whitespace-nowrap font-semibold tabular-nums text-pink-900 dark:text-pink-100">{{ part.counter }}</span>
+                        <span class="whitespace-nowrap font-semibold tabular-nums text-pink-900 dark:text-pink-100">{{
+                           part.counter
+                        }}</span>
                      </div>
                   </div>
                </div>
@@ -177,7 +167,9 @@ watch(
                   :aria-label="$t('actions.decrease-count', { type: $t('parts.part') })"
                   @click.stop="emit('adjust', { part, increment: false })"
                />
-               <span class="min-w-9 text-center text-sm font-semibold tabular-nums text-pink-900 dark:text-pink-100">{{ part.counter }}</span>
+               <span class="min-w-9 text-center text-sm font-semibold tabular-nums text-pink-900 dark:text-pink-100">{{
+                  part.counter
+               }}</span>
                <UButton
                   icon="i-heroicons-plus-16-solid"
                   variant="soft"

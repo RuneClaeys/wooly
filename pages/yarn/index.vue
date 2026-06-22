@@ -128,11 +128,7 @@ function initializeExpandedTypes(types: ArchiveType[]) {
    hasInitializedExpandedTypes.value = true;
 }
 
-watch(
-   archiveList,
-   initializeExpandedTypes,
-   { immediate: true },
-);
+watch(archiveList, initializeExpandedTypes, { immediate: true });
 
 function isExpanded(typeId: number) {
    return expandedTypeIds.value.includes(typeId);

@@ -20,10 +20,7 @@ function syncProjectFromInitialProject(initialProject?: SelectProject) {
    errors.value = {};
 }
 
-watch(
-   () => props.initialProject,
-   syncProjectFromInitialProject,
-);
+watch(() => props.initialProject, syncProjectFromInitialProject);
 
 const validateName = (name: string): string | null => {
    if (!name || name.trim().length === 0) return t('form.field-required');

@@ -5,7 +5,9 @@ const { userRouter } = useTrpcClient();
 const route = useRoute();
 const { t } = useI18n();
 
-const isMainTabPage = computed(() => route.path === '/' || route.path === '/bingo' || route.path === '/yarn' || route.path === '/year-goals');
+const isMainTabPage = computed(
+   () => route.path === '/' || route.path === '/bingo' || route.path === '/yarn' || route.path === '/year-goals',
+);
 
 const mainTabTitle = computed(() => {
    if (route.path === '/bingo') return t('bingo.board', 2);

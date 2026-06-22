@@ -43,10 +43,7 @@ function syncYarnTypeFromInitialType(initialType?: typeof props.initialType) {
    errors.value = {};
 }
 
-watch(
-   () => props.initialType,
-   syncYarnTypeFromInitialType,
-);
+watch(() => props.initialType, syncYarnTypeFromInitialType);
 
 const validateName = (name: string): string | null => {
    if (!name || name.trim().length === 0) return t('form.field-required');

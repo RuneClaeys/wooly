@@ -38,10 +38,7 @@ function syncBoardFromInitialBoard(initialBoard?: InitialBoard) {
    errors.value = {};
 }
 
-watch(
-   () => props.initialBoard,
-   syncBoardFromInitialBoard,
-);
+watch(() => props.initialBoard, syncBoardFromInitialBoard);
 
 const title = computed(() =>
    props.initialBoard ? t('actions.edit-type', { type: t('bingo.board') }) : t('actions.create-type', { type: t('bingo.board') }),

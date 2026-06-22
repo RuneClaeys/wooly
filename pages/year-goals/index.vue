@@ -19,7 +19,11 @@ const { data: yearOptionsData } = yearGoalRouter.yearOptions.useQuery();
 const { data: yearSummaryData, execute: refreshYearSummary } = yearGoalRouter.yearSummary.useQuery();
 
 const yearInput = computed(() => ({ year: selectedYear.value }));
-const { data: goals, pending, execute: refreshGoals } = yearGoalRouter.listGoals.useQuery(yearInput, {
+const {
+   data: goals,
+   pending,
+   execute: refreshGoals,
+} = yearGoalRouter.listGoals.useQuery(yearInput, {
    watch: [yearInput],
    deep: true,
 });
@@ -53,15 +57,13 @@ function syncSelectedYearWithOptions(years: number[]) {
    }
 }
 
-watch(
-   yearOptions,
-   syncSelectedYearWithOptions,
-   { immediate: true },
-);
+watch(yearOptions, syncSelectedYearWithOptions, { immediate: true });
 
 const yearSelectItems = computed(() =>
    yearOptions.value.map((year) => {
-      const summary = (yearSummaryData.value ?? []).find((entry: { year: number; total: number; completed: number }) => entry.year === year);
+      const summary = (yearSummaryData.value ?? []).find(
+         (entry: { year: number; total: number; completed: number }) => entry.year === year,
+      );
       const suffix = summary ? ` (${summary.completed}/${summary.total})` : '';
       return {
          label: `${year}${suffix}`,

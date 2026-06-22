@@ -31,10 +31,7 @@ function resetManualUsageOnOpen(isOpen: boolean) {
    }
 }
 
-watch(
-   () => open.value,
-   resetManualUsageOnOpen,
-);
+watch(() => open.value, resetManualUsageOnOpen);
 
 function validate(): boolean {
    errors.value = {};

@@ -4,8 +4,8 @@ import { partRouter } from './part.router';
 import { projectRouter } from './project.router';
 import { skeinRouter } from './skein.router';
 import { userRouter } from './user.router';
-import { yearGoalRouter } from './year-goal.router';
 import { yarnRouter } from './yarn.router';
+import { yearGoalRouter } from './year-goal.router';
 
 export const appRouter = router({
    bingoRouter,

@@ -118,7 +118,10 @@ function canManualProgress(goal: YearGoalListItem) {
 
                <div class="space-y-1.5">
                   <div class="h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
-                     <div class="h-full bg-linear-to-r from-primary-400 to-primary-500 transition-all duration-300" :style="{ width: `${percent(goal)}%` }" />
+                     <div
+                        class="h-full bg-linear-to-r from-primary-400 to-primary-500 transition-all duration-300"
+                        :style="{ width: `${percent(goal)}%` }"
+                     />
                   </div>
                   <p class="text-xs wooly-muted">{{ percent(goal) }}%</p>
                </div>

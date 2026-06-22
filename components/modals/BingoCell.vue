@@ -72,15 +72,9 @@ function syncPositionFromLockedPosition(lockedPosition?: number) {
    }
 }
 
-watch(
-   () => props.initialCell,
-   syncCellFromInitialCell,
-);
+watch(() => props.initialCell, syncCellFromInitialCell);
 
-watch(
-   () => props.lockedPosition,
-   syncPositionFromLockedPosition,
-);
+watch(() => props.lockedPosition, syncPositionFromLockedPosition);
 
 const kindOptions = computed(() => [
    { label: t('bingo.kind-project'), value: 'project_finish' },

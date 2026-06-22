@@ -1,6 +1,6 @@
 import { TRPCError } from '@trpc/server';
 import { and, eq } from 'drizzle-orm';
-import { bingoBoards, bingoCells, parts, projectPhotos, projectYarns, projects, yearGoals, yarnColors, yarnTypes } from '~/db/schema';
+import { bingoBoards, bingoCells, parts, projectPhotos, projectYarns, projects, yarnColors, yarnTypes, yearGoals } from '~/db/schema';
 import type { Context } from '../context';
 
 export async function assertProjectOwnership(ctx: Context, projectId: number) {

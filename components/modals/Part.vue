@@ -28,10 +28,7 @@ function syncPartFromInitialPart(initialPart?: SelectPart) {
    errors.value = {};
 }
 
-watch(
-   () => props.initialPart,
-   syncPartFromInitialPart,
-);
+watch(() => props.initialPart, syncPartFromInitialPart);
 
 const validateName = (name: string): string | null => {
    if (!name || name.trim().length === 0) return t('form.field-required');
