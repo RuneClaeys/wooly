@@ -1,4 +1,4 @@
-import { and, asc, desc, eq } from 'drizzle-orm';
+import { and, asc, desc, eq, sql } from 'drizzle-orm';
 import { z } from 'zod';
 import { parts, projects } from '~/db/schema';
 import { genericSort } from '~/server/helpers/zod.helper';
@@ -101,6 +101,31 @@ export const partRouter = router({
          await refreshProject(ctx, part.projectId);
          await recomputeBingoBoardsForUser(ctx);
          return result;
+      }),
+
+   adjustCounter: protectedProcedure
+      .input(
+         z.object({
+            id: z.number(),
+            delta: z.number().int().refine((value) => value !== 0, { message: 'Delta must not be zero' }),
+         }),
+      )
+      .mutation(async ({ input, ctx }) => {
+         const part = await assertPartOwnership(ctx, input.id);
+
+         const result = await ctx.db
+            .update(parts)
+            .set({
+               counter: sql`${parts.counter} + ${input.delta}`,
+               updatedAt: new Date(),
+            })
+            .where(eq(parts.id, input.id))
+            .returning()
+            .execute();
+
+         await refreshProject(ctx, part.projectId);
+         await recomputeBingoBoardsForUser(ctx);
+         return result[0] ?? null;
       }),
 
    setCompleted: protectedProcedure.input(z.object({ id: z.number(), completed: z.boolean() })).mutation(async ({ input, ctx }) => {

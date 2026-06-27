@@ -104,3 +104,10 @@
   - `assertPartOwnership(partId, userId)` via joins.
 - Consider flat top-level routers (`project`, `part`, `user`) for clearer API boundaries.
 - Add a thin service layer for reusable permission checks and transaction-aware writes.
+
+## 8) Maintainer Preferences (2026-06-27)
+- Avoid multiline `watch(...)` calls; prefer single-line watcher declarations with named handlers when needed.
+- Avoid very small/dumb components that fragment readability.
+- Keep components readable by reducing local implementation noise.
+- Keep business logic in top-level pages/components.
+- Use composables to extract lifecycle-aware feature behavior into smaller maintainable units.
