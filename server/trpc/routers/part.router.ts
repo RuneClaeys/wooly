@@ -107,7 +107,10 @@ export const partRouter = router({
       .input(
          z.object({
             id: z.number(),
-            delta: z.number().int().refine((value) => value !== 0, { message: 'Delta must not be zero' }),
+            delta: z
+               .number()
+               .int()
+               .refine((value) => value !== 0, { message: 'Delta must not be zero' }),
          }),
       )
       .mutation(async ({ input, ctx }) => {

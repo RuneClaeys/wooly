@@ -11,13 +11,7 @@ type UsePartCounterQueueSyncOptions = {
    onSyncError: () => void;
 };
 
-export const usePartCounterQueueSync = ({
-   projectId,
-   parts,
-   refreshParts,
-   adjustCounter,
-   onSyncError,
-}: UsePartCounterQueueSyncOptions) => {
+export const usePartCounterQueueSync = ({ projectId, parts, refreshParts, adjustCounter, onSyncError }: UsePartCounterQueueSyncOptions) => {
    const partCounterQueueStorageKey = computed(() => `wooly:project:${projectId.value}:part-counter-deltas`);
    const pendingPartCounterDeltas = ref<Record<number, number>>({});
    const appliedPendingCounterOffsets = ref<Record<number, number>>({});

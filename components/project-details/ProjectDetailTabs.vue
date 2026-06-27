@@ -35,10 +35,7 @@ function isTabActive(projectId: number, tab: TabKey) {
          ]"
       >
          {{ $t(`tabs.${tab}`) }}
-         <div
-            v-if="isTabActive(projectId, tab)"
-            class="absolute bottom-0 left-0 right-0 h-0.5 bg-primary-600 dark:bg-primary-400"
-         />
+         <div v-if="isTabActive(projectId, tab)" class="absolute bottom-0 left-0 right-0 h-0.5 bg-primary-600 dark:bg-primary-400" />
       </NuxtLink>
    </div>
 </template>
