@@ -71,7 +71,7 @@ export const pwa: NuxtConfig['pwa'] = {
       ],
       id: 'wooly',
       dir: 'ltr',
-      orientation: 'portrait',
+      orientation: 'any',
       display_override: ['standalone', 'fullscreen', 'minimal-ui', 'browser', 'window-controls-overlay'],
       iarc_rating_id: '7+',
       prefer_related_applications: false,
