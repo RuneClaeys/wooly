@@ -57,6 +57,7 @@ function resolveProjectName(projectId: number | null, newProjectName: string | n
 function buildAutoLabel(
    kind: 'project_finish' | 'parts_count' | 'skeins_count' | 'free_text',
    projectName: string | null,
+   selectedPartNames: string[],
    targetValue: number | null,
    fallbackLabel: string | null,
 ) {
@@ -73,6 +74,21 @@ function buildAutoLabel(
    }
 
    if (kind === 'parts_count') {
+      if (selectedPartNames.length) {
+         const previewNames = selectedPartNames.slice(0, 2);
+         const hiddenCount = selectedPartNames.length - previewNames.length;
+         if (hiddenCount > 0) {
+            return t('bingo.auto-label-parts-specific-more', {
+               partNames: previewNames.join(', '),
+               extraCount: hiddenCount,
+            });
+         }
+
+         return t('bingo.auto-label-parts-specific', {
+            partNames: previewNames.join(', '),
+         });
+      }
+
       return t(target === 1 ? 'bingo.auto-label-parts-singular' : 'bingo.auto-label-parts-plural', { target, projectName });
    }
 
@@ -97,6 +113,8 @@ async function createCell(payload: {
       kind: 'project_finish' | 'parts_count' | 'skeins_count' | 'free_text';
       label: string | null;
       linkedProjectId: number | null;
+      linkedPartIds: number[] | null;
+      selectedPartNames: string[];
       targetValue: number | null;
       newProjectName: string | null;
    };
@@ -106,7 +124,13 @@ async function createCell(payload: {
       const createdProjectId = payload.cell.newProjectName ? await ensureProject(payload.cell.newProjectName) : null;
       const linkedProjectId = payload.cell.linkedProjectId ?? createdProjectId;
       const projectName = resolveProjectName(linkedProjectId, payload.cell.newProjectName);
-      const computedLabel = buildAutoLabel(payload.cell.kind, projectName, payload.cell.targetValue, payload.cell.label);
+      const computedLabel = buildAutoLabel(
+         payload.cell.kind,
+         projectName,
+         payload.cell.selectedPartNames,
+         payload.cell.targetValue,
+         payload.cell.label,
+      );
 
       await bingoRouter.createCell.mutate({
          boardId: boardId.value,
@@ -114,6 +138,7 @@ async function createCell(payload: {
          kind: payload.cell.kind,
          label: computedLabel,
          linkedProjectId,
+         linkedPartIds: payload.cell.linkedPartIds,
          targetValue: payload.cell.targetValue,
       });
       await refreshBoard();
@@ -131,6 +156,8 @@ async function updateCell(payload: {
       kind: 'project_finish' | 'parts_count' | 'skeins_count' | 'free_text';
       label: string | null;
       linkedProjectId: number | null;
+      linkedPartIds: number[] | null;
+      selectedPartNames: string[];
       targetValue: number | null;
       newProjectName: string | null;
    };
@@ -142,7 +169,13 @@ async function updateCell(payload: {
       const createdProjectId = payload.cell.newProjectName ? await ensureProject(payload.cell.newProjectName) : null;
       const linkedProjectId = payload.cell.linkedProjectId ?? createdProjectId;
       const projectName = resolveProjectName(linkedProjectId, payload.cell.newProjectName);
-      const computedLabel = buildAutoLabel(payload.cell.kind, projectName, payload.cell.targetValue, payload.cell.label);
+      const computedLabel = buildAutoLabel(
+         payload.cell.kind,
+         projectName,
+         payload.cell.selectedPartNames,
+         payload.cell.targetValue,
+         payload.cell.label,
+      );
 
       await bingoRouter.updateCell.mutate({
          id: cellToEdit.value.id,
@@ -150,6 +183,7 @@ async function updateCell(payload: {
          kind: payload.cell.kind,
          label: computedLabel,
          linkedProjectId,
+         linkedPartIds: payload.cell.linkedPartIds,
          targetValue: payload.cell.targetValue,
       });
       await refreshBoard();

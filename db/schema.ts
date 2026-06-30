@@ -1,5 +1,5 @@
 import { relations, sql } from 'drizzle-orm';
-import { boolean, integer, pgTable, real, serial, text, timestamp, varchar } from 'drizzle-orm/pg-core';
+import { boolean, integer, jsonb, pgTable, real, serial, text, timestamp, varchar } from 'drizzle-orm/pg-core';
 
 // Users
 export const users = pgTable('users', {
@@ -151,6 +151,7 @@ export const bingoCells = pgTable('bingo_cells', {
    kind: varchar('kind', { length: 40 }).notNull(),
    label: text('label'),
    linkedProjectId: integer('linked_project_id').references(() => projects.id, { onDelete: 'set null' }),
+   linkedPartIds: jsonb('linked_part_ids').$type<number[] | null>(),
    targetValue: integer('target_value'),
    createdAt: timestamp('created_at').default(sql`CURRENT_TIMESTAMP`),
    updatedAt: timestamp('updated_at').default(sql`CURRENT_TIMESTAMP`),
@@ -219,6 +220,7 @@ export const yearGoals = pgTable('year_goals', {
    kind: varchar('kind', { length: 40 }).notNull(),
    label: text('label'),
    linkedProjectId: integer('linked_project_id').references(() => projects.id, { onDelete: 'set null' }),
+   linkedPartIds: jsonb('linked_part_ids').$type<number[] | null>(),
    targetValue: integer('target_value'),
    createdAt: timestamp('created_at').default(sql`CURRENT_TIMESTAMP`),
    updatedAt: timestamp('updated_at').default(sql`CURRENT_TIMESTAMP`),

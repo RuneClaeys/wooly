@@ -97,9 +97,10 @@ const goalToEdit = ref<any | undefined>(undefined);
 
 function buildAutoLabel(
    goal: {
-      kind: 'projects_count' | 'yarn_balls_count' | 'specific_project_finish' | 'free_challenge';
+      kind: 'projects_count' | 'yarn_balls_count' | 'specific_project_finish' | 'parts_count' | 'free_challenge';
       targetValue: number | null;
       linkedProjectId: number | null;
+      selectedPartNames: string[];
       label: string | null;
    },
    linkedProjectName: string | null,
@@ -119,6 +120,29 @@ function buildAutoLabel(
       return t('year-goals.auto-label-specific-project', { projectName: linkedProjectName });
    }
 
+    if (goal.kind === 'parts_count') {
+      if (goal.selectedPartNames.length) {
+         const previewNames = goal.selectedPartNames.slice(0, 2);
+         const hiddenCount = goal.selectedPartNames.length - previewNames.length;
+         if (hiddenCount > 0) {
+            return t('year-goals.auto-label-parts-specific-more', {
+               partNames: previewNames.join(', '),
+               extraCount: hiddenCount,
+            });
+         }
+
+         return t('year-goals.auto-label-parts-specific', {
+            partNames: previewNames.join(', '),
+         });
+      }
+
+      if (!linkedProjectName) return goal.label;
+      return t(goal.targetValue === 1 ? 'year-goals.auto-label-parts-singular' : 'year-goals.auto-label-parts-plural', {
+         target: target,
+         projectName: linkedProjectName,
+      });
+    }
+
    return goal.label;
 }
 
@@ -131,9 +155,11 @@ function resolveProjectName(projectId: number | null) {
 async function createGoal(payload: {
    goal: {
       year: number;
-      kind: 'projects_count' | 'yarn_balls_count' | 'specific_project_finish' | 'free_challenge';
+      kind: 'projects_count' | 'yarn_balls_count' | 'specific_project_finish' | 'parts_count' | 'free_challenge';
       label: string | null;
       linkedProjectId: number | null;
+      linkedPartIds: number[] | null;
+      selectedPartNames: string[];
       targetValue: number | null;
    };
    done: () => void;
@@ -147,6 +173,7 @@ async function createGoal(payload: {
          kind: payload.goal.kind,
          label,
          linkedProjectId: payload.goal.linkedProjectId,
+         linkedPartIds: payload.goal.linkedPartIds,
          targetValue: payload.goal.targetValue,
       });
 
@@ -171,9 +198,11 @@ function editGoal(goal: any) {
 async function updateGoal(payload: {
    goal: {
       year: number;
-      kind: 'projects_count' | 'yarn_balls_count' | 'specific_project_finish' | 'free_challenge';
+      kind: 'projects_count' | 'yarn_balls_count' | 'specific_project_finish' | 'parts_count' | 'free_challenge';
       label: string | null;
       linkedProjectId: number | null;
+      linkedPartIds: number[] | null;
+      selectedPartNames: string[];
       targetValue: number | null;
    };
    done: () => void;
@@ -190,6 +219,7 @@ async function updateGoal(payload: {
          kind: payload.goal.kind,
          label,
          linkedProjectId: payload.goal.linkedProjectId,
+         linkedPartIds: payload.goal.linkedPartIds,
          targetValue: payload.goal.targetValue,
       });
 

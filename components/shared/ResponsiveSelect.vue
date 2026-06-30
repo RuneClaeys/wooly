@@ -106,7 +106,7 @@ function clearValue() {
             <UIcon name="i-heroicons-chevron-up-down-16-solid" class="h-4 w-4 opacity-70" />
          </button>
 
-         <UDrawer v-model:open="drawerOpen" :title="drawerTitle" nested>
+         <UDrawer v-model:open="drawerOpen" :title="drawerTitle">
             <template #body>
                <div class="space-y-3 px-4 py-3">
                   <UInput
