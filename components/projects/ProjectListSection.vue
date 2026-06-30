@@ -5,7 +5,12 @@ import type { SelectProject } from '~/db/schema';
 const { t } = useI18n();
 
 const status = defineModel<'active' | 'finished'>('status', { default: 'active' });
-const sorting = defineModel<Sorting>('sorting');
+const sorting = defineModel<Sorting>('sorting', {
+   default: () => ({
+      orderBy: 'createdAt',
+      order: 'desc',
+   }),
+});
 
 defineProps<{
    projects?: SelectProject[];
@@ -56,28 +61,36 @@ const hasActiveFilters = computed(
 
    <UCard v-if="showFilters" class="wooly-shell">
       <div class="grid gap-2 md:grid-cols-3">
-         <USelect
-            v-model="sorting.orderBy"
+         <ResponsiveSelect
+            :value="sorting.orderBy"
             :items="[
                { label: $t('generic.name'), value: 'name' },
                { label: $t('filters.created-on'), value: 'createdAt' },
                { label: $t('filters.last-changed-at'), value: 'updatedAt' },
             ]"
-            size="md"
+            :title="$t('filters.sort-by')"
             class="w-full wooly-select-clean"
+            @update:value="(value) => (sorting.orderBy = String(value) as typeof sorting.orderBy)"
          />
 
-         <USelect
-            v-model="sorting.order"
+         <ResponsiveSelect
+            :value="sorting.order"
             :items="[
                { label: $t('filters.newest-first'), value: 'asc' },
                { label: $t('filters.oldest-first'), value: 'desc' },
             ]"
-            size="md"
+            :title="$t('filters.direction')"
             class="w-full wooly-select-clean"
+            @update:value="(value) => (sorting.order = String(value) as typeof sorting.order)"
          />
 
-         <USelect v-model="status" :items="statusOptions" size="md" class="w-full wooly-select-clean" />
+         <ResponsiveSelect
+            :value="status"
+            :items="statusOptions"
+            :title="$t('generic.status')"
+            class="w-full wooly-select-clean"
+            @update:value="(value) => (status = String(value) as typeof status)"
+         />
       </div>
    </UCard>
 

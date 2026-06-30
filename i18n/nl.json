@@ -79,6 +79,11 @@
    },
    "form": {
       "field-required": "Dit veld is verplicht",
+      "select-placeholder": "Selecteer een optie",
+      "select-options": "Opties",
+      "select-search-placeholder": "Typ om te zoeken",
+      "select-no-results": "Geen opties gevonden",
+      "select-clear": "Selectie wissen",
       "max-length": "Mag maximaal {max} tekens bevatten",
       "min-zero": "Moet nul of hoger zijn",
       "greater-than-zero": "Moet groter zijn dan 0",

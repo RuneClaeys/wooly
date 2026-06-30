@@ -29,20 +29,20 @@ const orderOptions = computed(() => [
 
       <div v-if="sorting" class="flex flex-col gap-2 md:flex-row md:items-center">
          <ClientOnly>
-            <USelect
-               :model-value="sorting.orderBy"
+            <ResponsiveSelect
+               :value="sorting.orderBy"
                :items="orderByOptions"
-               size="md"
+               :title="$t('filters.sort-by')"
                class="w-full md:w-44 wooly-select-clean"
-               @update:model-value="$emit('update:sorting', { ...sorting, orderBy: $event })"
+               @update:value="$emit('update:sorting', { ...sorting, orderBy: $event })"
             />
 
-            <USelect
-               :model-value="sorting.order"
+            <ResponsiveSelect
+               :value="sorting.order"
                :items="orderOptions"
-               size="md"
+               :title="$t('filters.direction')"
                class="w-full md:w-44 wooly-select-clean"
-               @update:model-value="$emit('update:sorting', { ...sorting, order: $event })"
+               @update:value="$emit('update:sorting', { ...sorting, order: $event })"
             />
 
             <slot name="otherFilters" />

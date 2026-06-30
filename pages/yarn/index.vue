@@ -348,27 +348,29 @@ async function setCurrentStash(payload: { amount: number; done: () => void }) {
                   :placeholder="$t('yarn.search-types-placeholder')"
                />
 
-               <USelect
-                  v-model="typeSort"
-                  size="sm"
-                  value-key="value"
+               <ResponsiveSelect
+                  :value="typeSort"
+                  :title="$t('filters.sort-by')"
                   :items="[
                      { label: $t('yarn.sort-name-asc'), value: 'name-asc' },
                      { label: $t('yarn.sort-name-desc'), value: 'name-desc' },
                      { label: $t('yarn.sort-last-used-desc'), value: 'last-used-desc' },
                      { label: $t('yarn.sort-last-used-asc'), value: 'last-used-asc' },
                   ]"
+                  class="wooly-select-clean"
+                  @update:value="(value) => (typeSort = String(value) as typeof typeSort)"
                />
 
-               <USelect
-                  v-model="lastUsedFilter"
-                  size="sm"
-                  value-key="value"
+               <ResponsiveSelect
+                  :value="lastUsedFilter"
+                  :title="$t('generic.status')"
                   :items="[
                      { label: $t('yarn.filter-all-types'), value: 'all' },
                      { label: $t('yarn.filter-used-types'), value: 'used' },
                      { label: $t('yarn.filter-unused-types'), value: 'unused' },
                   ]"
+                  class="wooly-select-clean"
+                  @update:value="(value) => (lastUsedFilter = String(value) as typeof lastUsedFilter)"
                />
             </div>
          </div>

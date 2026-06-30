@@ -34,6 +34,18 @@ const orderOptions = computed(() => [
 ]);
 
 const hasAnyData = computed(() => (props.parts?.length ?? 0) > 0);
+
+function updateOrderBy(value: string | number | null) {
+   if (value === 'name' || value === 'createdAt' || value === 'updatedAt') {
+      sorting.value = { ...sorting.value, orderBy: value };
+   }
+}
+
+function updateOrder(value: string | number | null) {
+   if (value === 'asc' || value === 'desc') {
+      sorting.value = { ...sorting.value, order: value };
+   }
+}
 </script>
 
 <template>
@@ -73,23 +85,23 @@ const hasAnyData = computed(() => (props.parts?.length ?? 0) > 0);
             <div class="space-y-4 px-4 py-3">
                <div class="space-y-2">
                   <p class="text-sm wooly-muted">{{ $t('filters.sort-by') }}</p>
-                  <USelect
-                     :model-value="sorting.orderBy"
+                  <ResponsiveSelect
+                     :value="sorting.orderBy"
                      :items="orderByOptions"
-                     size="md"
+                     :title="$t('filters.sort-by')"
                      class="w-full wooly-select-clean"
-                     @update:model-value="sorting = { ...sorting, orderBy: $event }"
+                     @update:value="updateOrderBy"
                   />
                </div>
 
                <div class="space-y-2">
                   <p class="text-sm wooly-muted">{{ $t('filters.direction') }}</p>
-                  <USelect
-                     :model-value="sorting.order"
+                  <ResponsiveSelect
+                     :value="sorting.order"
                      :items="orderOptions"
-                     size="md"
+                     :title="$t('filters.direction')"
                      class="w-full wooly-select-clean"
-                     @update:model-value="sorting = { ...sorting, order: $event }"
+                     @update:value="updateOrder"
                   />
                </div>
             </div>

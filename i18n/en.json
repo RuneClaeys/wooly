@@ -79,6 +79,11 @@
    },
    "form": {
       "field-required": "This field is required",
+      "select-placeholder": "Select an option",
+      "select-options": "Options",
+      "select-search-placeholder": "Type to search",
+      "select-no-results": "No options found",
+      "select-clear": "Clear selection",
       "max-length": "Must be {max} characters or less",
       "min-zero": "Must be zero or higher",
       "greater-than-zero": "Must be greater than 0",
