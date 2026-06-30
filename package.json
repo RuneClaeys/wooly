@@ -4,7 +4,7 @@
    "type": "module",
    "scripts": {
       "build": "nuxt build",
-      "vercel-build": "nuxt build && drizzle-kit push",
+      "vercel-build": "nuxt build && npm run db:push:safe",
       "dev": "nuxt dev",
       "dev:prod": "nuxt dev --dotenv .env.prod",
       "generate": "nuxt generate",
@@ -12,6 +12,8 @@
       "postinstall": "nuxt prepare",
       "db:migrate": "drizzle-kit generate",
       "db:push": "drizzle-kit push",
+      "db:repair-orphans": "node scripts/repair-fk-orphans.mjs",
+      "db:push:safe": "npm run db:repair-orphans && drizzle-kit push",
       "drizzle:studio": "npm exec drizzle-kit studio",
       "db:seed": "node db/seed.mjs",
       "db:seed:append": "node db/seed.mjs --append",
