@@ -25,6 +25,10 @@ const form = ref<CurrentStashForm>({
 const errors = ref<Record<string, string>>({});
 const isSubmitting = ref(false);
 
+function clearErrors() {
+   errors.value = {};
+}
+
 function resetCurrentStashOnOpen(isOpen: boolean) {
    if (isOpen) {
       form.value.amount = props.initialStashCount ?? 0;
@@ -80,7 +84,7 @@ async function onSubmit() {
       :title="$t('yarn.set-current-stash')"
       :description="colorName"
       :ui="{ content: 'mx-2 w-[calc(100%-1rem)] sm:mx-0 sm:max-w-lg' }"
-      @update:open="() => (errors.value = {})"
+      @update:open="clearErrors"
    >
       <template #body>
          <div class="space-y-4">

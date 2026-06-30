@@ -78,7 +78,13 @@
       "title": "Filter and sort"
    },
    "form": {
-      "field-required": "This field is required"
+      "field-required": "This field is required",
+      "max-length": "Must be {max} characters or less",
+      "min-zero": "Must be zero or higher",
+      "greater-than-zero": "Must be greater than 0",
+      "whole-number": "Must be a whole number",
+      "fix-errors": "Please fix the errors in the form",
+      "save-failed": "Could not save. Please try again."
    },
    "generic": {
       "active": "Active",

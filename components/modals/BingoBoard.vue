@@ -90,7 +90,7 @@ function onSubmit() {
                :placeholder="$t('bingo.board-name-placeholder')"
                required
                :max-length="120"
-               @update:model-value="(value) => (board.name = value)"
+               @update:model-value="(value) => (board.name = String(value))"
             />
 
             <UFormField :label="$t('bingo.size')" size="lg">

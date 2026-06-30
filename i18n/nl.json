@@ -78,7 +78,13 @@
       "title": "Filteren en sorteren"
    },
    "form": {
-      "field-required": "Dit veld is verplicht"
+      "field-required": "Dit veld is verplicht",
+      "max-length": "Mag maximaal {max} tekens bevatten",
+      "min-zero": "Moet nul of hoger zijn",
+      "greater-than-zero": "Moet groter zijn dan 0",
+      "whole-number": "Moet een geheel getal zijn",
+      "fix-errors": "Corrigeer de fouten in het formulier",
+      "save-failed": "Opslaan mislukt. Probeer opnieuw."
    },
    "generic": {
       "active": "Actief",
