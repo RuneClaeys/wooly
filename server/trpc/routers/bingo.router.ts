@@ -3,7 +3,12 @@ import { z } from 'zod';
 import { bingoBoards, bingoCellProgress, bingoCells, parts, projectYarns, projects } from '~/db/schema';
 import type { Context } from '../context';
 import { protectedProcedure, router } from '../trpc';
-import { assertBingoBoardOwnership, assertBingoCellOwnership, assertGoalPartSelectionOwnership, assertProjectOwnership } from './ownership.guard';
+import {
+   assertBingoBoardOwnership,
+   assertBingoCellOwnership,
+   assertGoalPartSelectionOwnership,
+   assertProjectOwnership,
+} from './ownership.guard';
 
 const bingoKindSchema = z.enum(['project_finish', 'parts_count', 'skeins_count', 'free_text']);
 
@@ -61,15 +66,15 @@ function normalizeCellData(input: {
       };
    }
 
-    if (input.kind === 'parts_count') {
+   if (input.kind === 'parts_count') {
       const hasSpecificParts = linkedPartIds.length > 0;
       return {
          label,
          linkedProjectId: input.linkedProjectId ?? null,
          linkedPartIds: hasSpecificParts ? linkedPartIds : null,
-             targetValue: hasSpecificParts ? linkedPartIds.length : (input.targetValue ?? 1),
+         targetValue: hasSpecificParts ? linkedPartIds.length : (input.targetValue ?? 1),
       };
-    }
+   }
 
    return {
       label,

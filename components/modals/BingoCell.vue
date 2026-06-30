@@ -100,7 +100,9 @@ const positionOptions = computed(() => {
 });
 
 const showProjectSelector = computed(() => cell.value.kind === 'project_finish' || cell.value.kind === 'parts_count');
-const showTarget = computed(() => cell.value.kind === 'skeins_count' || (cell.value.kind === 'parts_count' && partGoalMode.value === 'amount'));
+const showTarget = computed(
+   () => cell.value.kind === 'skeins_count' || (cell.value.kind === 'parts_count' && partGoalMode.value === 'amount'),
+);
 const autoLabelKind = computed(
    () => cell.value.kind === 'project_finish' || cell.value.kind === 'parts_count' || cell.value.kind === 'skeins_count',
 );
@@ -407,6 +409,19 @@ function onSubmit() {
                   </div>
                </div>
 
+               <FormField
+                  v-if="isPartsGoal && partGoalMode === 'amount'"
+                  :model-value="cell.targetValue"
+                  :label="$t('bingo.target')"
+                  :error="errors.targetValue"
+                  type="number"
+                  :min="1"
+                  show-stepper
+                  :decrement-aria-label="$t('actions.decrease-count', { type: $t('bingo.target') })"
+                  :increment-aria-label="$t('actions.increase-count', { type: $t('bingo.target') })"
+                  @update:model-value="(val) => (cell.targetValue = Number(val))"
+               />
+
                <!-- Existing project select -->
                <FormSelect
                   v-if="projectMode === 'existing'"
@@ -437,9 +452,11 @@ function onSubmit() {
                      :placeholder="$t('bingo.parts-select-placeholder')"
                      multiple
                      class="w-full"
-                     @update:model-value="(val) => (cell.linkedPartIds = ((val ?? []) as number[]))"
+                     @update:model-value="(val) => (cell.linkedPartIds = (val ?? []) as number[])"
                   />
-                  <p v-if="errors.linkedPartIds" class="text-xs text-error-600 dark:text-error-400 leading-tight">{{ errors.linkedPartIds }}</p>
+                  <p v-if="errors.linkedPartIds" class="text-xs text-error-600 dark:text-error-400 leading-tight">
+                     {{ errors.linkedPartIds }}
+                  </p>
                </div>
 
                <div
@@ -452,7 +469,7 @@ function onSubmit() {
             </div>
 
             <FormField
-               v-if="showTarget"
+               v-if="showTarget && !isPartsGoal"
                :model-value="cell.targetValue"
                :label="$t('bingo.target')"
                :error="errors.targetValue"

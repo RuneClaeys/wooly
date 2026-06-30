@@ -120,7 +120,7 @@ function buildAutoLabel(
       return t('year-goals.auto-label-specific-project', { projectName: linkedProjectName });
    }
 
-    if (goal.kind === 'parts_count') {
+   if (goal.kind === 'parts_count') {
       if (goal.selectedPartNames.length) {
          const previewNames = goal.selectedPartNames.slice(0, 2);
          const hiddenCount = goal.selectedPartNames.length - previewNames.length;
@@ -141,7 +141,7 @@ function buildAutoLabel(
          target: target,
          projectName: linkedProjectName,
       });
-    }
+   }
 
    return goal.label;
 }

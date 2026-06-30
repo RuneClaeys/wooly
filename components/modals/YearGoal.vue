@@ -92,7 +92,10 @@ const kindOptions = computed(() => [
 const yearSelectOptions = computed(() => props.yearOptions.map((year) => ({ label: String(year), value: year })));
 const isPartsGoal = computed(() => goal.value.kind === 'parts_count');
 const showTarget = computed(
-   () => goal.value.kind === 'projects_count' || goal.value.kind === 'yarn_balls_count' || (isPartsGoal.value && partGoalMode.value === 'amount'),
+   () =>
+      goal.value.kind === 'projects_count' ||
+      goal.value.kind === 'yarn_balls_count' ||
+      (isPartsGoal.value && partGoalMode.value === 'amount'),
 );
 const showProject = computed(() => goal.value.kind === 'specific_project_finish' || isPartsGoal.value);
 const showLabel = computed(() => goal.value.kind === 'free_challenge');
@@ -310,7 +313,7 @@ function onSubmit() {
             </div>
 
             <FormField
-               v-if="showTarget"
+               v-if="showTarget && !isPartsGoal"
                :model-value="goal.targetValue"
                :label="$t('year-goals.target')"
                :error="errors.targetValue"
@@ -363,6 +366,19 @@ function onSubmit() {
                   </div>
                </div>
 
+               <FormField
+                  v-if="partGoalMode === 'amount'"
+                  :model-value="goal.targetValue"
+                  :label="$t('year-goals.target')"
+                  :error="errors.targetValue"
+                  type="number"
+                  :min="1"
+                  show-stepper
+                  :decrement-aria-label="$t('actions.decrease-count', { type: $t('year-goals.target') })"
+                  :increment-aria-label="$t('actions.increase-count', { type: $t('year-goals.target') })"
+                  @update:model-value="(val) => (goal.targetValue = Number(val))"
+               />
+
                <div v-if="partGoalMode === 'specific'" class="space-y-1.5">
                   <label class="block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('year-goals.parts-select') }}</label>
                   <USelectMenu
@@ -372,9 +388,11 @@ function onSubmit() {
                      :placeholder="$t('year-goals.parts-select-placeholder')"
                      multiple
                      class="w-full"
-                     @update:model-value="(val) => (goal.linkedPartIds = ((val ?? []) as number[]))"
+                     @update:model-value="(val) => (goal.linkedPartIds = (val ?? []) as number[])"
                   />
-                  <p v-if="errors.linkedPartIds" class="text-xs text-error-600 dark:text-error-400 leading-tight">{{ errors.linkedPartIds }}</p>
+                  <p v-if="errors.linkedPartIds" class="text-xs text-error-600 dark:text-error-400 leading-tight">
+                     {{ errors.linkedPartIds }}
+                  </p>
                </div>
             </div>
 
