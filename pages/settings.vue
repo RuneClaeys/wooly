@@ -31,7 +31,13 @@ function updateLocale(nextLocale: string) {
 
             <div class="flex flex-col gap-5">
                <UFormField :label="$t('generic.language')" name="language" class="max-w-xs">
-                  <USelect class="wooly-select-clean" :model-value="locale" :items="locales" @update:model-value="updateLocale" />
+                  <ResponsiveSelect
+                     class="wooly-select-clean"
+                     :title="$t('generic.language')"
+                     :value="locale"
+                     :items="locales"
+                     @update:value="(value) => updateLocale(String(value ?? ''))"
+                  />
                </UFormField>
 
                <UButton

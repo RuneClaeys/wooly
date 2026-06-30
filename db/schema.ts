@@ -1,5 +1,5 @@
 import { relations, sql } from 'drizzle-orm';
-import { boolean, integer, pgTable, real, serial, text, timestamp, varchar } from 'drizzle-orm/pg-core';
+import { boolean, integer, jsonb, pgTable, real, serial, text, timestamp, varchar } from 'drizzle-orm/pg-core';
 
 // Users
 export const users = pgTable('users', {
@@ -27,7 +27,9 @@ export const projects = pgTable('projects', {
    finished: boolean('finished').notNull().default(false),
    createdAt: timestamp('created_at').default(sql`CURRENT_TIMESTAMP`),
    updatedAt: timestamp('updated_at').default(sql`CURRENT_TIMESTAMP`),
-   userId: varchar('user_id', { length: 255 }).notNull(),
+   userId: varchar('user_id', { length: 255 })
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
 });
 
 export const projectsRelations = relations(projects, ({ one, many }) => ({
@@ -60,7 +62,9 @@ export const projectPhotos = pgTable('project_photos', {
    contentType: text('content_type').notNull(),
    size: integer('size').notNull(),
    createdAt: timestamp('created_at').default(sql`CURRENT_TIMESTAMP`),
-   projectId: integer('project_id').notNull(),
+   projectId: integer('project_id')
+      .notNull()
+      .references(() => projects.id, { onDelete: 'cascade' }),
 });
 
 export const projectPhotosRelations = relations(projectPhotos, ({ one }) => ({
@@ -83,7 +87,9 @@ export const parts = pgTable('parts', {
    completedAt: timestamp('completed_at'),
    createdAt: timestamp('created_at').default(sql`CURRENT_TIMESTAMP`),
    updatedAt: timestamp('updated_at').default(sql`CURRENT_TIMESTAMP`),
-   projectId: integer('project_id').notNull(),
+   projectId: integer('project_id')
+      .notNull()
+      .references(() => projects.id, { onDelete: 'cascade' }),
 });
 
 export const partsRelations = relations(parts, ({ one }) => ({
@@ -110,7 +116,9 @@ export const bingoBoards = pgTable('bingo_boards', {
    endDate: timestamp('end_date').notNull(),
    createdAt: timestamp('created_at').default(sql`CURRENT_TIMESTAMP`),
    updatedAt: timestamp('updated_at').default(sql`CURRENT_TIMESTAMP`),
-   userId: varchar('user_id', { length: 255 }).notNull(),
+   userId: varchar('user_id', { length: 255 })
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
 });
 
 export const bingoBoardsRelations = relations(bingoBoards, ({ one, many }) => ({
@@ -136,11 +144,14 @@ export type InsertBingoBoard = Omit<typeof bingoBoards.$inferInsert, 'createdAt'
 // bingo cells
 export const bingoCells = pgTable('bingo_cells', {
    id: serial('id').primaryKey(),
-   boardId: integer('board_id').notNull(),
+   boardId: integer('board_id')
+      .notNull()
+      .references(() => bingoBoards.id, { onDelete: 'cascade' }),
    position: integer('position').notNull(),
    kind: varchar('kind', { length: 40 }).notNull(),
    label: text('label'),
-   linkedProjectId: integer('linked_project_id'),
+   linkedProjectId: integer('linked_project_id').references(() => projects.id, { onDelete: 'set null' }),
+   linkedPartIds: jsonb('linked_part_ids').$type<number[] | null>(),
    targetValue: integer('target_value'),
    createdAt: timestamp('created_at').default(sql`CURRENT_TIMESTAMP`),
    updatedAt: timestamp('updated_at').default(sql`CURRENT_TIMESTAMP`),
@@ -174,7 +185,9 @@ export type InsertBingoCell = Omit<typeof bingoCells.$inferInsert, 'createdAt' |
 // bingo cell progress
 export const bingoCellProgress = pgTable('bingo_cell_progress', {
    id: serial('id').primaryKey(),
-   cellId: integer('cell_id').notNull(),
+   cellId: integer('cell_id')
+      .notNull()
+      .references(() => bingoCells.id, { onDelete: 'cascade' }),
    baselineValue: integer('baseline_value').notNull().default(0),
    currentValue: integer('current_value').notNull().default(0),
    autoCompleted: boolean('auto_completed').notNull().default(false),
@@ -206,11 +219,14 @@ export const yearGoals = pgTable('year_goals', {
    year: integer('year').notNull(),
    kind: varchar('kind', { length: 40 }).notNull(),
    label: text('label'),
-   linkedProjectId: integer('linked_project_id'),
+   linkedProjectId: integer('linked_project_id').references(() => projects.id, { onDelete: 'set null' }),
+   linkedPartIds: jsonb('linked_part_ids').$type<number[] | null>(),
    targetValue: integer('target_value'),
    createdAt: timestamp('created_at').default(sql`CURRENT_TIMESTAMP`),
    updatedAt: timestamp('updated_at').default(sql`CURRENT_TIMESTAMP`),
-   userId: varchar('user_id', { length: 255 }).notNull(),
+   userId: varchar('user_id', { length: 255 })
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
 });
 
 export const yearGoalsRelations = relations(yearGoals, ({ one }) => ({
@@ -241,7 +257,9 @@ export type InsertYearGoal = Omit<typeof yearGoals.$inferInsert, 'createdAt' | '
 // year goal progress
 export const yearGoalProgress = pgTable('year_goal_progress', {
    id: serial('id').primaryKey(),
-   goalId: integer('goal_id').notNull(),
+   goalId: integer('goal_id')
+      .notNull()
+      .references(() => yearGoals.id, { onDelete: 'cascade' }),
    baselineValue: integer('baseline_value').notNull().default(0),
    currentValue: integer('current_value').notNull().default(0),
    autoCompleted: boolean('auto_completed').notNull().default(false),
@@ -273,7 +291,9 @@ export const yarnTypes = pgTable('yarn_types', {
    name: text('name').notNull(),
    skeinWeightGrams: integer('skein_weight_grams'),
    thicknessMm: real('thickness_mm'),
-   userId: varchar('user_id', { length: 255 }).notNull(),
+   userId: varchar('user_id', { length: 255 })
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
    createdAt: timestamp('created_at').default(sql`CURRENT_TIMESTAMP`),
    updatedAt: timestamp('updated_at').default(sql`CURRENT_TIMESTAMP`),
 });
@@ -298,7 +318,9 @@ export type InsertYarnType = Omit<typeof yarnTypes.$inferInsert, 'createdAt' | '
 // yarn colors
 export const yarnColors = pgTable('yarn_colors', {
    id: serial('id').primaryKey(),
-   yarnTypeId: integer('yarn_type_id').notNull(),
+   yarnTypeId: integer('yarn_type_id')
+      .notNull()
+      .references(() => yarnTypes.id, { onDelete: 'cascade' }),
    name: text('name').notNull(),
    stashCount: integer('stash_count').notNull().default(0),
    manualUsedCount: integer('manual_used_count').notNull().default(0),
@@ -326,8 +348,12 @@ export type InsertYarnColor = Omit<typeof yarnColors.$inferInsert, 'createdAt' |
 // project yarn usages
 export const projectYarns = pgTable('project_yarns', {
    id: serial('id').primaryKey(),
-   projectId: integer('project_id').notNull(),
-   yarnColorId: integer('yarn_color_id').notNull(),
+   projectId: integer('project_id')
+      .notNull()
+      .references(() => projects.id, { onDelete: 'cascade' }),
+   yarnColorId: integer('yarn_color_id')
+      .notNull()
+      .references(() => yarnColors.id, { onDelete: 'cascade' }),
    usedCount: integer('used_count').notNull().default(0),
    createdAt: timestamp('created_at').default(sql`CURRENT_TIMESTAMP`),
    updatedAt: timestamp('updated_at').default(sql`CURRENT_TIMESTAMP`),

@@ -90,16 +90,19 @@ function onSubmit() {
                :placeholder="$t('bingo.board-name-placeholder')"
                required
                :max-length="120"
-               @update:model-value="(value) => (board.name = value)"
+               @update:model-value="(value) => (board.name = String(value))"
             />
 
             <UFormField :label="$t('bingo.size')" size="lg">
-               <USelect
-                  v-model="board.size"
+               <ResponsiveSelect
+                  :value="board.size"
+                  :title="$t('bingo.size')"
                   :items="[
                      { label: '3x3', value: 3 },
                      { label: '4x4', value: 4 },
                   ]"
+                  class="wooly-select-clean"
+                  @update:value="(value) => (board.size = Number(value) as 3 | 4)"
                />
             </UFormField>
 

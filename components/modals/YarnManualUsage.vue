@@ -24,6 +24,10 @@ const form = ref<ManualUsageForm>({
 const errors = ref<Record<string, string>>({});
 const isSubmitting = ref(false);
 
+function clearErrors() {
+   errors.value = {};
+}
+
 function resetManualUsageOnOpen(isOpen: boolean) {
    if (isOpen) {
       form.value.amount = 1;
@@ -71,7 +75,7 @@ async function onSubmit() {
       :title="$t('yarn.add-manual-usage')"
       :description="colorName"
       :ui="{ content: 'mx-2 w-[calc(100%-1rem)] sm:mx-0 sm:max-w-lg' }"
-      @update:open="() => (errors.value = {})"
+      @update:open="clearErrors"
    >
       <template #body>
          <div class="space-y-4">

@@ -1,4 +1,5 @@
 <script lang="ts" setup>
+import { useModalForm } from '~/composables/useModalForm';
 import { useToast } from '~/composables/useToast';
 
 type YarnTypeForm = {
@@ -21,66 +22,48 @@ const props = defineProps<{
 }>();
 const emits = defineEmits<{ (e: 'save-type', payload: { type: YarnTypeForm; done: () => void }): void }>();
 
-const yarnType = ref<YarnTypeForm>({
-   name: props.initialType?.name ?? '',
-   skeinWeightGrams: props.initialType?.skeinWeightGrams ?? null,
-   thicknessMm: props.initialType?.thicknessMm ?? null,
+const {
+   form: yarnType,
+   errors,
+   isSubmitting,
+   validate,
+   validateField,
+   clearErrors,
+   reset,
+} = useModalForm<YarnTypeForm>({
+   createInitial: () => ({
+      name: props.initialType?.name ?? '',
+      skeinWeightGrams: props.initialType?.skeinWeightGrams ?? null,
+      thicknessMm: props.initialType?.thicknessMm ?? null,
+   }),
+   watchSource: () => props.initialType,
+   validators: {
+      name: (value) => {
+         if (!value || value.trim().length === 0) return t('form.field-required');
+         if (value.length > 100) return t('form.max-length', { max: 100 });
+         return null;
+      },
+      skeinWeightGrams: (value) => {
+         if (value === null || value === undefined) return null;
+         if (!Number.isFinite(value) || value <= 0) return t('form.greater-than-zero');
+         if (!Number.isInteger(value)) return t('form.whole-number');
+         return null;
+      },
+      thicknessMm: (value) => {
+         if (value === null || value === undefined) return null;
+         if (!Number.isFinite(value) || value <= 0) return t('form.greater-than-zero');
+         return null;
+      },
+   },
 });
-
-const errors = ref<Record<string, string>>({});
-const isSubmitting = ref(false);
 
 const modalTitle = computed(() =>
    props.initialType ? t('actions.edit-type', { type: t('yarn.type') }) : t('actions.create-type', { type: t('yarn.type') }),
 );
 
-function syncYarnTypeFromInitialType(initialType?: typeof props.initialType) {
-   yarnType.value = {
-      name: initialType?.name ?? '',
-      skeinWeightGrams: initialType?.skeinWeightGrams ?? null,
-      thicknessMm: initialType?.thicknessMm ?? null,
-   };
-   errors.value = {};
-}
-
-watch(() => props.initialType, syncYarnTypeFromInitialType);
-
-const validateName = (name: string): string | null => {
-   if (!name || name.trim().length === 0) return t('form.field-required');
-   if (name.length > 100) return 'Name must be 100 characters or less';
-   return null;
-};
-
-const validateSkeinWeight = (value: number | null): string | null => {
-   if (value === null || value === undefined) return null;
-   if (!Number.isFinite(value) || value <= 0) return 'Skein weight must be above 0g';
-   if (!Number.isInteger(value)) return 'Skein weight must be a whole number in grams';
-   return null;
-};
-
-const validateThickness = (value: number | null): string | null => {
-   if (value === null || value === undefined) return null;
-   if (!Number.isFinite(value) || value <= 0) return 'Thickness must be above 0 mm';
-   return null;
-};
-
-const validate = (): boolean => {
-   errors.value = {};
-
-   const nameError = validateName(yarnType.value.name);
-   const skeinWeightError = validateSkeinWeight(yarnType.value.skeinWeightGrams);
-   const thicknessError = validateThickness(yarnType.value.thicknessMm);
-
-   if (nameError) errors.value.name = nameError;
-   if (skeinWeightError) errors.value.skeinWeightGrams = skeinWeightError;
-   if (thicknessError) errors.value.thicknessMm = thicknessError;
-
-   return Object.keys(errors.value).length === 0;
-};
-
 async function onSubmit() {
    if (!validate()) {
-      showErrorToast('Please fix the errors in the form');
+      showErrorToast(t('form.fix-errors'));
       return;
    }
 
@@ -94,40 +77,13 @@ async function onSubmit() {
          },
          done: () => {
             isSubmitting.value = false;
-            if (!props.initialType) yarnType.value = { name: '', skeinWeightGrams: null, thicknessMm: null };
+            if (!props.initialType) reset();
             open.value = false;
          },
       });
    } catch {
       isSubmitting.value = false;
-      showErrorToast('Failed to save yarn type');
-   }
-}
-
-function handleNameBlur() {
-   const error = validateName(yarnType.value.name);
-   if (error) {
-      errors.value.name = error;
-   } else {
-      delete errors.value.name;
-   }
-}
-
-function handleSkeinWeightBlur() {
-   const error = validateSkeinWeight(yarnType.value.skeinWeightGrams);
-   if (error) {
-      errors.value.skeinWeightGrams = error;
-   } else {
-      delete errors.value.skeinWeightGrams;
-   }
-}
-
-function handleThicknessBlur() {
-   const error = validateThickness(yarnType.value.thicknessMm);
-   if (error) {
-      errors.value.thicknessMm = error;
-   } else {
-      delete errors.value.thicknessMm;
+      showErrorToast(t('form.save-failed'));
    }
 }
 </script>
@@ -137,7 +93,7 @@ function handleThicknessBlur() {
       v-model:open="open"
       :title="modalTitle"
       :ui="{ content: 'mx-2 w-[calc(100%-1rem)] sm:mx-0 sm:max-w-lg' }"
-      @update:open="() => (errors = {})"
+      @update:open="clearErrors"
    >
       <template #body>
          <div class="space-y-4">
@@ -149,7 +105,7 @@ function handleThicknessBlur() {
                required
                :max-length="100"
                @update:model-value="(val) => (yarnType.name = String(val))"
-               @blur="handleNameBlur"
+               @blur="() => validateField('name')"
             />
 
             <FormField
@@ -164,7 +120,7 @@ function handleThicknessBlur() {
                :decrement-aria-label="$t('actions.decrease-count', { type: $t('yarn.skein-weight-grams') })"
                :increment-aria-label="$t('actions.increase-count', { type: $t('yarn.skein-weight-grams') })"
                @update:model-value="(val) => (yarnType.skeinWeightGrams = val === '' ? null : Number(val))"
-               @blur="handleSkeinWeightBlur"
+               @blur="() => validateField('skeinWeightGrams')"
             />
 
             <FormField
@@ -179,7 +135,7 @@ function handleThicknessBlur() {
                :decrement-aria-label="$t('actions.decrease-count', { type: $t('yarn.thickness-mm') })"
                :increment-aria-label="$t('actions.increase-count', { type: $t('yarn.thickness-mm') })"
                @update:model-value="(val) => (yarnType.thicknessMm = val === '' ? null : Number(val))"
-               @blur="handleThicknessBlur"
+               @blur="() => validateField('thicknessMm')"
             />
          </div>
       </template>

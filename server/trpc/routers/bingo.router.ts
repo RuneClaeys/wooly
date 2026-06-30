@@ -1,9 +1,14 @@
-import { and, asc, desc, eq, sql } from 'drizzle-orm';
+import { and, asc, desc, eq, inArray, sql } from 'drizzle-orm';
 import { z } from 'zod';
 import { bingoBoards, bingoCellProgress, bingoCells, parts, projectYarns, projects } from '~/db/schema';
 import type { Context } from '../context';
 import { protectedProcedure, router } from '../trpc';
-import { assertBingoBoardOwnership, assertBingoCellOwnership, assertProjectOwnership } from './ownership.guard';
+import {
+   assertBingoBoardOwnership,
+   assertBingoCellOwnership,
+   assertGoalPartSelectionOwnership,
+   assertProjectOwnership,
+} from './ownership.guard';
 
 const bingoKindSchema = z.enum(['project_finish', 'parts_count', 'skeins_count', 'free_text']);
 
@@ -19,6 +24,7 @@ const cellCreateSchema = z.object({
    kind: bingoKindSchema,
    label: z.string().trim().optional().nullable(),
    linkedProjectId: z.number().optional().nullable(),
+   linkedPartIds: z.array(z.number().int().positive()).optional().nullable(),
    targetValue: z.number().int().positive().optional().nullable(),
 });
 
@@ -28,6 +34,7 @@ const cellUpdateSchema = z.object({
    kind: bingoKindSchema,
    label: z.string().trim().optional().nullable(),
    linkedProjectId: z.number().optional().nullable(),
+   linkedPartIds: z.array(z.number().int().positive()).optional().nullable(),
    targetValue: z.number().int().positive().optional().nullable(),
 });
 
@@ -35,14 +42,17 @@ function normalizeCellData(input: {
    kind: z.infer<typeof bingoKindSchema>;
    label?: string | null;
    linkedProjectId?: number | null;
+   linkedPartIds?: number[] | null;
    targetValue?: number | null;
 }) {
    const label = input.label?.trim() || null;
+   const linkedPartIds = Array.from(new Set(input.linkedPartIds ?? []));
 
    if (input.kind === 'free_text') {
       return {
          label,
          linkedProjectId: null,
+         linkedPartIds: null,
          targetValue: null,
       };
    }
@@ -51,18 +61,35 @@ function normalizeCellData(input: {
       return {
          label,
          linkedProjectId: input.linkedProjectId ?? null,
+         linkedPartIds: null,
          targetValue: 1,
+      };
+   }
+
+   if (input.kind === 'parts_count') {
+      const hasSpecificParts = linkedPartIds.length > 0;
+      return {
+         label,
+         linkedProjectId: input.linkedProjectId ?? null,
+         linkedPartIds: hasSpecificParts ? linkedPartIds : null,
+         targetValue: hasSpecificParts ? linkedPartIds.length : (input.targetValue ?? 1),
       };
    }
 
    return {
       label,
       linkedProjectId: input.linkedProjectId ?? null,
+      linkedPartIds: null,
       targetValue: input.targetValue ?? 1,
    };
 }
 
-async function getRawTrackedValue(ctx: Context, kind: z.infer<typeof bingoKindSchema>, linkedProjectId?: number | null) {
+async function getRawTrackedValue(
+   ctx: Context,
+   kind: z.infer<typeof bingoKindSchema>,
+   linkedProjectId?: number | null,
+   linkedPartIds?: number[] | null,
+) {
    if (!linkedProjectId) return 0;
 
    if (kind === 'project_finish') {
@@ -73,6 +100,15 @@ async function getRawTrackedValue(ctx: Context, kind: z.infer<typeof bingoKindSc
    }
 
    if (kind === 'parts_count') {
+      if (linkedPartIds?.length) {
+         const [row] = await ctx.db
+            .select({ value: sql<number>`count(*)::int` })
+            .from(parts)
+            .where(and(eq(parts.projectId, linkedProjectId), inArray(parts.id, linkedPartIds), eq(parts.completed, true)));
+
+         return row?.value ?? 0;
+      }
+
       const [row] = await ctx.db
          .select({ value: sql<number>`count(*)::int` })
          .from(parts)
@@ -143,6 +179,7 @@ export async function recomputeBingoBoard(ctx: Context, boardId: number) {
          cellId: bingoCells.id,
          kind: bingoCells.kind,
          linkedProjectId: bingoCells.linkedProjectId,
+         linkedPartIds: bingoCells.linkedPartIds,
          targetValue: bingoCells.targetValue,
          baselineValue: bingoCellProgress.baselineValue,
          currentValue: bingoCellProgress.currentValue,
@@ -164,12 +201,17 @@ export async function recomputeBingoBoard(ctx: Context, boardId: number) {
       const manualCompleted = row.manualCompleted ?? false;
 
       if (kind === 'project_finish') {
-         const rawValue = await getRawTrackedValue(ctx, kind, row.linkedProjectId);
+         const rawValue = await getRawTrackedValue(ctx, kind, row.linkedProjectId, row.linkedPartIds);
          currentValue = rawValue;
          autoCompleted = rawValue >= 1;
       } else if (kind === 'parts_count' || kind === 'skeins_count') {
-         const rawValue = await getRawTrackedValue(ctx, kind, row.linkedProjectId);
-         currentValue = Math.max(0, rawValue - baseline);
+         const rawValue = await getRawTrackedValue(ctx, kind, row.linkedProjectId, row.linkedPartIds);
+         if (kind === 'parts_count' && row.linkedPartIds?.length) {
+            baseline = 0;
+            currentValue = rawValue;
+         } else {
+            currentValue = Math.max(0, rawValue - baseline);
+         }
          autoCompleted = currentValue >= target;
       } else {
          autoCompleted = false;
@@ -252,6 +294,7 @@ export const bingoRouter = router({
             kind: bingoCells.kind,
             label: bingoCells.label,
             linkedProjectId: bingoCells.linkedProjectId,
+            linkedPartIds: bingoCells.linkedPartIds,
             linkedProjectName: projects.name,
             targetValue: bingoCells.targetValue,
             createdAt: bingoCells.createdAt,
@@ -344,6 +387,20 @@ export const bingoRouter = router({
          await assertProjectOwnership(ctx, normalized.linkedProjectId);
       }
 
+      if (input.kind === 'parts_count') {
+         if (!normalized.linkedProjectId) {
+            throw new Error('Project is required for parts goals');
+         }
+
+         if (!normalized.linkedPartIds?.length && !normalized.targetValue) {
+            throw new Error('Target is required for amount-based parts goals');
+         }
+
+         if (normalized.linkedPartIds?.length) {
+            await assertGoalPartSelectionOwnership(ctx, normalized.linkedProjectId, normalized.linkedPartIds);
+         }
+      }
+
       const [cell] = await ctx.db
          .insert(bingoCells)
          .values({
@@ -352,20 +409,28 @@ export const bingoRouter = router({
             kind: input.kind,
             label: normalized.label,
             linkedProjectId: normalized.linkedProjectId,
+            linkedPartIds: normalized.linkedPartIds,
             targetValue: normalized.targetValue,
          })
          .returning()
          .execute();
 
-      const baseline = await getRawTrackedValue(ctx, input.kind, normalized.linkedProjectId);
+      if (!cell) {
+         throw new Error('Failed to create bingo cell');
+      }
+
+      const createdCell = cell!;
+
+      const baseline = await getRawTrackedValue(ctx, input.kind, normalized.linkedProjectId, normalized.linkedPartIds);
+      const isSpecificPartsGoal = input.kind === 'parts_count' && Boolean(normalized.linkedPartIds?.length);
       await upsertProgress(ctx, {
-         cellId: cell.id,
-         baselineValue: input.kind === 'parts_count' || input.kind === 'skeins_count' ? baseline : 0,
-         currentValue: input.kind === 'project_finish' ? baseline : 0,
+         cellId: createdCell.id,
+         baselineValue: input.kind === 'skeins_count' || (input.kind === 'parts_count' && !isSpecificPartsGoal) ? baseline : 0,
+         currentValue: input.kind === 'project_finish' || isSpecificPartsGoal ? baseline : 0,
       });
 
       await recomputeBingoBoard(ctx, board.id);
-      return cell;
+      return createdCell;
    }),
 
    updateCell: protectedProcedure.input(cellUpdateSchema).mutation(async ({ ctx, input }) => {
@@ -384,6 +449,20 @@ export const bingoRouter = router({
          await assertProjectOwnership(ctx, normalized.linkedProjectId);
       }
 
+      if (input.kind === 'parts_count') {
+         if (!normalized.linkedProjectId) {
+            throw new Error('Project is required for parts goals');
+         }
+
+         if (!normalized.linkedPartIds?.length && !normalized.targetValue) {
+            throw new Error('Target is required for amount-based parts goals');
+         }
+
+         if (normalized.linkedPartIds?.length) {
+            await assertGoalPartSelectionOwnership(ctx, normalized.linkedProjectId, normalized.linkedPartIds);
+         }
+      }
+
       const [updatedCell] = await ctx.db
          .update(bingoCells)
          .set({
@@ -391,6 +470,7 @@ export const bingoRouter = router({
             kind: input.kind,
             label: normalized.label,
             linkedProjectId: normalized.linkedProjectId,
+            linkedPartIds: normalized.linkedPartIds,
             targetValue: normalized.targetValue,
             updatedAt: new Date(),
          })
@@ -398,11 +478,16 @@ export const bingoRouter = router({
          .returning()
          .execute();
 
-      const baseline = await getRawTrackedValue(ctx, input.kind, normalized.linkedProjectId);
+      if (!updatedCell) {
+         throw new Error('Failed to update bingo cell');
+      }
+
+      const baseline = await getRawTrackedValue(ctx, input.kind, normalized.linkedProjectId, normalized.linkedPartIds);
+      const isSpecificPartsGoal = input.kind === 'parts_count' && Boolean(normalized.linkedPartIds?.length);
       await upsertProgress(ctx, {
          cellId: existingCell.id,
-         baselineValue: input.kind === 'parts_count' || input.kind === 'skeins_count' ? baseline : 0,
-         currentValue: input.kind === 'project_finish' ? baseline : 0,
+         baselineValue: input.kind === 'skeins_count' || (input.kind === 'parts_count' && !isSpecificPartsGoal) ? baseline : 0,
+         currentValue: input.kind === 'project_finish' || isSpecificPartsGoal ? baseline : 0,
          autoCompleted: false,
          manualCompleted: false,
          completedAt: null,
@@ -446,7 +531,16 @@ export const bingoRouter = router({
       .mutation(async ({ ctx, input }) => {
          const cell = await assertBingoCellOwnership(ctx, input.cellId);
 
-         const rawValue = await getRawTrackedValue(ctx, cell.kind as z.infer<typeof bingoKindSchema>, cell.linkedProjectId);
+         if (cell.kind === 'parts_count' && cell.linkedPartIds?.length) {
+            throw new Error('Manual progress is unavailable for specific-part goals');
+         }
+
+         const rawValue = await getRawTrackedValue(
+            ctx,
+            cell.kind as z.infer<typeof bingoKindSchema>,
+            cell.linkedProjectId,
+            cell.linkedPartIds,
+         );
          const nextBaseline = rawValue - input.currentValue;
 
          await upsertProgress(ctx, {

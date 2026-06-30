@@ -73,7 +73,7 @@ function validateSelection(): string | null {
    if (creatingNewColor.value) {
       if (!form.value.newTypeName.trim()) return t('form.field-required');
       if (!form.value.newColorName.trim()) return t('form.field-required');
-      if (form.value.newColorStashCount < 0) return 'Stash count must be zero or higher';
+      if (form.value.newColorStashCount < 0) return t('form.min-zero');
       return null;
    }
 
@@ -82,7 +82,7 @@ function validateSelection(): string | null {
 }
 
 function validateUsedCount(): string | null {
-   if (!Number.isFinite(form.value.usedCount) || form.value.usedCount < 0) return 'Used count must be zero or higher';
+   if (!Number.isFinite(form.value.usedCount) || form.value.usedCount < 0) return t('form.min-zero');
    return null;
 }
 
@@ -128,7 +128,7 @@ function onNewColorUpdate(value: string | number) {
 
 async function onSubmit() {
    if (!validate()) {
-      showErrorToast('Please fix the errors in the form');
+      showErrorToast(t('form.fix-errors'));
       return;
    }
 
@@ -162,7 +162,7 @@ async function onSubmit() {
       });
    } catch {
       isSubmitting.value = false;
-      showErrorToast('Failed to save yarn usage');
+      showErrorToast(t('form.save-failed'));
    }
 }
 </script>

@@ -12,6 +12,7 @@ interface InitialCell {
    kind: 'project_finish' | 'parts_count' | 'skeins_count' | 'free_text';
    label: string | null;
    linkedProjectId: number | null;
+   linkedPartIds: number[] | null;
    targetValue: number | null;
 }
 
@@ -33,6 +34,8 @@ const emit = defineEmits<{
             kind: 'project_finish' | 'parts_count' | 'skeins_count' | 'free_text';
             label: string | null;
             linkedProjectId: number | null;
+            linkedPartIds: number[] | null;
+            selectedPartNames: string[];
             targetValue: number | null;
             newProjectName: string | null;
          };
@@ -46,9 +49,13 @@ const cell = ref({
    kind: props.initialCell?.kind ?? 'free_text',
    label: props.initialCell?.label ?? '',
    linkedProjectId: props.initialCell?.linkedProjectId ?? null,
+   linkedPartIds: props.initialCell?.linkedPartIds ?? [],
    targetValue: props.initialCell?.targetValue ?? 1,
    newProjectName: '',
 });
+
+const { partRouter } = useTrpcClient();
+const projectParts = ref<Array<{ id: number; name: string | null }>>([]);
 
 const errors = ref<Record<string, string>>({});
 const isSubmitting = ref(false);
@@ -59,10 +66,12 @@ function syncCellFromInitialCell(initialCell?: InitialCell) {
       kind: initialCell?.kind ?? 'free_text',
       label: initialCell?.label ?? '',
       linkedProjectId: initialCell?.linkedProjectId ?? null,
+      linkedPartIds: initialCell?.linkedPartIds ?? [],
       targetValue: initialCell?.targetValue ?? 1,
       newProjectName: '',
    };
    projectMode.value = initialCell?.linkedProjectId ? 'existing' : 'existing';
+   partGoalMode.value = initialCell?.linkedPartIds?.length ? 'specific' : 'amount';
    errors.value = {};
 }
 
@@ -91,11 +100,57 @@ const positionOptions = computed(() => {
 });
 
 const showProjectSelector = computed(() => cell.value.kind === 'project_finish' || cell.value.kind === 'parts_count');
-const showTarget = computed(() => cell.value.kind === 'parts_count' || cell.value.kind === 'skeins_count');
+const showTarget = computed(
+   () => cell.value.kind === 'skeins_count' || (cell.value.kind === 'parts_count' && partGoalMode.value === 'amount'),
+);
 const autoLabelKind = computed(
    () => cell.value.kind === 'project_finish' || cell.value.kind === 'parts_count' || cell.value.kind === 'skeins_count',
 );
 const showLabelField = computed(() => !autoLabelKind.value);
+const isPartsGoal = computed(() => cell.value.kind === 'parts_count');
+const selectedProjectId = computed(() => (projectMode.value === 'existing' ? cell.value.linkedProjectId : null));
+const canCreateProjectInline = computed(() => cell.value.kind === 'project_finish');
+
+async function fetchProjectParts(projectId: number | null) {
+   if (!projectId || !isPartsGoal.value) {
+      projectParts.value = [];
+      return;
+   }
+
+   try {
+      projectParts.value = await partRouter.list.query({
+         projectId,
+         sorting: { orderBy: 'createdAt', order: 'asc' },
+      });
+   } catch {
+      projectParts.value = [];
+   }
+}
+
+watch(
+   () => [selectedProjectId.value, isPartsGoal.value] as const,
+   ([projectId, partsGoal]) => {
+      if (!partsGoal) {
+         projectParts.value = [];
+         return;
+      }
+
+      void fetchProjectParts(projectId);
+   },
+   { immediate: true },
+);
+
+const partOptions = computed(() =>
+   (projectParts.value ?? []).map((part: { id: number; name: string | null }) => ({
+      label: part.name?.trim() || `#${part.id}`,
+      value: part.id,
+   })),
+);
+
+const selectedPartNames = computed(() => {
+   const selectedIds = new Set(cell.value.linkedPartIds ?? []);
+   return partOptions.value.filter((option) => selectedIds.has(Number(option.value))).map((option) => option.label);
+});
 
 const selectedProjectName = computed(() => {
    if (projectMode.value === 'new') return cell.value.newProjectName.trim();
@@ -118,6 +173,21 @@ const autoLabelPreview = computed(() => {
    }
 
    if (cell.value.kind === 'parts_count') {
+      if (partGoalMode.value === 'specific' && selectedPartNames.value.length) {
+         const previewNames = selectedPartNames.value.slice(0, 2);
+         const hiddenCount = selectedPartNames.value.length - previewNames.length;
+         if (hiddenCount > 0) {
+            return t('bingo.auto-label-parts-specific-more', {
+               partNames: previewNames.join(', '),
+               extraCount: hiddenCount,
+            });
+         }
+
+         return t('bingo.auto-label-parts-specific', {
+            partNames: previewNames.join(', '),
+         });
+      }
+
       return t(target === 1 ? 'bingo.auto-label-parts-singular' : 'bingo.auto-label-parts-plural', {
          target,
          projectName,
@@ -128,16 +198,54 @@ const autoLabelPreview = computed(() => {
 });
 
 const projectMode = ref<'existing' | 'new'>(props.initialCell?.linkedProjectId ? 'existing' : 'existing');
+const partGoalMode = ref<'amount' | 'specific'>(props.initialCell?.linkedPartIds?.length ? 'specific' : 'amount');
 
 function syncProjectFieldsForMode(mode: 'existing' | 'new') {
    if (mode === 'existing') {
       cell.value.newProjectName = '';
    } else {
       cell.value.linkedProjectId = null;
+      cell.value.linkedPartIds = [];
    }
 }
 
 watch(projectMode, syncProjectFieldsForMode);
+
+function syncModesForKind(kind: typeof cell.value.kind) {
+   if (kind === 'parts_count') {
+      projectMode.value = 'existing';
+      if (partGoalMode.value === 'specific') {
+         cell.value.targetValue = 1;
+      } else {
+         cell.value.linkedPartIds = [];
+      }
+      return;
+   }
+
+   partGoalMode.value = 'amount';
+   cell.value.linkedPartIds = [];
+}
+
+watch(() => cell.value.kind, syncModesForKind);
+
+function syncPartFieldsForMode(mode: 'amount' | 'specific') {
+   if (mode === 'specific') {
+      cell.value.targetValue = 1;
+      return;
+   }
+
+   cell.value.linkedPartIds = [];
+}
+
+watch(partGoalMode, syncPartFieldsForMode);
+
+function syncSelectedPartsWithProject(projectId: number | null) {
+   if (!projectId) {
+      cell.value.linkedPartIds = [];
+   }
+}
+
+watch(selectedProjectId, syncSelectedPartsWithProject);
 
 const title = computed(() =>
    props.initialCell ? t('actions.edit-type', { type: t('bingo.cell') }) : t('actions.create-type', { type: t('bingo.cell') }),
@@ -154,8 +262,16 @@ function validate() {
       errors.value.linkedProjectId = t('bingo.select-or-create-project');
    }
 
+   if (isPartsGoal.value && !cell.value.linkedProjectId) {
+      errors.value.linkedProjectId = t('bingo.select-project');
+   }
+
    if (showTarget.value && (!cell.value.targetValue || cell.value.targetValue < 1)) {
       errors.value.targetValue = t('bingo.target-min');
+   }
+
+   if (isPartsGoal.value && partGoalMode.value === 'specific' && !cell.value.linkedPartIds.length) {
+      errors.value.linkedPartIds = t('bingo.select-parts');
    }
 
    if (showLabelField.value && !cell.value.label.trim()) {
@@ -175,6 +291,8 @@ function onSubmit() {
          kind: cell.value.kind,
          label: showLabelField.value ? cell.value.label.trim() || null : null,
          linkedProjectId: cell.value.linkedProjectId,
+         linkedPartIds: isPartsGoal.value && partGoalMode.value === 'specific' ? cell.value.linkedPartIds : null,
+         selectedPartNames: isPartsGoal.value && partGoalMode.value === 'specific' ? selectedPartNames.value : [],
          targetValue: showTarget.value ? cell.value.targetValue : null,
          newProjectName: cell.value.newProjectName.trim() || null,
       },
@@ -186,6 +304,7 @@ function onSubmit() {
                kind: 'free_text',
                label: '',
                linkedProjectId: null,
+               linkedPartIds: [],
                targetValue: 1,
                newProjectName: '',
             };
@@ -233,7 +352,7 @@ function onSubmit() {
                </label>
 
                <!-- Toggle between existing / new -->
-               <div class="flex rounded-lg bg-slate-100 dark:bg-slate-800 p-1 gap-1">
+               <div v-if="canCreateProjectInline" class="flex rounded-lg bg-slate-100 dark:bg-slate-800 p-1 gap-1">
                   <button
                      type="button"
                      :class="[
@@ -260,6 +379,49 @@ function onSubmit() {
                   </button>
                </div>
 
+               <div v-if="isPartsGoal" class="space-y-1.5">
+                  <label class="block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('bingo.parts-mode') }}</label>
+                  <div class="flex rounded-lg bg-slate-100 dark:bg-slate-800 p-1 gap-1">
+                     <button
+                        type="button"
+                        :class="[
+                           'flex-1 rounded-md px-3 py-2 text-sm font-medium transition-all tap-target',
+                           partGoalMode === 'amount'
+                              ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm'
+                              : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300',
+                        ]"
+                        @click="partGoalMode = 'amount'"
+                     >
+                        {{ $t('bingo.parts-mode-amount') }}
+                     </button>
+                     <button
+                        type="button"
+                        :class="[
+                           'flex-1 rounded-md px-3 py-2 text-sm font-medium transition-all tap-target',
+                           partGoalMode === 'specific'
+                              ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm'
+                              : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300',
+                        ]"
+                        @click="partGoalMode = 'specific'"
+                     >
+                        {{ $t('bingo.parts-mode-specific') }}
+                     </button>
+                  </div>
+               </div>
+
+               <FormField
+                  v-if="isPartsGoal && partGoalMode === 'amount'"
+                  :model-value="cell.targetValue"
+                  :label="$t('bingo.target')"
+                  :error="errors.targetValue"
+                  type="number"
+                  :min="1"
+                  show-stepper
+                  :decrement-aria-label="$t('actions.decrease-count', { type: $t('bingo.target') })"
+                  :increment-aria-label="$t('actions.increase-count', { type: $t('bingo.target') })"
+                  @update:model-value="(val) => (cell.targetValue = Number(val))"
+               />
+
                <!-- Existing project select -->
                <FormSelect
                   v-if="projectMode === 'existing'"
@@ -273,13 +435,29 @@ function onSubmit() {
 
                <!-- New project name -->
                <FormField
-                  v-else
+                  v-else-if="canCreateProjectInline"
                   :model-value="cell.newProjectName"
                   :label="''"
                   :placeholder="$t('bingo.create-project-inline-placeholder')"
                   :error="errors.linkedProjectId"
                   @update:model-value="(val) => (cell.newProjectName = String(val))"
                />
+
+               <div v-if="isPartsGoal && partGoalMode === 'specific'" class="space-y-1.5">
+                  <label class="block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('bingo.parts-select') }}</label>
+                  <USelectMenu
+                     :model-value="cell.linkedPartIds"
+                     :items="partOptions"
+                     value-key="value"
+                     :placeholder="$t('bingo.parts-select-placeholder')"
+                     multiple
+                     class="w-full"
+                     @update:model-value="(val) => (cell.linkedPartIds = (val ?? []) as number[])"
+                  />
+                  <p v-if="errors.linkedPartIds" class="text-xs text-error-600 dark:text-error-400 leading-tight">
+                     {{ errors.linkedPartIds }}
+                  </p>
+               </div>
 
                <div
                   v-if="autoLabelKind"
@@ -291,7 +469,7 @@ function onSubmit() {
             </div>
 
             <FormField
-               v-if="showTarget"
+               v-if="showTarget && !isPartsGoal"
                :model-value="cell.targetValue"
                :label="$t('bingo.target')"
                :error="errors.targetValue"

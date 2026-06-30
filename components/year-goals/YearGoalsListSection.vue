@@ -2,9 +2,10 @@
 interface YearGoalListItem {
    id: number;
    year: number;
-   kind: 'projects_count' | 'yarn_balls_count' | 'specific_project_finish' | 'free_challenge';
+   kind: 'projects_count' | 'yarn_balls_count' | 'specific_project_finish' | 'parts_count' | 'free_challenge';
    label: string | null;
    linkedProjectId: number | null;
+   linkedPartIds: number[] | null;
    linkedProjectName: string | null;
    targetValue: number | null;
    currentValue: number | null;
@@ -27,7 +28,7 @@ const emit = defineEmits<{
 }>();
 
 function percent(goal: YearGoalListItem) {
-   if (goal.kind === 'projects_count' || goal.kind === 'yarn_balls_count') {
+   if (goal.kind === 'projects_count' || goal.kind === 'yarn_balls_count' || goal.kind === 'parts_count') {
       const target = Math.max(1, goal.targetValue ?? 1);
       const value = Math.max(0, goal.currentValue ?? 0);
       return Math.min(100, Math.round((value / target) * 100));
@@ -37,7 +38,11 @@ function percent(goal: YearGoalListItem) {
 }
 
 function canManualProgress(goal: YearGoalListItem) {
-   return goal.kind === 'projects_count' || goal.kind === 'yarn_balls_count';
+   if (goal.kind === 'parts_count' && goal.linkedPartIds?.length) {
+      return false;
+   }
+
+   return goal.kind === 'projects_count' || goal.kind === 'yarn_balls_count' || goal.kind === 'parts_count';
 }
 </script>
 

@@ -1,4 +1,5 @@
 <script lang="ts" setup>
+import { useModalForm } from '~/composables/useModalForm';
 import { useToast } from '~/composables/useToast';
 import type { SelectProject } from '~/db/schema';
 
@@ -9,37 +10,31 @@ const open = defineModel('modelValue', { default: false });
 const props = defineProps<{ initialProject?: SelectProject }>();
 const emits = defineEmits<{ (e: 'save-project', payload: { id?: number; project: typeof project.value; done: () => void }): void }>();
 
-const project = ref({ name: props.initialProject?.name ?? '', finished: props.initialProject?.finished ?? false });
-const errors = ref<Record<string, string>>({});
-const isSubmitting = ref(false);
+const {
+   form: project,
+   errors,
+   isSubmitting,
+   validate,
+   validateField,
+   clearErrors,
+   reset,
+} = useModalForm({
+   createInitial: () => ({ name: props.initialProject?.name ?? '', finished: props.initialProject?.finished ?? false }),
+   watchSource: () => props.initialProject,
+   validators: {
+      name: (value) => {
+         if (!value || value.trim().length === 0) return t('form.field-required');
+         if (value.length > 100) return t('form.max-length', { max: 100 });
+         return null;
+      },
+   },
+});
 
 const modalTitle = computed(() => (props.initialProject ? t('actions.edit-project') : t('actions.create-project')));
 
-function syncProjectFromInitialProject(initialProject?: SelectProject) {
-   project.value = { name: initialProject?.name ?? '', finished: initialProject?.finished ?? false };
-   errors.value = {};
-}
-
-watch(() => props.initialProject, syncProjectFromInitialProject);
-
-const validateName = (name: string): string | null => {
-   if (!name || name.trim().length === 0) return t('form.field-required');
-   if (name.length > 100) return 'Name must be 100 characters or less';
-   return null;
-};
-
-const validate = (): boolean => {
-   errors.value = {};
-   const nameError = validateName(project.value.name);
-   if (nameError) {
-      errors.value.name = nameError;
-   }
-   return Object.keys(errors.value).length === 0;
-};
-
 async function onSubmit() {
    if (!validate()) {
-      showErrorToast('Please fix the errors in the form');
+      showErrorToast(t('form.fix-errors'));
       return;
    }
 
@@ -49,22 +44,13 @@ async function onSubmit() {
          project: project.value,
          done: () => {
             isSubmitting.value = false;
-            if (!props.initialProject) project.value = { name: '', finished: false };
+            if (!props.initialProject) reset();
             open.value = false;
          },
       });
-   } catch (err) {
+   } catch {
       isSubmitting.value = false;
-      showErrorToast('Failed to save project');
-   }
-}
-
-function handleNameBlur() {
-   const error = validateName(project.value.name);
-   if (error) {
-      errors.value.name = error;
-   } else {
-      delete errors.value.name;
+      showErrorToast(t('form.save-failed'));
    }
 }
 </script>
@@ -74,7 +60,7 @@ function handleNameBlur() {
       v-model:open="open"
       :title="modalTitle"
       :ui="{ content: 'mx-2 w-[calc(100%-1rem)] sm:mx-0 sm:max-w-lg' }"
-      @update:open="() => (errors.value = {})"
+      @update:open="clearErrors"
    >
       <template #body>
          <div class="space-y-4">
@@ -86,8 +72,8 @@ function handleNameBlur() {
                :placeholder="$t('generic.name')"
                required
                :max-length="100"
-               @update:model-value="(val) => (project.name = val)"
-               @blur="handleNameBlur"
+               @update:model-value="(val) => (project.name = String(val))"
+               @blur="() => validateField('name')"
             />
 
             <!-- Status Toggle -->

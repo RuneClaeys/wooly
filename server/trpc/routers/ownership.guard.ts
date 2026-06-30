@@ -1,5 +1,5 @@
 import { TRPCError } from '@trpc/server';
-import { and, eq } from 'drizzle-orm';
+import { and, eq, inArray } from 'drizzle-orm';
 import { bingoBoards, bingoCells, parts, projectPhotos, projectYarns, projects, yarnColors, yarnTypes, yearGoals } from '~/db/schema';
 import type { Context } from '../context';
 
@@ -24,6 +24,25 @@ export async function assertPartOwnership(ctx: Context, partId: number) {
 
    await assertProjectOwnership(ctx, part.projectId);
    return part;
+}
+
+export async function assertGoalPartSelectionOwnership(ctx: Context, linkedProjectId: number, partIds: number[]) {
+   if (!partIds.length) {
+      throw new TRPCError({ code: 'BAD_REQUEST' });
+   }
+
+   await assertProjectOwnership(ctx, linkedProjectId);
+
+   const selectedParts = await ctx.db.query.parts.findMany({
+      where: and(eq(parts.projectId, linkedProjectId), inArray(parts.id, partIds)),
+   });
+
+   const uniqueRequestedIds = new Set(partIds);
+   if (selectedParts.length !== uniqueRequestedIds.size) {
+      throw new TRPCError({ code: 'BAD_REQUEST' });
+   }
+
+   return selectedParts;
 }
 
 export async function assertYarnTypeOwnership(ctx: Context, yarnTypeId: number) {

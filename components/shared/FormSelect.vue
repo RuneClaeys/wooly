@@ -39,16 +39,14 @@ const hasError = computed(() => Boolean(props.error));
                   : 'border-slate-200/90 hover:border-slate-300 dark:border-slate-700 dark:hover:border-slate-600',
             ]"
          >
-            <USelectMenu
-               :model-value="modelValue"
+            <ResponsiveSelect
+               :value="modelValue"
                :items="items"
-               value-key="value"
                :placeholder="placeholder"
-               :search-input="false"
                :disabled="disabled"
-               :clear="clearable"
+               :clearable="clearable"
                class="wooly-select w-full"
-               @update:model-value="$emit('update:modelValue', $event)"
+               @update:value="$emit('update:modelValue', $event)"
             />
          </div>
       </div>

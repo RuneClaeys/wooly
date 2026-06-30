@@ -1,17 +1,18 @@
-import { and, desc, eq, sql } from 'drizzle-orm';
+import { and, desc, eq, inArray, sql } from 'drizzle-orm';
 import { z } from 'zod';
-import { projectYarns, projects, yarnColors, yarnTypes, yearGoalProgress, yearGoals } from '~/db/schema';
+import { parts, projectYarns, projects, yarnColors, yarnTypes, yearGoalProgress, yearGoals } from '~/db/schema';
 import type { Context } from '../context';
 import { protectedProcedure, router } from '../trpc';
-import { assertProjectOwnership, assertYearGoalOwnership } from './ownership.guard';
+import { assertGoalPartSelectionOwnership, assertProjectOwnership, assertYearGoalOwnership } from './ownership.guard';
 
-const yearGoalKindSchema = z.enum(['projects_count', 'yarn_balls_count', 'specific_project_finish', 'free_challenge']);
+const yearGoalKindSchema = z.enum(['projects_count', 'yarn_balls_count', 'specific_project_finish', 'parts_count', 'free_challenge']);
 
 const yearGoalCreateSchema = z.object({
    year: z.number().int().min(2000).max(2100),
    kind: yearGoalKindSchema,
    label: z.string().trim().optional().nullable(),
    linkedProjectId: z.number().optional().nullable(),
+   linkedPartIds: z.array(z.number().int().positive()).optional().nullable(),
    targetValue: z.number().int().positive().optional().nullable(),
 });
 
@@ -21,6 +22,7 @@ const yearGoalUpdateSchema = z.object({
    kind: yearGoalKindSchema,
    label: z.string().trim().optional().nullable(),
    linkedProjectId: z.number().optional().nullable(),
+   linkedPartIds: z.array(z.number().int().positive()).optional().nullable(),
    targetValue: z.number().int().positive().optional().nullable(),
 });
 
@@ -28,14 +30,17 @@ function normalizeYearGoalData(input: {
    kind: z.infer<typeof yearGoalKindSchema>;
    label?: string | null;
    linkedProjectId?: number | null;
+   linkedPartIds?: number[] | null;
    targetValue?: number | null;
 }) {
    const label = input.label?.trim() || null;
+   const linkedPartIds = Array.from(new Set(input.linkedPartIds ?? []));
 
    if (input.kind === 'free_challenge') {
       return {
          label,
          linkedProjectId: null,
+         linkedPartIds: null,
          targetValue: null,
       };
    }
@@ -44,13 +49,25 @@ function normalizeYearGoalData(input: {
       return {
          label,
          linkedProjectId: input.linkedProjectId ?? null,
+         linkedPartIds: null,
          targetValue: 1,
+      };
+   }
+
+   if (input.kind === 'parts_count') {
+      const hasSpecificParts = linkedPartIds.length > 0;
+      return {
+         label,
+         linkedProjectId: input.linkedProjectId ?? null,
+         linkedPartIds: hasSpecificParts ? linkedPartIds : null,
+         targetValue: hasSpecificParts ? linkedPartIds.length : (input.targetValue ?? 1),
       };
    }
 
    return {
       label,
       linkedProjectId: null,
+      linkedPartIds: null,
       targetValue: input.targetValue ?? 1,
    };
 }
@@ -59,6 +76,7 @@ async function getRawTrackedValue(
    ctx: Context,
    kind: z.infer<typeof yearGoalKindSchema>,
    linkedProjectId?: number | null,
+   linkedPartIds?: number[] | null,
 ): Promise<number> {
    if (kind === 'projects_count') {
       const [row] = await ctx.db
@@ -93,6 +111,24 @@ async function getRawTrackedValue(
       });
 
       return project?.finished ? 1 : 0;
+   }
+
+   if (kind === 'parts_count' && linkedProjectId) {
+      if (linkedPartIds?.length) {
+         const [row] = await ctx.db
+            .select({ value: sql<number>`count(*)::int` })
+            .from(parts)
+            .where(and(eq(parts.projectId, linkedProjectId), inArray(parts.id, linkedPartIds), eq(parts.completed, true)));
+
+         return row?.value ?? 0;
+      }
+
+      const [row] = await ctx.db
+         .select({ value: sql<number>`count(*)::int` })
+         .from(parts)
+         .where(and(eq(parts.projectId, linkedProjectId), eq(parts.completed, true)));
+
+      return row?.value ?? 0;
    }
 
    return 0;
@@ -146,6 +182,7 @@ export async function recomputeYearGoalsForYear(ctx: Context, year: number) {
          id: yearGoals.id,
          kind: yearGoals.kind,
          linkedProjectId: yearGoals.linkedProjectId,
+         linkedPartIds: yearGoals.linkedPartIds,
          targetValue: yearGoals.targetValue,
          baselineValue: yearGoalProgress.baselineValue,
          currentValue: yearGoalProgress.currentValue,
@@ -167,12 +204,16 @@ export async function recomputeYearGoalsForYear(ctx: Context, year: number) {
       const manualCompleted = goal.manualCompleted ?? false;
 
       if (kind === 'specific_project_finish') {
-         const rawValue = await getRawTrackedValue(ctx, kind, goal.linkedProjectId);
+         const rawValue = await getRawTrackedValue(ctx, kind, goal.linkedProjectId, goal.linkedPartIds);
          currentValue = rawValue;
          autoCompleted = rawValue >= 1;
-      } else if (kind === 'projects_count' || kind === 'yarn_balls_count') {
-         const rawValue = await getRawTrackedValue(ctx, kind, goal.linkedProjectId);
-         currentValue = Math.max(0, rawValue - baseline);
+      } else if (kind === 'projects_count' || kind === 'yarn_balls_count' || kind === 'parts_count') {
+         const rawValue = await getRawTrackedValue(ctx, kind, goal.linkedProjectId, goal.linkedPartIds);
+         if (kind === 'parts_count' && goal.linkedPartIds?.length) {
+            currentValue = rawValue;
+         } else {
+            currentValue = Math.max(0, rawValue - baseline);
+         }
          autoCompleted = currentValue >= target;
       } else {
          autoCompleted = false;
@@ -203,6 +244,7 @@ export const yearGoalRouter = router({
             kind: yearGoals.kind,
             label: yearGoals.label,
             linkedProjectId: yearGoals.linkedProjectId,
+            linkedPartIds: yearGoals.linkedPartIds,
             linkedProjectName: projects.name,
             targetValue: yearGoals.targetValue,
             createdAt: yearGoals.createdAt,
@@ -227,6 +269,20 @@ export const yearGoalRouter = router({
          await assertProjectOwnership(ctx, normalized.linkedProjectId);
       }
 
+      if (input.kind === 'parts_count') {
+         if (!normalized.linkedProjectId) {
+            throw new Error('Project is required for parts goals');
+         }
+
+         if (!normalized.linkedPartIds?.length && !normalized.targetValue) {
+            throw new Error('Target is required for amount-based parts goals');
+         }
+
+         if (normalized.linkedPartIds?.length) {
+            await assertGoalPartSelectionOwnership(ctx, normalized.linkedProjectId, normalized.linkedPartIds);
+         }
+      }
+
       const [goal] = await ctx.db
          .insert(yearGoals)
          .values({
@@ -234,17 +290,26 @@ export const yearGoalRouter = router({
             kind: input.kind,
             label: normalized.label,
             linkedProjectId: normalized.linkedProjectId,
+            linkedPartIds: normalized.linkedPartIds,
             targetValue: normalized.targetValue,
             userId: ctx.session.user.id,
          })
          .returning()
          .execute();
 
-      const baseline = await getRawTrackedValue(ctx, input.kind, normalized.linkedProjectId);
+      if (!goal) {
+         throw new Error('Failed to create year goal');
+      }
+
+      const baseline = await getRawTrackedValue(ctx, input.kind, normalized.linkedProjectId, normalized.linkedPartIds);
+      const isSpecificPartsGoal = input.kind === 'parts_count' && Boolean(normalized.linkedPartIds?.length);
       await upsertProgress(ctx, {
          goalId: goal.id,
-         baselineValue: input.kind === 'projects_count' || input.kind === 'yarn_balls_count' ? baseline : 0,
-         currentValue: input.kind === 'specific_project_finish' ? baseline : 0,
+         baselineValue:
+            input.kind === 'projects_count' || input.kind === 'yarn_balls_count' || (input.kind === 'parts_count' && !isSpecificPartsGoal)
+               ? baseline
+               : 0,
+         currentValue: input.kind === 'specific_project_finish' || isSpecificPartsGoal ? baseline : 0,
       });
 
       await recomputeYearGoalsForYear(ctx, input.year);
@@ -259,6 +324,20 @@ export const yearGoalRouter = router({
          await assertProjectOwnership(ctx, normalized.linkedProjectId);
       }
 
+      if (input.kind === 'parts_count') {
+         if (!normalized.linkedProjectId) {
+            throw new Error('Project is required for parts goals');
+         }
+
+         if (!normalized.linkedPartIds?.length && !normalized.targetValue) {
+            throw new Error('Target is required for amount-based parts goals');
+         }
+
+         if (normalized.linkedPartIds?.length) {
+            await assertGoalPartSelectionOwnership(ctx, normalized.linkedProjectId, normalized.linkedPartIds);
+         }
+      }
+
       const [updatedGoal] = await ctx.db
          .update(yearGoals)
          .set({
@@ -266,6 +345,7 @@ export const yearGoalRouter = router({
             kind: input.kind,
             label: normalized.label,
             linkedProjectId: normalized.linkedProjectId,
+            linkedPartIds: normalized.linkedPartIds,
             targetValue: normalized.targetValue,
             updatedAt: new Date(),
          })
@@ -273,11 +353,15 @@ export const yearGoalRouter = router({
          .returning()
          .execute();
 
-      const baseline = await getRawTrackedValue(ctx, input.kind, normalized.linkedProjectId);
+      const baseline = await getRawTrackedValue(ctx, input.kind, normalized.linkedProjectId, normalized.linkedPartIds);
+      const isSpecificPartsGoal = input.kind === 'parts_count' && Boolean(normalized.linkedPartIds?.length);
       await upsertProgress(ctx, {
          goalId: existingGoal.id,
-         baselineValue: input.kind === 'projects_count' || input.kind === 'yarn_balls_count' ? baseline : 0,
-         currentValue: input.kind === 'specific_project_finish' ? baseline : 0,
+         baselineValue:
+            input.kind === 'projects_count' || input.kind === 'yarn_balls_count' || (input.kind === 'parts_count' && !isSpecificPartsGoal)
+               ? baseline
+               : 0,
+         currentValue: input.kind === 'specific_project_finish' || isSpecificPartsGoal ? baseline : 0,
          autoCompleted: false,
          manualCompleted: false,
          completedAt: null,
@@ -320,7 +404,16 @@ export const yearGoalRouter = router({
       .mutation(async ({ ctx, input }) => {
          const goal = await assertYearGoalOwnership(ctx, input.goalId);
 
-         const rawValue = await getRawTrackedValue(ctx, goal.kind as z.infer<typeof yearGoalKindSchema>, goal.linkedProjectId);
+         if (goal.kind === 'parts_count' && goal.linkedPartIds?.length) {
+            throw new Error('Manual progress is unavailable for specific-part goals');
+         }
+
+         const rawValue = await getRawTrackedValue(
+            ctx,
+            goal.kind as z.infer<typeof yearGoalKindSchema>,
+            goal.linkedProjectId,
+            goal.linkedPartIds,
+         );
          const nextBaseline = rawValue - input.currentValue;
 
          await upsertProgress(ctx, {
