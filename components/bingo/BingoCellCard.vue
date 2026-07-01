@@ -70,6 +70,7 @@ function kindLabelShort(kind: BingoCellItem['kind']) {
             'ring-2 ring-success-500 bg-success-50/50 dark:bg-success-950/20': isCompleted(cell),
             'hover:shadow-md': !isCompleted(cell),
          }"
+         @click="emit('edit', cell)"
       >
          <!-- Top row: badge (if fits) + actions -->
          <div class="flex items-start justify-between gap-1 shrink-0">
@@ -85,7 +86,7 @@ function kindLabelShort(kind: BingoCellItem['kind']) {
                size="xs"
                class="shrink-0 -mr-1 -mt-0.5"
                :aria-label="$t('actions.more')"
-               @click="isActionsModalOpen = true"
+               @click.stop="isActionsModalOpen = true"
             />
          </div>
 

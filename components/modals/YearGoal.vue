@@ -58,6 +58,19 @@ const projectParts = ref<Array<{ id: number; name: string | null }>>([]);
 const errors = ref<Record<string, string>>({});
 const isSubmitting = ref(false);
 
+function toNumberOrNull(value: string | number | null | undefined) {
+   if (value === null || value === undefined || value === '') return null;
+   const normalized = Number(value);
+   return Number.isFinite(normalized) ? normalized : null;
+}
+
+function toNumberArray(values: Array<string | number> | null | undefined) {
+   if (!values?.length) return [];
+   return values
+      .map((value) => Number(value))
+      .filter((value) => Number.isFinite(value));
+}
+
 function syncGoalFromInitialGoal(initialGoal?: InitialGoal) {
    goal.value = {
       year: initialGoal?.year ?? props.selectedYear,
@@ -147,7 +160,8 @@ const selectedPartNames = computed(() => {
 });
 
 const selectedProjectName = computed(() => {
-   const selected = props.projects.find((project) => project.value === goal.value.linkedProjectId);
+   const selectedProjectId = toNumberOrNull(goal.value.linkedProjectId);
+   const selected = props.projects.find((project) => toNumberOrNull(project.value) === selectedProjectId);
    return selected?.label ?? '';
 });
 
@@ -332,7 +346,7 @@ function onSubmit() {
                :items="projects"
                :error="errors.linkedProjectId"
                :placeholder="$t('year-goals.project-link-placeholder')"
-               @update:model-value="(val) => (goal.linkedProjectId = val as number | null)"
+               @update:model-value="(val) => (goal.linkedProjectId = toNumberOrNull(val))"
             />
 
             <div v-if="isPartsGoal" class="space-y-3">
@@ -388,7 +402,7 @@ function onSubmit() {
                      :placeholder="$t('year-goals.parts-select-placeholder')"
                      multiple
                      class="w-full"
-                     @update:model-value="(val) => (goal.linkedPartIds = (val ?? []) as number[])"
+                     @update:model-value="(val) => (goal.linkedPartIds = toNumberArray((val ?? []) as Array<string | number>))"
                   />
                   <p v-if="errors.linkedPartIds" class="text-xs text-error-600 dark:text-error-400 leading-tight">
                      {{ errors.linkedPartIds }}

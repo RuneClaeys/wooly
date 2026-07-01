@@ -60,6 +60,19 @@ const projectParts = ref<Array<{ id: number; name: string | null }>>([]);
 const errors = ref<Record<string, string>>({});
 const isSubmitting = ref(false);
 
+function toNumberOrNull(value: string | number | null | undefined) {
+   if (value === null || value === undefined || value === '') return null;
+   const normalized = Number(value);
+   return Number.isFinite(normalized) ? normalized : null;
+}
+
+function toNumberArray(values: Array<string | number> | null | undefined) {
+   if (!values?.length) return [];
+   return values
+      .map((value) => Number(value))
+      .filter((value) => Number.isFinite(value));
+}
+
 function syncCellFromInitialCell(initialCell?: InitialCell) {
    cell.value = {
       position: initialCell?.position ?? props.lockedPosition ?? 1,
@@ -108,7 +121,9 @@ const autoLabelKind = computed(
 );
 const showLabelField = computed(() => !autoLabelKind.value);
 const isPartsGoal = computed(() => cell.value.kind === 'parts_count');
-const selectedProjectId = computed(() => (projectMode.value === 'existing' ? cell.value.linkedProjectId : null));
+const projectMode = ref<'existing' | 'new'>(props.initialCell?.linkedProjectId ? 'existing' : 'existing');
+const partGoalMode = ref<'amount' | 'specific'>(props.initialCell?.linkedPartIds?.length ? 'specific' : 'amount');
+const selectedProjectId = computed(() => (projectMode.value === 'existing' ? toNumberOrNull(cell.value.linkedProjectId) : null));
 const canCreateProjectInline = computed(() => cell.value.kind === 'project_finish');
 
 async function fetchProjectParts(projectId: number | null) {
@@ -154,7 +169,8 @@ const selectedPartNames = computed(() => {
 
 const selectedProjectName = computed(() => {
    if (projectMode.value === 'new') return cell.value.newProjectName.trim();
-   const selected = props.projects.find((project) => project.value === cell.value.linkedProjectId);
+   const currentProjectId = toNumberOrNull(cell.value.linkedProjectId);
+   const selected = props.projects.find((project) => toNumberOrNull(project.value) === currentProjectId);
    return selected?.label?.trim() ?? '';
 });
 
@@ -196,9 +212,6 @@ const autoLabelPreview = computed(() => {
 
    return '';
 });
-
-const projectMode = ref<'existing' | 'new'>(props.initialCell?.linkedProjectId ? 'existing' : 'existing');
-const partGoalMode = ref<'amount' | 'specific'>(props.initialCell?.linkedPartIds?.length ? 'specific' : 'amount');
 
 function syncProjectFieldsForMode(mode: 'existing' | 'new') {
    if (mode === 'existing') {
@@ -430,7 +443,7 @@ function onSubmit() {
                   :items="projects"
                   :placeholder="$t('bingo.project-link-placeholder')"
                   :error="errors.linkedProjectId"
-                  @update:model-value="(val) => (cell.linkedProjectId = val as number | null)"
+                  @update:model-value="(val) => (cell.linkedProjectId = toNumberOrNull(val))"
                />
 
                <!-- New project name -->
@@ -452,7 +465,7 @@ function onSubmit() {
                      :placeholder="$t('bingo.parts-select-placeholder')"
                      multiple
                      class="w-full"
-                     @update:model-value="(val) => (cell.linkedPartIds = (val ?? []) as number[])"
+                     @update:model-value="(val) => (cell.linkedPartIds = toNumberArray((val ?? []) as Array<string | number>))"
                   />
                   <p v-if="errors.linkedPartIds" class="text-xs text-error-600 dark:text-error-400 leading-tight">
                      {{ errors.linkedPartIds }}

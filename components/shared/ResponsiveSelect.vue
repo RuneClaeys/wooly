@@ -34,6 +34,7 @@ const { t, locale } = useI18n();
 const isMobile = useMediaQuery('(max-width: 639px)');
 const drawerOpen = ref(false);
 const searchQuery = ref('');
+const drawerBodyRef = ref<HTMLElement | null>(null);
 
 function valuesEqual(a: string | number | null | undefined, b: string | number | null | undefined) {
    if (a === b) return true;
@@ -66,6 +67,28 @@ function openDrawer() {
    searchQuery.value = '';
    drawerOpen.value = true;
 }
+
+function scrollActiveInputIntoView() {
+   if (!drawerBodyRef.value) return;
+   const activeElement = document.activeElement;
+   if (!(activeElement instanceof HTMLElement)) return;
+   if (!drawerBodyRef.value.contains(activeElement)) return;
+
+   requestAnimationFrame(() => {
+      activeElement.scrollIntoView({ block: 'center', inline: 'nearest', behavior: 'smooth' });
+   });
+}
+
+function onDrawerFocusIn() {
+   setTimeout(scrollActiveInputIntoView, 120);
+}
+
+watch(drawerOpen, (isOpen) => {
+   if (!isOpen) return;
+   nextTick(() => {
+      drawerBodyRef.value?.scrollTo({ top: 0 });
+   });
+});
 
 function selectValue(value: string | number | null) {
    emit('update:value', value);
@@ -106,16 +129,21 @@ function clearValue() {
             <UIcon name="i-heroicons-chevron-up-down-16-solid" class="h-4 w-4 opacity-70" />
          </button>
 
-         <UDrawer v-model:open="drawerOpen" :title="drawerTitle">
+         <UDrawer
+            v-model:open="drawerOpen"
+            :title="drawerTitle"
+            :ui="{ content: 'max-h-[min(82dvh,calc(100dvh-0.75rem))]' }"
+         >
             <template #body>
-               <div class="space-y-3 px-4 py-3">
-                  <UInput
-                     v-if="searchable"
-                     v-model="searchQuery"
-                     icon="i-heroicons-magnifying-glass-16-solid"
-                     :placeholder="resolvedSearchPlaceholder"
-                     class="w-full"
-                  />
+               <div ref="drawerBodyRef" class="wooly-responsive-select-drawer-body space-y-3 px-4 py-3" @focusin="onDrawerFocusIn">
+                  <div v-if="searchable" class="sticky top-0 z-10 -mx-4 bg-white px-4 pb-2 dark:bg-slate-900">
+                     <UInput
+                        v-model="searchQuery"
+                        icon="i-heroicons-magnifying-glass-16-solid"
+                        :placeholder="resolvedSearchPlaceholder"
+                        class="w-full"
+                     />
+                  </div>
 
                   <UButton
                      v-if="clearable && value !== null"
@@ -151,3 +179,12 @@ function clearValue() {
       </div>
    </div>
 </template>
+
+<style scoped>
+.wooly-responsive-select-drawer-body {
+   max-height: min(72dvh, calc(100dvh - 10rem));
+   overflow-y: auto;
+   overscroll-behavior: contain;
+   padding-bottom: max(0.75rem, env(keyboard-inset-height, 0px));
+}
+</style>
