@@ -68,9 +68,7 @@ function toNumberOrNull(value: string | number | null | undefined) {
 
 function toNumberArray(values: Array<string | number> | null | undefined) {
    if (!values?.length) return [];
-   return values
-      .map((value) => Number(value))
-      .filter((value) => Number.isFinite(value));
+   return values.map((value) => Number(value)).filter((value) => Number.isFinite(value));
 }
 
 function syncCellFromInitialCell(initialCell?: InitialCell) {

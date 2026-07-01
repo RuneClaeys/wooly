@@ -129,11 +129,7 @@ function clearValue() {
             <UIcon name="i-heroicons-chevron-up-down-16-solid" class="h-4 w-4 opacity-70" />
          </button>
 
-         <UDrawer
-            v-model:open="drawerOpen"
-            :title="drawerTitle"
-            :ui="{ content: 'max-h-[min(82dvh,calc(100dvh-0.75rem))]' }"
-         >
+         <UDrawer v-model:open="drawerOpen" :title="drawerTitle" :ui="{ content: 'max-h-[min(82dvh,calc(100dvh-0.75rem))]' }">
             <template #body>
                <div ref="drawerBodyRef" class="wooly-responsive-select-drawer-body space-y-3 px-4 py-3" @focusin="onDrawerFocusIn">
                   <div v-if="searchable" class="sticky top-0 z-10 -mx-4 bg-white px-4 pb-2 dark:bg-slate-900">
